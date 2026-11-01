@@ -71,6 +71,7 @@ No accounts, no analytics, no third-party SDKs.
 - **The back button has layers.** Close the lookup popover, then the word card, then the previous page, and only then leave the app.
 - **Themes follow the phone.** A WebView answers `prefers-color-scheme` from the app's own theme, which is why "follow system" used to stay dark on a light phone; the native layer now reports `Configuration.uiMode`.
 - **Import and clear work.** With no `WebChromeClient`, `confirm()` silently returns `false` and the file picker never opens. `onJsConfirm` and `onShowFileChooser` fixed both.
+- **Progress travels to the web edition, and back.** The upstream site re-checks the whole file on import and refuses it if `progress.drills` is missing or one of the 22 settings it knows about is absent (`examDate`, `illus`, `recall`…) — which is why every export from this app ended in 「备份内容不完整或格式有误」. 我的 → 数据 now offers **导出网页版兼容备份** (adds `drills: {}` and every setting the site expects; of this app's 30 ambience tracks only the 8 it knows are sent, the rest become `stars`) and **从网页版备份导入** (drops `drills`, `books` and the exam plan, keeps cards, daily stats and the settings both sides share). The site's rules are restated in `src/store/web-backup.ts` and pinned by eight tests; a 895-word backup exported from the phone imported on [0xlei.tech/words](https://0xlei.tech/words/) as 「已恢复 895 个词的学习记录」.
 
 Full implementation notes, size breakdown and per-bug write-ups: **[docs/android.md](docs/android.md)** (Chinese).
 

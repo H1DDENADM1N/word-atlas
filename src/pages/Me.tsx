@@ -1,9 +1,9 @@
-import { Download, RotateCcw, Upload } from "lucide-react";
+import { Download, Globe, RotateCcw, Upload } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { useAtlas } from "../atlas/context";
 import { isMastered } from "../store/srs";
 import { saveBlob } from "../lib/native";
-import { dayKey, exportBackup, importBackup, resetProgress, store, useStore, type Settings, type Theme } from "../store/store";
+import { dayKey, exportBackup, exportWebBackup, importAnyBackup, resetProgress, store, useStore, type Settings, type Theme } from "../store/store";
 import { toast } from "../ui/Toast";
 import { streakOf } from "./Today";
 
@@ -31,6 +31,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   const settings = useStore((s) => s.settings);
   const saveError = useStore((s) => s.saveError);
   const file = useRef<HTMLInputElement>(null);
+  const webFile = useRef<HTMLInputElement>(null);
 
   const stats = useMemo(() => {
     const cards = Object.values(progress.cards);
@@ -57,10 +58,17 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
     const where = await saveBlob(blob, `word-atlas-backup-${dayKey()}.json`);
     toast(where === "shell" ? "备份已保存到下载目录" : "备份已下载", "ok");
   };
+  const downloadWeb = async () => {
+    const blob = new Blob([exportWebBackup()], { type: "application/json" });
+    const where = await saveBlob(blob, `word-atlas-web-backup-${dayKey()}.json`);
+    toast(where === "shell" ? "网页版备份已保存到下载目录" : "网页版备份已下载", "ok");
+  };
   const restore = async (f: File) => {
     if (f.size > 30 * 1024 * 1024) return toast("文件太大，不像是学习备份。", "warn");
-    const r = importBackup(await f.text());
-    toast(r.ok ? `已恢复 ${r.cards} 个词的记忆` : r.error, r.ok ? "ok" : "warn");
+    const r = importAnyBackup(await f.text());
+    if (!r.ok) return toast(r.error, "warn");
+    const days = r.days ? `、${r.days} 天记录` : "";
+    toast(`${r.web ? "网页版备份" : "备份"}已恢复：${r.cards} 个词${days}`, "ok");
   };
   const maxF = Math.max(1, ...stats.forecast);
   const streak = streakOf(progress.days);
@@ -261,6 +269,20 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
             >
               <RotateCcw size={18} /> 清空记录
             </button>
+          </div>
+
+          <h4 className="group-label">与网页版互通</h4>
+          <p className="muted">
+            网页版（0xlei.tech/words）的导入会逐项核对整份文件：少了 drills、或少一个它认得的设置项，就整份拒收。下面两个按钮负责在两边搬进度，它没有的选项按默认值补齐。
+          </p>
+          <div className="data-actions">
+            <button className="btn btn-ghost" onClick={downloadWeb}>
+              <Globe size={18} /> 导出网页版兼容备份
+            </button>
+            <button className="btn btn-ghost" onClick={() => webFile.current?.click()}>
+              <Globe size={18} /> 从网页版备份导入
+            </button>
+            <input ref={webFile} type="file" accept="application/json,.json" hidden onChange={(e) => e.target.files?.[0] && restore(e.target.files[0]).finally(() => (e.target.value = ""))} />
           </div>
         </section>
       </div>

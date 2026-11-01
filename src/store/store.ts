@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import type { Accent } from "../atlas/types";
 import { asAmbienceId, type AmbienceChoice } from "../lib/ambience";
 import type { CardState, Grade } from "./srs";
+import { webProgress, webSettings } from "./web-backup";
 
 export type QuizKind = "meaning" | "picture" | "listen" | "spell";
 
@@ -236,6 +237,11 @@ function scheduleSave() {
 }
 
 export function flush() {
+  // Headless (tests, scripts) there is no timer and nowhere to save.
+  if (typeof window === "undefined") {
+    dirty = false;
+    return;
+  }
   window.clearTimeout(saveTimer);
   if (!dirty) return;
   dirty = false;
@@ -314,17 +320,42 @@ export function toggleBookmark(id: string) {
 
 /* ---------- backup ---------- */
 
+/** This app's own file: everything it knows, for another install of this app. */
 export function exportBackup() {
   flush();
   const { progress, settings } = state;
   return JSON.stringify({ app: "word-atlas", version: 2, exported: new Date().toISOString(), progress: { ...progress, session: null }, settings }, null, 1);
 }
 
+/**
+ * The same progress in the upstream site's dialect.
+ *
+ * The site re-checks the whole file and refuses it outright if one setting it knows about is missing — `progress.drills`, `examDate`, `illus` and five more. `web-backup.ts` holds its rules; this is only the envelope.
+ */
+export function exportWebBackup() {
+  flush();
+  const { progress, settings } = state;
+  return JSON.stringify({ app: "word-atlas", version: 2, exported: new Date().toISOString(), progress: webProgress(progress), settings: webSettings(settings) }, null, 1);
+}
+
 function markDirty() {
   dirty = true;
 }
 
-export function importBackup(text: string): { ok: true; cards: number } | { ok: false; error: string } {
+export type ImportReport = { ok: true; cards: number; days: number; web: boolean } | { ok: false; error: string };
+
+/** A file from the site is the one carrying `drills`, or the reader's book state. */
+function looksWeb(data: Record<string, unknown>) {
+  const p = data.progress;
+  return isObj(p) && (isObj(p.drills) || "books" in data || "booksReader" in data);
+}
+
+/**
+ * Restore from either dialect.
+ *
+ * The site writes fields this app has no room for (`drills`, `books`, the exam plan); `sanitizeProgress` drops them, and the settings only this app has keep their current value instead of falling back to a default.
+ */
+export function importAnyBackup(text: string): ImportReport {
   let data: unknown;
   try {
     data = JSON.parse(text);
@@ -335,12 +366,28 @@ export function importBackup(text: string): { ok: true; cards: number } | { ok: 
     return { ok: false, error: "这不是词光的学习备份。" };
   const id = state.progress.datasetId;
   if (data.progress.datasetId !== id) return { ok: false, error: "备份来自另一个词库，请先切换到对应词库。" };
+  const web = looksWeb(data);
   const progress = sanitizeProgress({ ...data.progress, session: null }, id);
-  state = { ...state, progress, settings: { ...sanitizeSettings(data.settings), onboarded: true } };
+  const settings = sanitizeSettings(data.settings);
+  state = {
+    ...state,
+    progress,
+    settings: {
+      ...settings,
+      ...(web ? { autoplayEx: state.settings.autoplayEx, autoplayEx2: state.settings.autoplayEx2, blurZh: state.settings.blurZh } : {}),
+      onboarded: true,
+    },
+  };
   emit();
   markDirty();
   flush();
-  return { ok: true, cards: Object.keys(progress.cards).length };
+  return { ok: true, cards: Object.keys(progress.cards).length, days: Object.keys(progress.days).length, web };
+}
+
+/** The plain 导入备份 button: one summary line, whichever dialect the file is in. */
+export function importBackup(text: string): { ok: true; cards: number } | { ok: false; error: string } {
+  const r = importAnyBackup(text);
+  return r.ok ? { ok: true, cards: r.cards } : r;
 }
 
 export function resetProgress() {
