@@ -6,10 +6,12 @@ import "@fontsource-variable/atkinson-hyperlegible-next/index.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { installFocusRing } from "./lib/focusRing";
 import { installBackHandler, installSystemTheme, isShell } from "./lib/native";
 import "./styles/app.css";
 
 installSystemTheme();
+installFocusRing();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

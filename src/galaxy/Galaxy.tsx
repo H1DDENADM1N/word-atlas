@@ -198,6 +198,8 @@ export function Galaxy({
         const dx = p.x - prev.x;
         const dy = p.y - prev.y;
         drag.current.moved += Math.abs(dx) + Math.abs(dy);
+        // A drag is a rotation, not a tap on the star it started from.
+        if (drag.current.moved > 8 && hover) setHover(null);
         eng.cam.yaw -= dx * 0.006;
         eng.cam.pitch = Math.max(0.12, Math.min(1.45, eng.cam.pitch + dy * 0.005));
       }
@@ -240,18 +242,32 @@ export function Galaxy({
     if (!eng || !d || d.moved > 8) return;
     const p = local(e);
     const i = eng.pick(p.x, p.y, e.pointerType === "mouse" ? 16 : 26);
-    if (i < 0) return;
+    if (i < 0) {
+      // Tapping empty space dismisses the preview.
+      if (hover) setHover(null);
+      return;
+    }
     const ref = atlas.words[i];
-    if (e.pointerType !== "mouse" && hover?.ref.id !== ref.id) {
-      // First tap previews, second tap opens.
+    // A tap on another star only moves the preview there; the same star — or
+    // the same spot, since the core is dense enough that a fresh pick can land
+    // on a neighbour — opens it. Without this, every tap after the first jumped
+    // straight into a word card.
+    const sameStar = !!hover && (hover.ref.id === ref.id || Math.hypot(p.x - hover.x, p.y - hover.y) < 28);
+    if (e.pointerType !== "mouse" && !sameStar) {
+      // The preview has to outlive the finger lift (see onPointerLeave): it used
+      // to be set and cleared in the same frame, so no second tap could open.
       eng.hover = i;
       setHover({ ref, x: p.x, y: p.y });
       if (store.get().settings.sfx) void cue("twinkle");
       return;
     }
-    eng.flyTo(i);
+    // Open what the tip is showing when the tap confirms it, not whatever the
+    // picker happened to land on next to it.
+    const openId = sameStar ? hover!.ref.id : ref.id;
+    eng.flyTo(layout.index.get(openId) ?? i);
+    setHover(null);
     if (store.get().settings.sfx) void cue("fly");
-    window.setTimeout(() => openWord(ref.id), 350);
+    window.setTimeout(() => openWord(openId), 350);
   };
 
   const onWheel = (e: React.WheelEvent) => {
@@ -287,7 +303,11 @@ export function Galaxy({
         onPointerDown={onDown}
         onPointerUp={onUp}
         onPointerCancel={onUp}
-        onPointerLeave={() => {
+        onPointerLeave={(e) => {
+          // A touch pointer reports `pointerleave` the moment the finger lifts,
+          // which wiped the preview in the same frame it appeared. Only a mouse
+          // leaving the canvas should hide the tip.
+          if (e.pointerType !== "mouse") return;
           if (engine.current) engine.current.hover = -1;
           setHover(null);
         }}
@@ -314,17 +334,17 @@ export function Galaxy({
         ))}
       </div>
       {hover && (
-        <button
+        <div
           className="galaxy-tip"
+          aria-hidden="true"
           style={{ transform: `translate(${Math.min(hover.x + 18, (canvas.current?.clientWidth ?? 0) - 260)}px, ${Math.max(8, hover.y - 46)}px)` }}
-          onClick={() => openWord(hover.ref.id)}
         >
           <Illustration src={atlas.img(hover.ref, "thumb")} word={hover.ref.word} topic={hover.ref.topic} />
           <span>
             <b lang="en">{hover.ref.word}</b>
             <small>{hover.ref.zh}</small>
           </span>
-        </button>
+        </div>
       )}
       <div className="galaxy-hud">
         <p>

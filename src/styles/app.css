@@ -200,7 +200,15 @@ a {
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
+/* A ring is for keyboard users, and only Tab counts as keyboard navigation
+   here: `:focus-visible` also matches a programmatic focus() whenever the last
+   interaction was a key press, so answering a spelling question with the soft
+   keyboard's Enter painted an orange ring around 继续 that nobody had tabbed
+   to. src/lib/focusRing.ts arms the ring on Tab and disarms it on any tap. */
 :focus-visible {
+  outline: none;
+}
+html[data-focus-ring="key"] :focus-visible {
   outline: 2px solid var(--terra);
   outline-offset: 3px;
   border-radius: 8px;
@@ -4454,6 +4462,10 @@ a:hover .mark-needle,
   left: 0;
   top: 0;
   z-index: 3;
+  /* A label, not a button: it sits under the finger that revealed it, so any
+     tap here must fall through to the star map (tapping the same star again is
+     what opens it). */
+  pointer-events: none;
   display: flex;
   align-items: center;
   gap: 12px;

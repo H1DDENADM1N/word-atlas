@@ -298,6 +298,43 @@ const syllable = $headword.attr("syllable");   // 点击时用 syllable 换掉 h
 
 > 顺带把打字练习页在手机上改成全屏 fixed 覆盖层（`.practice.typing`）。它原先待在 tabbar 与 footer 之间，键盘一弹页面就滚，目标词正好落在键盘后面。
 
+### 排查记录：星图上点星星打不开词条
+
+现象：图鉴切到星图，点一颗星没有任何反应——既没有预览小卡，也没有词条；点第二下、第三下还是一样。
+
+原因一，触摸指针的生命周期：`pointerup` 之后浏览器会紧接着补发 `pointerout` / `pointerleave`（手指抬起就等于「离开」）。`Galaxy` 的 `onPointerLeave` 会把 `hover` 清成 `null`，而首触的预览 `setHover(...)` 与这次清空落在同一批更新里，所以渲染拿到的永远是 `null`——小卡一帧都没出现过。打开词条又要求「第二下点的是同一颗星」（`hover?.ref.id === ref.id`），`hover` 既然永远是空，第二下仍然只会预览，词条就再也打不开。桌面端不受影响，鼠标的 `pointerleave` 只在指针真的移出画布时才发生。触摸模拟下的事件序列与真机一致：`pointerdown → pointerup → pointerleave → click`。
+
+原因二（修好原因一之后才露出来）：只要屏幕上已经有一张预览，点**别的**星星会直接进词卡，而不是换成那颗星的预览。两件事叠在一起：一是预览卡跟着触点走，首触把它移到手指下方，而浏览器是**重新渲染之后**才按触点做 `click` 命中测试，于是那次「只想预览一下」的点击落在了刚出现的小卡上；二是这张卡有 182×74 CSS px，比一颗星大得多，压在星域上就等于挡住一片星星，之后想点的那颗往往就在它下面。
+
+改法（`src/galaxy/Galaxy.tsx`）：
+
+| 位置 | 改法 | 为什么 |
+| :--- | :--- | :--- |
+| `onPointerLeave` | `pointerType !== "mouse"` 时直接返回 | 触摸的「离开」不是离开画布 |
+| `onUp` | 只有「同一颗星，或离上一次点击 28 px 以内」才打开，否则把预览挪到新那颗星上 | 换一颗星应该先看词；核心星域密到同一个点重新 `pick` 可能落到邻居身上，所以再补一条位置容差 |
+| `onUp` | 打开的是预览卡上那颗（`hover.ref.id`），不是这次 `pick` 到的 | 卡片显示哪颗就打开哪颗，不然会出现「看着 A 点开 B」 |
+| `.galaxy-tip` | 从 `<button>` 改成 `<div>`，并加 `pointer-events: none` | 小卡不该是可点区域：它正压在手指下面，任何点击都应该穿透到星图上。这样「点别的星」永远只是换预览，打开统一交给「再点同一颗」 |
+| `onMove` | 拖动累计超过 8 px 时清掉预览 | 旋转星图不是点星星，别把上一次的预览留在屏幕上 |
+
+验证（363×800，触摸模拟）：点第一颗星 → 小卡 `pool / n. 游泳池；水塘`，不打开；点旁边另一颗（哪怕它正好被小卡盖住）→ 小卡换成 `during / prep. 在……期间`，仍不打开；再点这一颗 → 打开 `during`。桌面端鼠标悬停显示 `respect`，单击打开的就是 `respect`。
+
+### 排查记录：拼写答完后「继续」多了一圈橙边
+
+现象：拼写题按软键盘的回车提交，答完那一刻「继续」按钮外面多出一圈橙色描边（`--terra`，2 px），像被选中了。
+
+原因在 `:focus-visible` 的判定：只要最近一次交互是按键，Chromium 就把随后的 `focus()` 也算作键盘聚焦。`Feedback` 挂载时会把焦点移到「继续」（回车要能接着走，输入法也该收起），于是回车提交 → 按钮被聚焦 → 命中全局 `:focus-visible` 的橙色 outline。鼠标点选项时上一次交互是指针，所以只有拼写题会犯。
+
+实测：提交后 `document.activeElement` 是 `button.btn.btn-xl.btn-sage`，`getComputedStyle().outline` 为 `solid 2px rgb(229, 124, 90) offset=3px`。
+
+改法：把「键盘导航」收窄成 Tab。
+
+| 位置 | 改法 | 为什么 |
+| :--- | :--- | :--- |
+| `src/lib/focusRing.ts`（新增） | `keydown` 里只有 `Tab` 把 `data-focus-ring="key"` 写到 `<html>`，任何 `pointerdown` 写回 `pointer` | 回车、空格是操作，Tab 才是导航 |
+| `app.css` | 全局 `:focus-visible` 只留 `outline: none`，橙色描边挂到 `html[data-focus-ring="key"] :focus-visible` | 不换判定标准的话，程序化聚焦永远会带出描边 |
+
+验证：拼写题回车提交后 `outline` 为 `none`，再按回车仍能进入下一题；改用 `Shift+Tab` 回到上一个按钮时橙边照旧出现，键盘用户没有丢掉焦点提示。
+
 
 ## 排查记录：导入备份 / 清空记录「无效」
 
