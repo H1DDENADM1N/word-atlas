@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: ~1.05 GB](https://img.shields.io/badge/APK-~1.05_GB-2F5D50?style=flat-square)
+![APK: ~991 MB](https://img.shields.io/badge/APK-~991_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -49,7 +49,7 @@
 | 真题 | 无 | 「雅思语境」下面多一节**真题例句**，1,211 条剑桥雅思 4 原文与译文，标出处 |
 | 话题星座 | 无（只有词汇星图） | 图鉴里多一块**话题星座**面板，十九个话题各一个星座 |
 | 环境声 | 无 | **30 条**循环录音，配平响度，读词时自动压低 |
-| 体积 | 仓库约 1 GB 资源 | APK 约 **1051 MB**（全部资源都在里面） |
+| 体积 | 仓库约 1 GB 资源 | APK 约 **991 MB**（全部资源都在里面） |
 | 更新方式 | `git pull` / 网站自动更新 | 重新构建并安装（换签名需先卸载） |
 | 构建工具 | Node + Vite | 再加 JDK 17 + Android SDK，**不需要 Gradle** |
 
@@ -94,16 +94,18 @@
 | 词条 | **7,298** 条，CEFR A1–C2，19 个话题 |
 | 例句 | **14,596** 条，日常与雅思语境，附中文翻译 |
 | 插画 | **7,298** 幅，512 px WebP，另带缩略图 |
-| 录音 | **22,905** 段：英音、美音、例句朗读 |
+| 录音 | **22,905** 段：英音、美音、例句朗读（单词发音不进仓库，构建时从 OALDPEX 导入） |
 | 复习 | TS-FSRS 间隔复习，目标记忆率可调 |
 | 功能 | 今日、图鉴、词卡、词汇星图（WebGL2）、四类练习、打字练习、导出 / 恢复备份（含与网页版互通） |
 | 数据存放 | 本地优先，无账号无服务器，记录只在这台设备上 |
 
-内容来源同样一致：释义、例句、搭配与大语言模型按统一词典规范撰写，插画由图像模型逐词绘制，语音由 ElevenLabs 合成。经过自动结构与一致性校验，但**尚未逐条人工审校**，可能有错。不是官方雅思词表，也不承诺提分。
+内容来源同样一致：释义、例句、搭配与大语言模型按统一词典规范撰写，插画由图像模型逐词绘制，例句朗读由 ElevenLabs 合成。经过自动结构与一致性校验，但**尚未逐条人工审校**，可能有错。不是官方雅思词表，也不承诺提分。
+
+单词的英音与美音是唯一的例外：它们来自《牛津高阶英语词典》数据包（OALDPEX）的真人录音，由 `scripts/atlas/import_audio.py` 在构建机上导入，**不进本仓库**（见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)），版权归牛津大学出版社，仅限自建自用。
 
 ## 安装
 
-APK 约 1.05 GB，不进仓库（`.gitignore` 已排除）。两种方式：
+APK 约 991 MB，不进仓库（`.gitignore` 已排除）。两种方式：
 
 1. 看 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases) 有没有现成产物；
 2. 按下一节自己构建。
@@ -139,6 +141,10 @@ npm ci
 # 一次性拉取离线语音运行时与音色（约 540 MB，校验 SHA-256，不进仓库）
 python3 scripts/android/fetch_tts.py
 
+# 单词的英音/美音不在仓库里：从 OALDPEX 数据包导入（14,518 个文件，60 MB）
+# 没有 OALDPEX 就跳过这一步：构建照常，单词改由内置 Kokoro 朗读
+python3 scripts/atlas/import_audio.py
+
 export ANDROID_HOME=$HOME/.android-sdk
 export JAVA_HOME=/path/to/jdk-17
 
@@ -164,7 +170,7 @@ npm run build        # 构建到 dist/
 | :--- | ---: |
 | 插画 `atlas/img`（512 px WebP） | 203 MB |
 | 缩略图 `atlas/thumb` | 88 MB |
-| 录音（英音 / 美音 / 例句） | 426 MB |
+| 录音（英音 49 / 美音 48 / 例句 267） | 364 MB |
 | 词库 `atlas/entries` + `index.json` | 6.9 MB |
 | 真题例句 `atlas/ielts.json` + 音节标注 `atlas/syllables.json` | 0.6 MB |
 | 界面音效（17 段） | 0.3 MB |
@@ -172,14 +178,14 @@ npm run build        # 构建到 dist/
 | 离线语音：ONNX Runtime + JNI（arm64 / x86_64） | 55 MB |
 | 离线语音：Kokoro-82M 音色 + espeak 音素表 | 353 MB |
 | 前端 bundle、字体、图标 | ~1 MB |
-| **APK** | **约 1051 MB** |
+| **APK** | **约 991 MB** |
 
 想瘦身：只保留 `thumb/`（省 203 MB）、把录音转低码率、只打一个 ABI，或换回 Piper 音色（`fetch_tts.py --voice piper`，省约 290 MB，音质明显下降）。
 
 ## 已知限制
 
 - **冷启动略慢**：首次要从 APK 里读取内联数据并解析。
-- **体积就是代价**：1051 MB 是"全部资源装进 APK"的直接结果。
+- **体积就是代价**：991 MB 是"全部资源装进 APK"的直接结果。
 - **内置语音的延迟**：模型加载约 0.9 s；一句 7.8 s 的雅思长句合成约 3.6 s。按钮一出现就预渲染，所以正常点按是零等待，页面刚打开立刻点仍要等。
 - **语音只是兜底**：22,905 段真人录音优先，TTS 只补第二条例句缺录音的那 6,287 个词。
 - **真题例句只覆盖 30%**：来源词典只收了剑桥雅思 4 的四套题，2,216 / 7,298 个词条有例句；A1 日常词本来就不出现在学术文章里。

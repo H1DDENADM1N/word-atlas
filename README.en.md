@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: ~1.0 GB](https://img.shields.io/badge/APK-~1.0_GB-2F5D50?style=flat-square)
+![APK: ~991 MB](https://img.shields.io/badge/APK-~991_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -82,12 +82,14 @@ Full implementation notes, size breakdown and per-bug write-ups: **[docs/android
 | Entries | **7,298**, CEFR A1–C2, 19 topics |
 | Examples | **14,596** with Chinese translations |
 | Illustrations | **7,298** at 512 px WebP, plus thumbnails |
-| Recordings | **22,905**: UK, US and example narration |
+| Recordings | **22,905**: UK, US and example narration (word audio is not in the repo; imported at build time) |
 | Review | TS-FSRS spaced repetition, adjustable retention |
 | Screens | Today, atlas, word card, WebGL2 word galaxy, four practice modes, typing, backup export/import |
 | Privacy | Local-first, no account, progress stays on the device |
 
-Content provenance is unchanged too: text and illustrations were generated for the project with AI, speech with ElevenLabs, checked automatically but **not reviewed entry by entry**. This is not an official IELTS list and promises no score gain.
+Content provenance is unchanged too: text and illustrations were generated for the project with AI, example narration with ElevenLabs, checked automatically but **not reviewed entry by entry**. This is not an official IELTS list and promises no score gain.
+
+The one exception is the UK/US pronunciation of each word: those are the real recordings from the *Oxford Advanced Learner's Dictionary* package (OALDPEX), imported on the build machine by `scripts/atlas/import_audio.py` and **not** part of this repository (see [CONTENT_LICENSE.md](CONTENT_LICENSE.md)). They belong to Oxford University Press and are for your own build only.
 
 ## Install
 
@@ -124,6 +126,10 @@ npm ci
 # Once: fetch the speech runtime and voice (~540 MB, SHA-256 checked, not committed)
 python3 scripts/android/fetch_tts.py
 
+# Word audio is not in the repo: import it from the OALDPEX package (14,518 files, 60 MB).
+# Without the package, skip this — the build still works and words fall back to Kokoro.
+python3 scripts/atlas/import_audio.py
+
 export ANDROID_HOME=$HOME/.android-sdk
 export JAVA_HOME=/path/to/jdk-17
 
@@ -146,7 +152,7 @@ npm run build
 | :--- | ---: |
 | Illustrations (512 px WebP) | 203 MB |
 | Thumbnails | 88 MB |
-| Recordings | 426 MB |
+| Recordings (UK 49 / US 48 / examples 267) | 364 MB |
 | Word data | 6.9 MB |
 | Exam sentences + syllable marks | 0.6 MB |
 | Sound cues and music | 4.4 MB |
@@ -176,7 +182,7 @@ To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or
 | Entries | [JSON](data/word-atlas.json) · [CSV](data/word-atlas.csv) |
 | Schema | [docs/dataset.md](docs/dataset.md) |
 | Illustrations | [public/atlas/img/](public/atlas/img/) |
-| Recordings | [public/atlas/audio/](public/atlas/audio/) |
+| Recordings | [public/atlas/audio/](public/atlas/audio/) — example narration only; word audio is generated locally |
 
 ## Contributing
 
@@ -189,7 +195,8 @@ To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or
 | | |
 | :--- | :--- |
 | Application code | [MIT](LICENSE) |
-| Vocabulary, illustrations and word recordings | [CC BY 4.0](CONTENT_LICENSE.md), credit “Word Atlas contributors（词光）” |
+| Vocabulary and illustrations | [CC BY 4.0](CONTENT_LICENSE.md), credit “Word Atlas contributors（词光）” |
+| Word pronunciations (UK/US) | Oxford University Press — local builds only, not redistributable |
 | Kokoro-82M, sherpa-onnx | Apache-2.0 |
 
 > The exam sentences and syllable marks are imported from third-party dictionaries (《雅思真题例句词典》, 《牛津高阶》) and are **not** covered by the CC BY 4.0 licence above. Their source files stay out of this repository (`.gitignore`); only the derived index ships in the APK.

@@ -38,3 +38,10 @@ android/vendor/
 # 雅思真题例句词典 -> scripts/atlas/import_ielts.py, OALDPEX -> import_syllables.py
 /雅思真题例句词典
 /OALDPEX
+
+# Word pronunciations are imported from OALDPEX by scripts/atlas/import_audio.py.
+# They are Oxford University Press's recordings, not ours, so they stay on the
+# build machine: `python3 scripts/atlas/import_audio.py` recreates them, and a
+# build without them falls back to the bundled Kokoro voice.
+/public/atlas/audio/uk/
+/public/atlas/audio/us/
