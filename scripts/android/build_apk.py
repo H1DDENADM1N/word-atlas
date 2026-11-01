@@ -148,8 +148,15 @@ def build_web(skip: bool) -> None:
     run([npm, "run", "build:android"], cwd=ROOT)
 
 
-def build_data_js() -> Path:
-    """Inline the word data and sound cues so the page needs no fetch()."""
+def build_data_js() -> tuple[Path, Path]:
+    """Inline the word data and sound cues so the page needs no fetch().
+
+    The ambience loops are 56 MB and cannot be inlined the same way: one JS
+    string that big would have to be parsed before the first paint. They go into
+    one script per track instead, which the page pulls in when a track is
+    actually chosen. A `<script>` works from `file://` where `fetch()` does not,
+    and base64 deflates back to roughly the size of the mp3 it encodes.
+    """
     log("inlining atlas data and sound cues")
     index_file = PUBLIC / "atlas" / "index.json"
     index_text = index_file.read_text(encoding="utf-8")
@@ -159,15 +166,33 @@ def build_data_js() -> Path:
     ielts = ielts_file.read_text(encoding="utf-8") if ielts_file.exists() else ""
     syl_file = PUBLIC / "atlas" / "syllables.json"
     syllables = syl_file.read_text(encoding="utf-8") if syl_file.exists() else ""
+
+    amb_dir = BUILD / "sfx"
+    if amb_dir.exists():
+        shutil.rmtree(amb_dir)
+    amb_dir.mkdir(parents=True, exist_ok=True)
+
     sfx = {}
     for path in sorted((PUBLIC / "sfx").glob("*.mp3")):
-        sfx[path.name] = base64.b64encode(path.read_bytes()).decode("ascii")
+        payload = base64.b64encode(path.read_bytes()).decode("ascii")
+        if path.name.startswith("amb-"):
+            name = json.dumps(path.name)
+            (amb_dir / f"{path.name}.js").write_text(
+                f"self.__WA_SFX=self.__WA_SFX||{{}};self.__WA_SFX[{name}]={json.dumps(payload)};\n",
+                encoding="ascii",
+            )
+        else:
+            sfx[path.name] = payload
     payload = {"index": index_text, "chunks": chunks, "ielts": ielts, "syllables": syllables, "sfx": sfx}
     target = BUILD / "data.js"
     target.parent.mkdir(parents=True, exist_ok=True)
     body = "window.__WA_DATA=" + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n"
     target.write_text(body, encoding="utf-8")
-    log(f"  {len(chunks)} entry chunks · {len(ielts) // 1024} KB exam sentences · {len(syllables) // 1024} KB syllable breaks · {len(sfx)} cues · {human(target.stat().st_size)}")
+    log(
+        f"  {len(chunks)} entry chunks · {len(ielts) // 1024} KB exam sentences · {len(syllables) // 1024} KB syllable breaks"
+        f" · {len(sfx)} cues · {len(list(amb_dir.glob('*.js')))} ambience payloads · {human(target.stat().st_size)}"
+    )
+    return target, amb_dir
     return target
 
 
@@ -249,8 +274,13 @@ def web_assets() -> list[tuple[Path, str]]:
             items.append((path, f"assets/www/{path.relative_to(DIST).as_posix()}"))
     for folder in ("atlas", "sfx", "brand"):
         for path in sorted((PUBLIC / folder).rglob("*")):
-            if path.is_file():
-                items.append((path, f"assets/www/{path.relative_to(PUBLIC).as_posix()}"))
+            if not path.is_file():
+                continue
+            # The ambience ships as `sfx/<name>.mp3.js`; keeping the raw mp3 too
+            # would store 56 MB of audio twice.
+            if folder == "sfx" and path.name.startswith("amb-") and path.suffix == ".mp3":
+                continue
+            items.append((path, f"assets/www/{path.relative_to(PUBLIC).as_posix()}"))
     for name in ("favicon.svg", "icon-512.png", "manifest.webmanifest"):
         path = PUBLIC / name
         if path.exists():
@@ -278,13 +308,15 @@ def native_and_voice() -> list[tuple[Path, str]]:
     return items
 
 
-def package_apk(base_apk: Path, dex_file: Path, data_js: Path) -> Path:
+def package_apk(base_apk: Path, dex_file: Path, data_js: Path, amb_js: Path) -> Path:
     log("packaging assets (this is the big step)")
     out = BUILD / "unaligned.apk"
     if out.exists():
         out.unlink()
     assets = web_assets()
     assets.append((data_js, "assets/www/atlas-embed/data.js"))
+    for path in sorted(amb_js.glob("*.js")):
+        assets.append((path, f"assets/www/sfx/{path.name}"))
     assets.extend(native_and_voice())
     total = 0
     written = 0
@@ -375,12 +407,12 @@ def main() -> None:
     aapt2 = build_tools / ("aapt2.exe" if os.name == "nt" else "aapt2")
 
     build_web(args.skip_web)
-    data_js = build_data_js()
+    data_js, amb_js = build_data_js()
     res_zip = aapt2_compile(aapt2)
     base_apk = aapt2_link(aapt2, android_jar, res_zip)
     classes = compile_java(java_home, android_jar)
     dex_file = dex(java_home, build_tools, android_jar, classes)
-    unaligned = package_apk(base_apk, dex_file, data_js)
+    unaligned = package_apk(base_apk, dex_file, data_js, amb_js)
     signed = align_and_sign(build_tools, java_home, unaligned)
 
     log(f"done · {signed} · {human(signed.stat().st_size)}")

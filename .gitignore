@@ -25,6 +25,15 @@ android/vendor/
 
 # Agent workspace state (session notes), not part of the app
 .workbuddy-ai/
+
+# Scratch: local verification scripts and screenshots, and copies of the
+# reference site's minified bundle pulled down while reverse-engineering it.
+.devcheck/
+/ref.js
+/ref.css
+/ref.html
+/ref-atlas.js
+
 # Third-party dictionaries, not part of the app:
 # 雅思真题例句词典 -> scripts/atlas/import_ielts.py, OALDPEX -> import_syllables.py
 /雅思真题例句词典

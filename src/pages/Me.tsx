@@ -3,9 +3,27 @@ import { useMemo, useRef } from "react";
 import { useAtlas } from "../atlas/context";
 import { isMastered } from "../store/srs";
 import { saveBlob } from "../lib/native";
-import { dayKey, exportBackup, importBackup, resetProgress, store, useStore, type Settings } from "../store/store";
+import { dayKey, exportBackup, importBackup, resetProgress, store, useStore, type Settings, type Theme } from "../store/store";
 import { toast } from "../ui/Toast";
 import { streakOf } from "./Today";
+
+/** A three-colour preview of each palette: page, surface, accent. */
+const SWATCH: Record<Theme, [string, string, string]> = {
+  // "follows the system" shows both skies at once, split down the middle.
+  system: ["linear-gradient(135deg, #f6f1e7 0 50%, #0d1120 50% 100%)", "#8f8b84", "#cb922c"],
+  light: ["#f6f1e7", "#fffdf8", "#cb922c"],
+  dark: ["#0d1120", "#131a2b", "#e8b65a"],
+  aurora: ["#05060f", "#171d35", "#4fe8b8"],
+  starlight: ["#06080f", "#10142a", "#e8c48a"],
+};
+
+const THEME_LABEL: [Theme, string][] = [
+  ["system", "系统"],
+  ["light", "浅色"],
+  ["dark", "深色"],
+  ["aurora", "极光"],
+  ["starlight", "星光"],
+];
 
 export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   const atlas = useAtlas();
@@ -45,6 +63,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
     toast(r.ok ? `已恢复 ${r.cards} 个词的记忆` : r.error, r.ok ? "ok" : "warn");
   };
   const maxF = Math.max(1, ...stats.forecast);
+  const streak = streakOf(progress.days);
 
   return (
     <div className="page me">
@@ -53,21 +72,27 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
         <h1 className="display">你的星空</h1>
       </header>
 
-      <section className="stat-strip">
-        <div>
+      <section className="stat-strip" aria-label="学习统计">
+        <div className="stat-lead">
           <dt>连续学习</dt>
           <dd>
-            {streakOf(progress.days)}
+            {streak}
             <small>天</small>
           </dd>
         </div>
         <div>
           <dt>已点亮</dt>
-          <dd>{stats.learned.toLocaleString()}</dd>
+          <dd>
+            {stats.learned.toLocaleString()}
+            <small>词</small>
+          </dd>
         </div>
         <div>
           <dt>长期记住</dt>
-          <dd>{stats.mastered.toLocaleString()}</dd>
+          <dd>
+            {stats.mastered.toLocaleString()}
+            <small>词</small>
+          </dd>
         </div>
         <div>
           <dt>首次正确率</dt>
@@ -89,6 +114,15 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
         <section className="panel">
           <h3 className="eyebrow">过去 20 周</h3>
           <Heatmap days={progress.days} />
+          <div className="heat-legend" aria-hidden="true">
+            <span>少</span>
+            <i className="h0" />
+            <i className="h1" />
+            <i className="h2" />
+            <i className="h3" />
+            <i className="h4" />
+            <span>多</span>
+          </div>
           <p className="muted">一格是一天，颜色越深，那天答得越多。「长期记住」指记忆稳定度超过 21 天。</p>
         </section>
 
@@ -96,7 +130,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           <h3 className="eyebrow">未来 7 天的复习量</h3>
           <ol className="forecast">
             {stats.forecast.map((n, i) => (
-              <li key={i}>
+              <li key={i} className={i === 0 ? "is-today" : ""}>
                 <span style={{ height: `${(n / maxF) * 100}%` }} />
                 <b>{n}</b>
                 <small>{i === 0 ? "今天" : i === 1 ? "明天" : `+${i}`}</small>
@@ -107,6 +141,8 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
 
         <section className="panel settings">
           <h3 className="eyebrow">学习设置</h3>
+
+          <Group label="学习节奏" />
           <Field label="每日新词" hint="复习不设上限，算法只安排快要遗忘的词。">
             <div className="segmented">
               {[5, 10, 15, 20, 30].map((n) => (
@@ -134,31 +170,22 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
               ))}
             </div>
           </Field>
-          <Field label="发音">
-            <div className="segmented">
-              <button className={settings.accent === "uk" ? "is-on" : ""} onClick={() => set({ accent: "uk" })}>
-                英式
-              </button>
-              <button className={settings.accent === "us" ? "is-on" : ""} onClick={() => set({ accent: "us" })}>
-                美式
-              </button>
-            </div>
-          </Field>
-          <Field label="外观" stack>
-            <div className="segmented segmented-wrap">
-              {(
-                [
-                  ["system", "跟随系统"],
-                  ["light", "浅色"],
-                  ["dark", "深色"],
-                  ["aurora", "极光"],
-                  ["starlight", "星光"],
-                ] as const
-              ).map(([k, l]) => (
-                <button key={k} className={settings.theme === k ? "is-on" : ""} onClick={() => set({ theme: k })}>
-                  {l}
-                </button>
-              ))}
+
+          <Group label="外观" />
+          <Field label="主题" hint="极光和星光会把整页配色换成夜空。" stack>
+            <div className="theme-picker" role="group" aria-label="主题">
+              {THEME_LABEL.map(([k, label]) => {
+                const [page, surface, accent] = SWATCH[k];
+                return (
+                  <button key={k} className={settings.theme === k ? "is-on" : ""} onClick={() => set({ theme: k })} aria-pressed={settings.theme === k}>
+                    <span className="theme-chip" style={{ "--tp": page, "--ts": surface, "--ta": accent } as React.CSSProperties} aria-hidden="true">
+                      <i />
+                      <i />
+                    </span>
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
             </div>
           </Field>
           <Field label="英文字体" hint="调整英文单词和例句的字体。">
@@ -176,11 +203,25 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
               ))}
             </div>
           </Field>
+
+          <Group label="声音" />
+          <Field label="发音">
+            <div className="segmented">
+              <button className={settings.accent === "uk" ? "is-on" : ""} onClick={() => set({ accent: "uk" })}>
+                英式
+              </button>
+              <button className={settings.accent === "us" ? "is-on" : ""} onClick={() => set({ accent: "us" })}>
+                美式
+              </button>
+            </div>
+          </Field>
           <Toggle label="自动播放发音" on={settings.autoplay} set={(v) => set({ autoplay: v })} />
           <Toggle sub label="自动朗读日常例句" on={settings.autoplayEx} set={(v) => set({ autoplayEx: v })} />
           <Toggle sub label="自动朗读雅思语境例句" on={settings.autoplayEx2} set={(v) => set({ autoplayEx2: v })} />
-          <Toggle label="例句中文先模糊" hint="点一下模糊的中文就显示，离开词卡后恢复模糊。" on={settings.blurZh} set={(v) => set({ blurZh: v })} />
           <Toggle label="界面音效" on={settings.sfx} set={(v) => set({ sfx: v })} />
+
+          <Group label="习惯" />
+          <Toggle label="例句中文先模糊" hint="点一下模糊的中文就显示，离开词卡后恢复模糊。" on={settings.blurZh} set={(v) => set({ blurZh: v })} />
           <Toggle label="开屏动画（每天一次）" on={settings.splash} set={(v) => set({ splash: v })} />
           <Toggle label="复习时加入拼写题" on={settings.spell} set={(v) => set({ spell: v })} />
           {privateAvailable && (
@@ -225,6 +266,11 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
       </div>
     </div>
   );
+}
+
+/** A quiet divider that groups the long settings list into readable runs. */
+function Group({ label }: { label: string }) {
+  return <h4 className="group-label">{label}</h4>;
 }
 
 function Field({ label, hint, stack, children }: { label: string; hint?: string; stack?: boolean; children: React.ReactNode }) {

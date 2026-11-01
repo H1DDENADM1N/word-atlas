@@ -1,6 +1,7 @@
 import { ArrowUpRight, Database, Github, Heart } from "lucide-react";
 import { useAtlas } from "../atlas/context";
-import { REPO_URL, UPSTREAM_SITE, UPSTREAM_URL } from "../config";
+import { AMBIENCE_REPO, AMBIENCE_SITE, REPO_URL, UPSTREAM_SITE, UPSTREAM_URL } from "../config";
+import { AMBIENCE } from "../lib/ambience";
 import { shell } from "../lib/native";
 
 const BASE = import.meta.env.BASE_URL;
@@ -101,8 +102,23 @@ export function About() {
               里的 <i>natural</i>——都能点：点一下弹一张小卡，给出音标、中文和发音，想深究再进完整词条。任何时候只开一张，返回键先关它。
             </li>
             <li>
-              <b>体积换自由。</b>安装包约 1 GB：{atlas.count.toLocaleString()} 幅插画、22,905
-              段录音和语音模型全在里面。装一次，之后无论是在地铁里还是飞行模式，功能都不打折。
+              <b>图鉴里多了「话题星座」。</b>十九个雅思话题各有一个星座，画在本话题自己的星上——先在本话题的星云里挑出一撮相邻的词，再用一棵互不相交的生成树把它们连起来，所以图形不会打结、也不会出现三角形。某个话题里学过的词到八成，星座就在星图上亮起来；点卡片，星图会飞到它跟前。连线只落在本话题的词上，不会伸到隔壁分类去。
+            </li>
+            <li>
+              <b>环境声是真的录音，不是合成的。</b>{AMBIENCE.length}{" "}
+              条循环：雨、海、林、火、咖啡馆、虫鸣、蛙声、风雪、篝火、列车、琴键、竹笛、古琴、竖琴……来自另一个开源学习站{" "}
+              <a href={AMBIENCE_SITE} target="_blank" rel="noreferrer">
+                gjenglish.com
+              </a>{" "}
+              的{" "}
+              <a href={AMBIENCE_REPO} target="_blank" rel="noreferrer">
+                仓库
+              </a>
+              ，按固定 commit 取原文件，逐条校验哈希。每条都配平过响度，换曲不用重调音量；读单词时会自动压低，选过的那条下次打开还在。
+            </li>
+            <li>
+              <b>体积换自由。</b>安装包约 1.05 GB：{atlas.count.toLocaleString()} 幅插画、22,905
+              段录音、三十条环境声和语音模型全在里面。装一次，之后无论是在地铁里还是飞行模式，功能都不打折。
             </li>
           </ul>
         </section>
@@ -130,6 +146,10 @@ export function About() {
             听力与阅读的原文及译文），不属于本仓库的 CC BY 4.0
             词库，版权归原编者，这里只做离线索引与朗读，供学习使用。
           </p>
+          <p className="muted">
+            环境声又是另一类：大部分是 Pixabay 上的录音，按 Pixabay Content License
+            使用（无需署名）；「静水深流」「八音旧梦」「弦上清音」三条由参考站自己用代码合成。来源与哈希都记在仓库里，可以逐条复核。
+          </p>
           <p className="muted">不是官方雅思词表，也不承诺提分。</p>
         </section>
 
@@ -142,7 +162,12 @@ export function About() {
           </p>
           <p className="muted">
             应用代码 <b>MIT</b>；词库文本、插画与词条录音 <b>CC BY 4.0</b>，署名 Word Atlas contributors（词光）。内置语音为
-            Kokoro-82M 与 sherpa-onnx，均为 Apache-2.0。
+            Kokoro-82M 与 sherpa-onnx，均为 Apache-2.0。环境声按上面的说明单独授权。
+          </p>
+          <p className="muted">
+            环境声不用手工收集：<code>python3 scripts/fetch_ambience.py</code> 按固定 commit
+            从参考站仓库取回全部曲目，把字节数与 SHA-256 写进 <code>scripts/ambience-sources.json</code>，
+            <code>--check</code> 可以逐条比对，上游悄悄换了文件会直接报出来。
           </p>
           <p className="muted">
             原版由{" "}

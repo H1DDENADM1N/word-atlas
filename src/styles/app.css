@@ -3601,6 +3601,10 @@ code {
 
 /* ---------- me ---------- */
 
+.page.me {
+  position: relative;
+}
+
 .stat-strip {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -3614,6 +3618,7 @@ code {
 .stat-strip > div {
   background: var(--card);
   padding: 18px 20px;
+  min-width: 0;
 }
 .stat-strip > div:last-child {
   grid-column: 1 / -1;
@@ -3632,6 +3637,13 @@ code {
   font: 500 12px var(--sans);
   color: var(--ink-3);
   margin-left: 4px;
+}
+/* The streak is the number people come back to check, so it leads. */
+.stat-strip .stat-lead dd {
+  color: var(--terra);
+}
+:root[data-theme="dark"] .stat-strip .stat-lead dd {
+  color: var(--ochre);
 }
 @media (min-width: 760px) {
   .stat-strip {
@@ -3660,27 +3672,46 @@ code {
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
   gap: 4px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .heatmap span {
   aspect-ratio: 1;
   border-radius: 4px;
   background: var(--paper-2);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
-.heatmap .h1 {
+.heatmap .h1,
+.heat-legend .h1 {
   background: color-mix(in oklab, var(--sage) 35%, var(--paper-2));
 }
-.heatmap .h2 {
+.heatmap .h2,
+.heat-legend .h2 {
   background: color-mix(in oklab, var(--sage) 60%, var(--paper-2));
 }
-.heatmap .h3 {
+.heatmap .h3,
+.heat-legend .h3 {
   background: var(--sage);
 }
-.heatmap .h4 {
+.heatmap .h4,
+.heat-legend .h4 {
   background: var(--sage-ink);
 }
 .heatmap .hx {
   background: transparent;
+}
+.heat-legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 12px;
+  font-size: 11.5px;
+  color: var(--ink-4);
+}
+.heat-legend i {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: var(--paper-2);
 }
 .forecast {
   list-style: none;
@@ -3705,6 +3736,13 @@ code {
   border-radius: 8px 8px 4px 4px;
   background: linear-gradient(180deg, var(--sky), color-mix(in oklab, var(--sky) 60%, var(--paper-2)));
 }
+/* Today's bar is the one that can be acted on. */
+.forecast li.is-today span {
+  background: linear-gradient(180deg, var(--ochre), color-mix(in oklab, var(--ochre) 55%, var(--paper-2)));
+}
+.forecast li.is-today b {
+  color: var(--ochre);
+}
 .forecast b {
   font: 600 15px var(--serif);
   font-variant-numeric: tabular-nums;
@@ -3722,9 +3760,30 @@ code {
   border-top: 1px solid var(--line);
   flex-wrap: wrap;
 }
-.settings .eyebrow + .field {
+.settings .eyebrow + .field,
+.settings .eyebrow + .group-label {
   border-top: 0;
   padding-top: 0;
+}
+/* The field under a group label keeps its breathing room — only the divider goes. */
+.group-label + .field {
+  border-top: 0;
+  padding-top: 10px;
+}
+/* Section labels break the long settings list into runs you can scan. */
+.group-label {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font: 600 11px/1 var(--sans);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.settings > .eyebrow + .group-label {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 .field > div:first-child {
   display: grid;
@@ -3797,6 +3856,86 @@ code {
   flex-wrap: wrap;
   margin-top: 16px;
 }
+@media (max-width: 479px) {
+  .data-actions {
+    flex-direction: column;
+  }
+  .data-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ---------- theme picker ----------
+   A row of names asks the learner to imagine a palette. Each chip is a tiny
+   window instead: page colour, the surface a card sits on, and the accent. */
+
+.theme-picker {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+.theme-picker button {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 9px 2px 8px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  color: var(--ink-3);
+  transition: background-color 0.18s, color 0.18s, border-color 0.18s;
+}
+.theme-picker button:hover {
+  color: var(--ink);
+  background: var(--paper-2);
+}
+.theme-picker button.is-on {
+  color: var(--ink);
+  font-weight: 600;
+  background: var(--paper-2);
+  border-color: color-mix(in oklab, var(--ochre) 45%, transparent);
+}
+.theme-chip {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--tp);
+  border: 1px solid var(--line-strong);
+  overflow: hidden;
+  display: block;
+  transition: transform 0.2s var(--spring);
+}
+.theme-picker button.is-on .theme-chip {
+  transform: translateY(-1px) scale(1.04);
+}
+.theme-chip i {
+  position: absolute;
+  display: block;
+}
+.theme-chip i:first-child {
+  inset: 6px 6px 6px 6px;
+  border-radius: 6px;
+  background: var(--ts);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+.theme-chip i:last-child {
+  right: 8px;
+  bottom: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ta);
+  box-shadow: 0 0 7px var(--ta);
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-chip,
+  .theme-picker button.is-on .theme-chip {
+    transition: none;
+    transform: none;
+  }
+}
 
 /* ---------- about ---------- */
 
@@ -3847,6 +3986,24 @@ code {
 .feature-list b {
   color: var(--ink);
   margin-right: 6px;
+}
+/* `a` is reset to inherit, which is right for the buttons on this page but
+   leaves the handful of in-prose links -- upstream, the ambience repo, the
+   scripts mentioned in the notes -- reading as ordinary words. Give them the
+   accent colour and a hairline rule, the same trick the word card uses for
+   clickable text; buttons and the standalone `.link` are excluded. */
+.about .lede a:not(.btn):not(.link),
+.about .feature-list a:not(.btn):not(.link),
+.about .panel p a:not(.btn):not(.link) {
+  color: var(--terra-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.about .lede a:not(.btn):not(.link):hover,
+.about .feature-list a:not(.btn):not(.link):hover,
+.about .panel p a:not(.btn):not(.link):hover {
+  color: var(--terra);
 }
 .keys {
   margin: 0;
@@ -4109,7 +4266,13 @@ a:hover .mark-needle,
   right: 0;
   top: calc(100% + 10px);
   z-index: 50;
-  width: 252px;
+  width: min(340px, calc(100vw - 28px));
+  max-height: min(70vh, 560px);
+  /* The list scrolls; the volume slider must not scroll away with it. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: contain;
   padding: 14px;
   border-radius: 20px;
   background: var(--card);
@@ -4117,49 +4280,90 @@ a:hover .mark-needle,
   box-shadow: var(--shadow-lg);
   animation: sheet-pop 0.25s var(--ease);
   text-align: left;
+  scrollbar-width: thin;
 }
 .amb-pop .eyebrow {
   margin: 2px 6px 10px;
 }
-.amb-pop ul {
+/* Pinned to the viewport on phones (see Ambience.tsx): the button sits too close
+   to the right edge for a 340px panel to hang off it without leaving the screen. */
+.amb-pop.is-pinned {
+  position: fixed;
+  right: auto;
+  max-height: min(72vh, 560px);
+}
+.amb-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Room for the focus ring, which would otherwise be clipped by the scroller. */
+  margin: 0 -4px;
+  padding: 2px 4px;
+  scrollbar-width: thin;
+  /* Thirty tracks never all fit: fade the last row so the cut reads as "there
+     is more below" rather than as a clipped tile. */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
+}
+/* Thirty tracks need a grid, not a column: a column would be far taller than the
+   phone. Two across keeps every target comfortably tappable. */
+.amb-grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 2px;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
-.amb-pop li button {
+.amb-grid li button {
   width: 100%;
+  min-height: 42px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 9px 10px;
+  gap: 8px;
+  padding: 8px 10px;
   border-radius: 12px;
-  font-size: 14.5px;
+  border: 1px solid transparent;
+  font-size: 13.5px;
+  line-height: 1.25;
   color: var(--ink-2);
-  transition: background-color 0.15s, color 0.15s;
+  background: var(--paper-2);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
-.amb-pop li button span {
+.amb-grid li button span {
   flex: 1;
   text-align: left;
 }
-.amb-pop li button:hover {
-  background: var(--paper-2);
+.amb-grid li button svg {
+  flex: none;
+}
+.amb-check {
+  flex: none;
+  opacity: 0.9;
+}
+.amb-grid li button:hover {
+  background: var(--paper-3);
   color: var(--ink);
 }
-.amb-pop li button.is-on {
+.amb-grid li button.is-on {
   color: var(--ink);
   font-weight: 600;
-  background: var(--paper-2);
+  border-color: color-mix(in oklab, var(--ochre) 46%, transparent);
+  background: var(--ochre-soft);
 }
-.amb-pop li button.is-on svg:first-child {
-  color: var(--terra);
+.amb-grid li button.is-on svg:first-child {
+  color: var(--ochre);
+}
+/* "安静" is the odd one out and reads better as a full-width row than as a
+   tile stranded alone at the end of a two-column grid. */
+.amb-grid li:last-child {
+  grid-column: 1 / -1;
 }
 .amb-vol {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 12px 6px 4px;
+  margin: 14px 6px 4px;
   font-size: 13px;
   color: var(--ink-3);
 }
@@ -4168,6 +4372,7 @@ a:hover .mark-needle,
   accent-color: var(--terra);
 }
 .amb-note {
+  flex: none;
   margin: 6px 6px 0;
   font-size: 12px;
   color: var(--ink-4);
@@ -4579,6 +4784,336 @@ a:hover .mark-needle,
   display: none;
 }
 
+/* ---------- topic constellations ----------
+   The panel that turns "7,298 stars" into nineteen answers. Sits beside the
+   star map on a wide screen and below it on a phone. */
+
+.constellation-workspace {
+  min-width: 0;
+}
+/* Joined lines are decoration over the star map: never in the way of a drag. */
+.galaxy-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.galaxy-hud {
+  pointer-events: none;
+}
+.galaxy-cstat {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 4px 12px 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: rgba(243, 236, 223, 0.78);
+  background: rgba(243, 236, 223, 0.06);
+  border: 1px solid rgba(255, 217, 152, 0.18);
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.galaxy-cstat b {
+  font: 600 15px var(--sans);
+  color: #ffe2a8;
+  font-variant-numeric: tabular-nums;
+  margin: 0 1px;
+}
+.galaxy-cstat:hover {
+  background: rgba(255, 217, 152, 0.12);
+  border-color: rgba(255, 217, 152, 0.4);
+}
+.galaxy-cstat:focus-visible {
+  outline: 2px solid #ffd998;
+  outline-offset: 2px;
+}
+.cpanel {
+  min-width: 0;
+  margin-top: 26px;
+  scroll-margin-top: calc(var(--top) + 12px);
+}
+.cpanel-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 28px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.cpanel-head h2 {
+  margin: 6px 0 0;
+  font: 600 26px/1.15 var(--sans);
+  color: var(--ink);
+}
+.cpanel-head h2 b {
+  color: var(--ochre);
+  font-variant-numeric: tabular-nums;
+}
+.cpanel-lede {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 14px;
+  max-width: 36ch;
+  text-wrap: pretty;
+}
+.cpanel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 12px;
+}
+.ccard {
+  position: relative;
+  min-width: 0;
+}
+.ccard-main {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  text-align: left;
+  border-radius: var(--r);
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  transition: transform 0.2s var(--ease), border-color 0.2s, box-shadow 0.25s;
+}
+.ccard-main:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow);
+}
+.ccard-main:active {
+  transform: translateY(0) scale(0.985);
+}
+.ccard-main:focus-visible {
+  outline: 2px solid var(--ochre);
+  outline-offset: 2px;
+}
+.ccard .cg {
+  width: 100%;
+  height: 62px;
+}
+.ccard.is-new .cg {
+  opacity: 0.5;
+}
+.ccard-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.ccard-name b {
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ccard-name small {
+  font: 400 13.5px var(--serif);
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ccard-bar {
+  position: relative;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--paper-3);
+  overflow: hidden;
+}
+.ccard-bar > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--tc);
+  filter: saturate(0.8);
+  transition: width 0.5s var(--ease);
+}
+.ccard.is-lit .ccard-bar > span {
+  background: var(--ochre);
+  filter: none;
+}
+.ccard-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.ccard-count {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.ccard-count small {
+  font: 400 12px var(--sans);
+  color: var(--ink-3);
+}
+.ccard-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+.ccard.is-lit .ccard-state {
+  color: var(--ochre-ink);
+  font-weight: 700;
+}
+.ccard.is-lit .ccard-main {
+  border-color: color-mix(in oklab, var(--ochre) 45%, transparent);
+  background: radial-gradient(120% 80% at 50% 0%, var(--ochre-soft), transparent 70%), var(--card);
+}
+.ccard.is-on .ccard-main {
+  border-color: var(--ochre);
+  box-shadow: 0 0 0 3px var(--ochre-soft), var(--shadow);
+}
+/* The figure itself: a faint dashed path, then gold once the topic is lit. */
+.cg {
+  display: block;
+  overflow: visible;
+  --cg-ghost: var(--ink-3);
+  --cg-line: var(--ink-2);
+  --cg-gold: var(--ochre);
+  --cg-star: var(--ink-3);
+}
+.cg-ghost {
+  fill: none;
+  stroke: var(--cg-ghost);
+  stroke-width: 1;
+  stroke-dasharray: 1, 3.2;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+.cg-line {
+  fill: none;
+  stroke: var(--cg-line);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.cg-glow {
+  fill: none;
+  stroke: var(--cg-gold);
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0.22;
+}
+.cg-star {
+  fill: var(--cg-star);
+}
+.cg.is-lit .cg-line {
+  stroke: var(--cg-gold);
+  stroke-width: 1.6;
+}
+.cg.is-lit .cg-star {
+  fill: var(--cg-gold);
+}
+@media (min-width: 1000px) {
+  .constellation-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 22px;
+    align-items: start;
+  }
+  .constellation-workspace .galaxy-full {
+    margin: 0;
+    height: min(72vh, 760px);
+    min-height: 520px;
+  }
+  .constellation-workspace .cpanel {
+    margin: 0;
+    height: min(72vh, 760px);
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+  }
+  .constellation-workspace .cpanel-head {
+    flex: 0 0 auto;
+  }
+  .constellation-workspace .cpanel-list {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+    padding: 4px 6px 16px 2px;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .constellation-workspace .ccard-main {
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 8px 12px;
+    padding: 14px;
+    align-content: center;
+  }
+  .constellation-workspace .ccard .cg {
+    grid-row: 1 / 4;
+    height: 68px;
+    align-self: center;
+  }
+  .constellation-workspace .ccard-name {
+    padding-right: 4px;
+  }
+}
+@media (max-width: 999px) {
+  .cpanel-head h2 {
+    font-size: 22px;
+  }
+  .cpanel-head h2 b {
+    font-size: 28px;
+  }
+  .cpanel-lede {
+    font-size: 13.5px;
+    max-width: none;
+  }
+}
+@media (max-width: 559px) {
+  .cpanel {
+    margin-top: 20px;
+  }
+  /* Wrap into rows — a sideways scroller hid seventeen of the nineteen topics. */
+  .cpanel-list {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 10px;
+  }
+  .ccard .cg {
+    height: 56px;
+  }
+  /* Two columns make each card ~150px wide; the English name needs to shrink
+     with it or "Technology" turns into "Technolo…". */
+  .ccard-name {
+    gap: 5px;
+  }
+  .ccard-name b {
+    font-size: 15px;
+  }
+  .ccard-name small {
+    font-size: 11.5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ccard-main,
+  .ccard-bar > span {
+    transition: none;
+  }
+  .ccard-main:hover {
+    transform: none;
+  }
+}
+/* In a skin the cards float on a sky, so they need a little more separation —
+   but only a border: a vertical wash across every card reads as a dirty pane. */
+:root[data-skin="starlight"] .ccard-main,
+:root[data-skin="aurora"] .ccard-main {
+  border-color: var(--line-strong);
+}
+:root[data-skin="starlight"] .ccard.is-lit .ccard-main,
+:root[data-skin="aurora"] .ccard.is-lit .ccard-main {
+  background: radial-gradient(120% 80% at 50% 0%, var(--ochre-soft), transparent 70%), var(--card);
+}
+
 /* Mini galaxy on Today and in the summary */
 .galaxy-mini {
   position: absolute;
@@ -4890,48 +5425,43 @@ a:hover .mark-needle,
   background:
     radial-gradient(130% 55% at 50% 118%, rgba(122, 86, 74, 0.26), transparent 62%),
     radial-gradient(70% 40% at 22% -6%, rgba(90, 120, 200, 0.14), transparent 70%),
-    radial-gradient(1px 1px at 12% 18%, rgba(243, 236, 223, 0.6), transparent 60%),
-    radial-gradient(1px 1px at 68% 42%, rgba(243, 236, 223, 0.45), transparent 60%),
-    radial-gradient(1.5px 1.5px at 38% 76%, rgba(255, 236, 205, 0.5), transparent 60%),
-    radial-gradient(1px 1px at 86% 88%, rgba(243, 236, 223, 0.38), transparent 60%),
     linear-gradient(180deg, #05060e 0%, #080a1a 52%, #100d1e 100%);
-  background-size: auto, auto, 260px 260px, 340px 340px, 420px 420px, 300px 300px, auto;
   background-attachment: fixed;
 }
-:root[data-skin="starlight"] body::after {
-  content: "";
+/* The stars themselves are drawn by <Starfield>: a repeating tile of dots has
+   no parallax, cannot twinkle individually, and never produces a shooting star. */
+.starfield {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(2px 2px at 18% 12%, rgba(255, 250, 240, 0.95), transparent 60%),
-    radial-gradient(1px 1px at 72% 22%, rgba(255, 250, 240, 0.8), transparent 60%),
-    radial-gradient(1.5px 1.5px at 42% 48%, rgba(255, 240, 215, 0.75), transparent 60%),
-    radial-gradient(1px 1px at 88% 62%, rgba(255, 250, 240, 0.7), transparent 60%),
-    radial-gradient(2px 2px at 30% 78%, rgba(255, 245, 230, 0.85), transparent 60%),
-    radial-gradient(1px 1px at 58% 90%, rgba(255, 250, 240, 0.6), transparent 60%);
-  background-size: 180px 180px, 230px 230px, 160px 160px, 260px 260px, 200px 200px, 170px 170px;
-  animation: starlight-twinkle 9s ease-in-out infinite alternate;
-}
-@keyframes starlight-twinkle {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  :root[data-skin="starlight"] body::after {
-    animation: none;
-    opacity: 0.8;
-  }
 }
 :root[data-skin="starlight"] .panel {
   background: rgba(12, 16, 33, 0.78);
   border-color: transparent;
   box-shadow: 0 0 0 1px rgba(243, 236, 223, 0.045);
+}
+/* Gold numerals: on a night sky the numbers are the only light in the room. */
+:root[data-skin="starlight"] .stat-strip dd,
+:root[data-skin="aurora"] .stat-strip dd {
+  color: var(--ochre);
+  text-shadow: 0 0 22px color-mix(in oklab, var(--ochre) 40%, transparent);
+}
+:root[data-skin="starlight"] .stat-strip .stat-lead dd,
+:root[data-skin="aurora"] .stat-strip .stat-lead dd {
+  color: var(--terra);
+  text-shadow: 0 0 22px color-mix(in oklab, var(--terra) 42%, transparent);
+}
+/* Active heat cells glow instead of just darkening. */
+:root[data-skin="starlight"] .heatmap .h3,
+:root[data-skin="starlight"] .heatmap .h4 {
+  box-shadow: 0 0 8px color-mix(in oklab, var(--sage) 55%, transparent);
+}
+:root[data-skin="aurora"] .heatmap .h3,
+:root[data-skin="aurora"] .heatmap .h4 {
+  box-shadow: 0 0 8px color-mix(in oklab, var(--sage) 55%, transparent);
 }
 :root[data-skin="starlight"] .topbar {
   background: color-mix(in oklab, var(--paper) 55%, transparent);

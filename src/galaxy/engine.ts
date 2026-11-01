@@ -271,26 +271,94 @@ export class GalaxyEngine {
     if (first) this.cam.dist = this.baseDist();
   }
 
-  /** Frame a set of stars immediately (no animation). */
-  frameStars(indices: number[], dist = 1.15) {
-    if (!indices.length) return;
+  /**
+   * Distance at which a cluster of world-radius `r` sits comfortably inside the
+   * viewport. A phone in portrait has a narrow horizontal field of view, so a
+   * fixed distance that looks right on a laptop clips the chain off-screen.
+   */
+  fitDist(r: number) {
+    const aspect = this.w / Math.max(1, this.h);
+    const halfV = 0.75 / 2;
+    const halfH = Math.atan(Math.tan(halfV) * aspect);
+    const half = Math.min(halfV, halfH);
+    // 1.45× the radius leaves room for the HUD chips and the button rail.
+    const want = (r * 1.45) / Math.tan(half);
+    return Math.min(this.baseDist() * 1.55, Math.max(0.9, want));
+  }
+
+  /** Centroid and a robust world radius for a set of stars. */
+  private spread(indices: number[]) {
     const p = this.layout.positions;
+    return this.spreadPoints(indices.map((i) => [p[i * 3], p[i * 3 + 1], p[i * 3 + 2]]));
+  }
+
+  /** Centroid and a robust world radius for a set of world points. */
+  private spreadPoints(pts: [number, number, number][]) {
     let x = 0;
     let y = 0;
     let z = 0;
-    indices.forEach((i) => {
-      x += p[i * 3];
-      y += p[i * 3 + 1];
-      z += p[i * 3 + 2];
-    });
-    const n = indices.length;
-    Object.assign(this.cam, { tx: (x / n) * 0.6, ty: y / n, tz: (z / n) * 0.6, dist });
+    for (const p of pts) {
+      x += p[0];
+      y += p[1];
+      z += p[2];
+    }
+    const n = pts.length;
+    const cx = x / n;
+    const cy = y / n;
+    const cz = z / n;
+    const ds = pts.map((p) => Math.hypot(p[0] - cx, p[1] - cy, p[2] - cz));
+    // One straggler at the edge of a topic should not pull the camera halfway
+    // across the galaxy, so fit to the 85th percentile instead of the maximum.
+    ds.sort((a, b) => a - b);
+    const r = ds[Math.min(ds.length - 1, Math.floor(ds.length * 0.85))] || 0;
+    // A centroid is already an average, so aim straight at it — the 0.6 pull
+    // that suits a single star would drag the cluster off-centre.
+    return { tx: cx, ty: cy, tz: cz, r };
+  }
+
+  /** Frame a set of stars immediately (no animation). */
+  frameStars(indices: number[], dist = 1.15) {
+    if (!indices.length) return;
+    const s = this.spread(indices);
+    Object.assign(this.cam, { tx: s.tx, ty: s.ty, tz: s.tz, dist });
   }
 
   /** Smoothly move the camera toward a word. */
   flyTo(i: number, dist = 0.75) {
     const p = this.layout.positions;
     this.goal = { tx: p[i * 3], ty: p[i * 3 + 1], tz: p[i * 3 + 2], dist };
+  }
+
+  /** Smoothly move the camera to frame a whole group of stars (a constellation). */
+  flyToStars(indices: number[], dist?: number) {
+    if (!indices.length) return;
+    const p = this.layout.positions;
+    const pts = indices.map((i) => [p[i * 3], p[i * 3 + 1], p[i * 3 + 2]] as [number, number, number]);
+    this.flyToPoints(pts, dist);
+  }
+
+  /** Smoothly move the camera to frame a set of world points. */
+  flyToPoints(pts: [number, number, number][], dist?: number) {
+    if (!pts.length) return;
+    const s = this.spreadPoints(pts);
+    this.goal = { tx: s.tx, ty: s.ty, tz: s.tz, dist: dist ?? this.fitDist(s.r) };
+  }
+
+  /**
+   * Frame a constellation.
+   *
+   * `fitDist` keeps its distance because a word cluster sits in a dense field
+   * and flying into it would bury the camera in dust. A constellation is the
+   * opposite: it is meant to be *read*, so the figure should fill the view the
+   * way the reference does. Hence the tighter padding and the lower floor.
+   */
+  flyToFigure(pts: [number, number, number][]) {
+    if (!pts.length) return;
+    const s = this.spreadPoints(pts);
+    const aspect = this.w / Math.max(1, this.h);
+    const half = Math.min(0.375, Math.atan(Math.tan(0.375) * aspect));
+    const want = (s.r * 1.35) / Math.tan(half);
+    this.goal = { tx: s.tx, ty: s.ty, tz: s.tz, dist: Math.min(this.baseDist(), Math.max(0.55, want)) };
   }
 
   reset() {
@@ -334,7 +402,7 @@ export class GalaxyEngine {
   }
 
   /** Project every star to CSS pixels (x, y, depth); depth <= 0 means behind the camera. */
-  private project() {
+  project() {
     const m = this.vp;
     const p = this.layout.positions;
     const s = this.screen;
@@ -367,6 +435,16 @@ export class GalaxyEngine {
 
   starScreen(i: number) {
     return { x: this.screen[i * 3], y: this.screen[i * 3 + 1], depth: this.screen[i * 3 + 2] };
+  }
+
+  /** Project an arbitrary point with the matrix `project()` just built. */
+  projectPoint(x: number, y: number, z: number) {
+    const m = this.vp;
+    const cw = m[3] * x + m[7] * y + m[11] * z + m[15];
+    if (cw <= 0.01) return { x: 0, y: 0, depth: -1 };
+    const cx = (m[0] * x + m[4] * y + m[8] * z + m[12]) / cw;
+    const cy = (m[1] * x + m[5] * y + m[9] * z + m[13]) / cw;
+    return { x: (cx * 0.5 + 0.5) * this.w, y: (1 - (cy * 0.5 + 0.5)) * this.h, depth: cw };
   }
 
   /** Nearest star to a pointer, favouring lit stars; null if nothing is close. */

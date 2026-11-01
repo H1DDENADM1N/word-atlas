@@ -7,6 +7,7 @@ import { cue, playFile } from "../lib/sound";
 import { isMastered } from "../store/srs";
 import { store, useStore } from "../store/store";
 import { Illustration } from "../ui/Illustration";
+import { LIT_AT } from "./constellation";
 import { detectQuality, GalaxyEngine } from "./engine";
 import { layoutGalaxy, TOPIC_COLORS, type GalaxyLayout } from "./layout";
 import { shareGalaxy } from "./share";
@@ -45,6 +46,8 @@ export function Galaxy({
   ignite,
   className = "",
   focus,
+  focusTopic,
+  constellationStat,
 }: {
   mode?: "full" | "mini";
   /** Words to show as today's gold stars. */
@@ -54,16 +57,41 @@ export function Galaxy({
   className?: string;
   /** Fly to this word once ready. */
   focus?: string | null;
+  /** Fly to this topic's constellation. */
+  focusTopic?: number | null;
+  /** Lit constellations, for the HUD counter. */
+  constellationStat?: { lit: number; total: number };
 }) {
   const atlas = useAtlas();
   const layout = useGalaxyLayout();
   const cards = useStore((s) => s.progress.cards);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const lineCanvas = useRef<HTMLCanvasElement>(null);
   const engine = useRef<GalaxyEngine | null>(null);
   const labels = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ ref: WordRef; x: number; y: number } | null>(null);
   const [fallback, setFallback] = useState(false);
   const highlightSet = useMemo(() => new Set(highlight ?? []), [highlight]);
+
+  // Which topics are lit, how far each figure is drawn, and which one the panel
+  // has selected — the only figures worth painting, so the sky stays readable.
+  const progress = useMemo(() => {
+    const totals = new Array(atlas.topics.length).fill(0);
+    const done = new Array(atlas.topics.length).fill(0);
+    for (const w of atlas.words) {
+      totals[w.topic]++;
+      if (cards[w.id]) done[w.topic]++;
+    }
+    return totals.map((t, i) => {
+      const need = Math.ceil(t * LIT_AT);
+      return { lit: t > 0 && done[i] >= need, drawn: need ? Math.min(1, done[i] / need) : 0 };
+    });
+  }, [atlas, cards]);
+  const litTopics = useMemo(() => progress.map((p) => p.lit), [progress]);
+  const litRef = useRef(litTopics);
+  litRef.current = litTopics;
+  const focusTopicRef = useRef(focusTopic);
+  focusTopicRef.current = focusTopic ?? null;
 
   useEffect(() => {
     const cv = canvas.current;
@@ -78,8 +106,26 @@ export function Galaxy({
     setFallback(!eng.webgl);
     eng.resize();
     if (mode === "mini") eng.cam.dist = eng.baseDist() * 1.1;
-    const ro = new ResizeObserver(() => eng.resize());
+    const overlay = lineCanvas.current;
+    const g2 = overlay?.getContext("2d") ?? null;
+    let ow = 0;
+    let oh = 0;
+    let odpr = 1;
+    const sizeOverlay = () => {
+      if (!overlay) return;
+      const r = cv.getBoundingClientRect();
+      ow = r.width;
+      oh = r.height;
+      odpr = Math.min(window.devicePixelRatio || 1, 2);
+      overlay.width = Math.round(ow * odpr);
+      overlay.height = Math.round(oh * odpr);
+    };
+    const ro = new ResizeObserver(() => {
+      eng.resize();
+      sizeOverlay();
+    });
     ro.observe(cv);
+    sizeOverlay();
     // Only animate while visible.
     const io = new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? eng.start() : eng.stop()));
     io.observe(cv);
@@ -88,19 +134,100 @@ export function Galaxy({
     if (mode === "full") {
       eng.onFrame = () => {
         const box = labels.current;
-        if (!box) return;
-        const kids = box.children as HTMLCollectionOf<HTMLElement>;
-        layout.topicCenters.forEach(([x, y, z], t) => {
-          const el = kids[t];
-          const p = eng.toScreen(x, y, z);
-          if (!el) return;
-          if (!p) {
-            el.style.opacity = "0";
-            return;
+        if (box) {
+          const kids = box.children as HTMLCollectionOf<HTMLElement>;
+          layout.topicCenters.forEach(([x, y, z], t) => {
+            const el = kids[t];
+            const p = eng.toScreen(x, y, z);
+            if (!el) return;
+            if (!p) {
+              el.style.opacity = "0";
+              return;
+            }
+            el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
+            el.style.opacity = String(Math.max(0, Math.min(0.9, 3.4 - p.depth)));
+          });
+        }
+        // Constellations: the lit ones, and the one being inspected.
+        if (g2 && overlay) {
+          g2.setTransform(odpr, 0, 0, odpr, 0, 0);
+          g2.clearRect(0, 0, ow, oh);
+          g2.lineCap = "round";
+          const sel = focusTopicRef.current;
+          if (layout.topicPaths.some((_, t) => litRef.current[t] || sel === t)) {
+            // `vp` is already current: the engine rebuilds it just before this
+            // callback, so `projectPoint` needs nothing else.
+            layout.topicPaths.forEach((pts, t) => {
+              const on = litRef.current[t];
+              const isSel = sel === t;
+              if (!on && !isSel) return;
+              const links = layout.topicLinks[t];
+              if (!pts.length || !links.length) return;
+              const color = on ? "#ffd998" : TOPIC_COLORS[t % TOPIC_COLORS.length];
+              const fade = isSel ? 1 : 0.72;
+              const at = (i: number) => eng.projectPoint(pts[i][0], pts[i][1], pts[i][2]);
+
+              const path = () => {
+                g2.beginPath();
+                for (const [i, j] of links) {
+                  const a = at(i);
+                  const b = at(j);
+                  if (a.depth <= 0.02 || b.depth <= 0.02) continue;
+                  g2.moveTo(a.x, a.y);
+                  g2.lineTo(b.x, b.y);
+                }
+              };
+
+              if (on) {
+                // Lit: one solid gold figure with a soft bloom under it.
+                path();
+                g2.strokeStyle = "#ffb85c";
+                g2.lineWidth = 6;
+                g2.globalAlpha = 0.14 * fade;
+                g2.stroke();
+                g2.strokeStyle = color;
+                g2.lineWidth = 1.6;
+                g2.globalAlpha = 0.95 * fade;
+                g2.stroke();
+              } else {
+                // Unlit: dotted, in the topic's own colour — the same single
+                // style the card uses, so a figure is never half dashed and
+                // half solid.
+                path();
+                g2.setLineDash([1.2, 4.2]);
+                g2.strokeStyle = color;
+                g2.lineWidth = 1;
+                g2.globalAlpha = (isSel ? 0.72 : 0.4) * fade;
+                g2.stroke();
+                g2.setLineDash([]);
+              }
+
+              // A halo and a core dot on each vertex, so the figure reads as
+              // "these stars", not as a wireframe floating in front of them.
+              const r = on ? 1.9 : 1.4;
+              g2.fillStyle = color;
+              g2.globalAlpha = (on ? 0.22 : 0.16) * fade;
+              g2.beginPath();
+              for (let i = 0; i < pts.length; i++) {
+                const q = at(i);
+                if (q.depth <= 0.02) continue;
+                g2.moveTo(q.x + r * 2.9, q.y);
+                g2.arc(q.x, q.y, r * 2.9, 0, Math.PI * 2);
+              }
+              g2.fill();
+              g2.globalAlpha = fade;
+              g2.beginPath();
+              for (let i = 0; i < pts.length; i++) {
+                const q = at(i);
+                if (q.depth <= 0.02) continue;
+                g2.moveTo(q.x + r, q.y);
+                g2.arc(q.x, q.y, r, 0, Math.PI * 2);
+              }
+              g2.fill();
+            });
+            g2.globalAlpha = 1;
           }
-          el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
-          el.style.opacity = String(Math.max(0, Math.min(0.9, 3.4 - p.depth)));
-        });
+        }
       };
     }
     return () => {
@@ -153,6 +280,15 @@ export function Galaxy({
       if (store.get().settings.sfx) void cue("fly");
     }
   }, [focus, layout]);
+
+  // The constellation panel asked for a topic: frame its whole figure.
+  useEffect(() => {
+    if (focusTopic == null) return;
+    const chain = layout.topicPaths[focusTopic];
+    if (!chain?.length) return;
+    engine.current?.flyToFigure(chain);
+    if (store.get().settings.sfx) void cue("fly");
+  }, [focusTopic, layout]);
 
   // First visit to the full galaxy: one quiet sentence explaining what it is.
   useEffect(() => {
@@ -326,6 +462,7 @@ export function Galaxy({
           if (e.key === "-") eng.cam.dist = clampDist(eng.cam.dist * 1.18);
         }}
       />
+      <canvas className="galaxy-lines" ref={lineCanvas} aria-hidden="true" />
       <div className="galaxy-labels" ref={labels} aria-hidden="true">
         {atlas.topics.map(([key, name], t) => (
           <span key={key} style={{ "--c": TOPIC_COLORS[t % TOPIC_COLORS.length] } as React.CSSProperties}>
@@ -350,6 +487,15 @@ export function Galaxy({
         <p>
           <b>{lit.toLocaleString()}</b> / {layout.n.toLocaleString()} 颗星已点亮
         </p>
+        {constellationStat && (
+          <button
+            className="galaxy-cstat"
+            onClick={() => document.getElementById("topic-constellations")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            aria-label={`已点亮星座 ${constellationStat.lit} / ${constellationStat.total}，查看全部话题星座`}
+          >
+            已点亮星座 <b>{constellationStat.lit}</b> / {constellationStat.total}
+          </button>
+        )}
         <ul className="galaxy-legend" aria-hidden="true">
           <li>
             <i className="lg-dust" />

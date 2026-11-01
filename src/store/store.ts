@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { Accent } from "../atlas/types";
+import { asAmbienceId, type AmbienceChoice } from "../lib/ambience";
 import type { CardState, Grade } from "./srs";
 
 export type QuizKind = "meaning" | "picture" | "listen" | "spell";
@@ -76,7 +77,7 @@ export interface Settings {
   startLevel: number;
   onboarded: boolean;
   dataset: "open" | "private";
-  ambience: "off" | "stars" | "rain" | "sea" | "forest" | "fire" | "voyage" | "cafe";
+  ambience: AmbienceChoice;
   ambienceVolume: number;
   splash: boolean;
 }
@@ -197,7 +198,8 @@ export function sanitizeSettings(v: unknown): Settings {
   if (num(v.startLevel, 0, 5)) s.startLevel = Math.round(v.startLevel as number);
   if (typeof v.onboarded === "boolean") s.onboarded = v.onboarded;
   if (v.dataset === "open" || v.dataset === "private") s.dataset = v.dataset;
-  if (["off", "stars", "rain", "sea", "forest", "fire", "voyage", "cafe"].includes(v.ambience as string)) s.ambience = v.ambience as Settings["ambience"];
+  const ambience = asAmbienceId(v.ambience);
+  if (v.ambience === "off" || ambience) s.ambience = ambience ?? "off";
   if (num(v.ambienceVolume, 0, 1)) s.ambienceVolume = v.ambienceVolume as number;
   if (typeof v.splash === "boolean") s.splash = v.splash;
   return s;

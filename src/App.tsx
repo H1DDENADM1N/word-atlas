@@ -22,6 +22,7 @@ import { Logo } from "./ui/Logo";
 import { Palette } from "./ui/Palette";
 import { Sheet } from "./ui/Sheet";
 import { shouldShowSplash, Splash } from "./ui/Splash";
+import { Starfield } from "./ui/Starfield";
 import { Toasts } from "./ui/Toast";
 
 const NAV: { page: Route["page"]; label: string; icon: typeof Compass }[] = [
@@ -132,6 +133,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
 
   return (
     <div className={`app ${focus ? "is-focus" : ""}`}>
+      <Starfield />
       {!focus && (
         <header className="topbar">
           <a className="topbar-logo" href="#/" aria-label="词光 Word Atlas 首页">

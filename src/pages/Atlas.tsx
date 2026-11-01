@@ -1,5 +1,6 @@
 import { Grid3x3, List, Search, Sparkles, X } from "lucide-react";
-import { Galaxy } from "../galaxy/Galaxy";
+import { Galaxy, useGalaxyLayout } from "../galaxy/Galaxy";
+import { topicProgress } from "../galaxy/constellation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAtlas } from "../atlas/context";
 import type { WordRef } from "../atlas/types";
@@ -10,6 +11,7 @@ import { useStore } from "../store/store";
 import { Illustration } from "../ui/Illustration";
 import { searchAtlas } from "../ui/Palette";
 import { Speak } from "../ui/Speak";
+import { TopicConstellations } from "../ui/TopicConstellations";
 
 type Status = "all" | "new" | "learning" | "mastered" | "saved";
 const STATUS: [Status, string][] = [
@@ -92,6 +94,22 @@ export function AtlasPage({
 
   const setFilter = (patch: Partial<Extract<Route, { page: "atlas" }>>) =>
     go({ page: "atlas", topic, level, view: route.view, ...patch }, null, true);
+
+  // Nineteen constellations. The geometry comes from the layout (it depends on
+  // where the stars are), the progress from the card store — so a word learned
+  // anywhere in the app redraws the panel without rebuilding the sky.
+  const layout = useGalaxyLayout();
+  const constellations = useMemo(() => topicProgress(atlas, layout.figures, cards), [atlas, layout, cards]);
+  const litCount = useMemo(() => constellations.filter((c) => c.lit).length, [constellations]);
+  const [focusTopic, setFocusTopic] = useState<number | null>(null);
+  // On a phone the panel sits under the star map, so a tap has to bring the
+  // map back into view — otherwise the camera flies somewhere off screen.
+  const pickTopic = (i: number | null) => {
+    setFocusTopic(i);
+    if (i !== null && window.matchMedia("(max-width: 999px)").matches) {
+      document.querySelector(".constellation-workspace .galaxy-full")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   return (
     <div className={`page atlas ${view === "galaxy" ? "is-galaxy" : ""}`}>
@@ -225,7 +243,15 @@ export function AtlasPage({
       </div>
 
       {view === "galaxy" ? (
-        <Galaxy mode="full" focus={q.trim() ? list[0]?.id : null} />
+        <div className="constellation-workspace">
+          <Galaxy
+            mode="full"
+            focus={q.trim() ? list[0]?.id : null}
+            focusTopic={focusTopic}
+            constellationStat={{ lit: litCount, total: constellations.length }}
+          />
+          <TopicConstellations items={constellations} selected={focusTopic} onPick={pickTopic} />
+        </div>
       ) : list.length === 0 ? (
         <div className="empty">
           <img src={`${import.meta.env.BASE_URL}brand/empty.webp`} alt="" />

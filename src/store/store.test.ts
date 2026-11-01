@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { AMBIENCE } from "../lib/ambience";
 import { sanitizeProgress, sanitizeSettings } from "./store";
 
 const card = { due: 1, s: 2, d: 5, el: 0, sd: 1, ls: 0, reps: 1, lapses: 0, st: 2, seen: 1 };
@@ -38,4 +39,17 @@ test("accepts the night skies and the three English faces", () => {
   assert.equal(sanitizeSettings({ wordFont: "classic" }).wordFont, "classic");
   assert.equal(sanitizeSettings({ wordFont: "comic" }).wordFont, "serif");
   assert.equal(sanitizeSettings({}).wordFont, "serif");
+});
+
+test("keeps every ambience track the app ships, and silence", () => {
+  for (const { id } of AMBIENCE) assert.equal(sanitizeSettings({ ambience: id }).ambience, id);
+  assert.equal(sanitizeSettings({ ambience: "off" }).ambience, "off");
+  // A track removed from the list must fall back rather than play nothing.
+  assert.equal(sanitizeSettings({ ambience: "thunderstorm" }).ambience, "stars");
+  assert.equal(sanitizeSettings({ ambience: 7 }).ambience, "stars");
+});
+
+test("follows a track that has been renamed instead of forgetting the choice", () => {
+  // The upstream ids arrived with the real audio; an older build saved "crickets".
+  assert.equal(sanitizeSettings({ ambience: "crickets" }).ambience, "crickets-night");
 });

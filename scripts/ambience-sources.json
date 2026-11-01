@@ -1,0 +1,156 @@
+{
+  "repo": "wenchester8-droid/english-starry-sky",
+  "commit": "35070f4385f4492c6247be9411afb4b696256616",
+  "files": {
+    "stars": {
+      "label": "星河入梦",
+      "bytes": 1857035,
+      "sha256": "93567d60c3254826027fafc24b0fd457084c2b85819ac2769614ec6d4bb9100a"
+    },
+    "rain": {
+      "label": "书窗听雨",
+      "bytes": 378923,
+      "sha256": "378f8303529f0efe972399ed16b710fd2f767cb79c42b130fb0a845680715ffb"
+    },
+    "sea": {
+      "label": "晨海潮声",
+      "bytes": 378923,
+      "sha256": "a3f4a39eb38391d239cdd08e073db3109a5ff799185aa2c6520e22b4faba3f1c"
+    },
+    "forest": {
+      "label": "林间晨光",
+      "bytes": 378923,
+      "sha256": "f5318da351c8c7eec2280bf7730644571bacbbc311fd8996b4e62b19f53ff93f"
+    },
+    "fire": {
+      "label": "炉火微温",
+      "bytes": 378923,
+      "sha256": "1b8e9cf41e2c1064d3c2752cc730d84db5a6cc204f1559a218ccb5b65d3f56f4"
+    },
+    "voyage": {
+      "label": "夜航舟中",
+      "bytes": 378923,
+      "sha256": "5338f69c96771ff5446254617e34a390ebf0133293dfcb1c7a745355191e7516"
+    },
+    "cafe": {
+      "label": "午后咖啡",
+      "bytes": 378923,
+      "sha256": "b0f832f8261b447a0d24e2e166c727738d0873435a7ab35ed35c54791e0a78a5"
+    },
+    "brown": {
+      "label": "静水深流",
+      "bytes": 1920983,
+      "sha256": "6691c79e5306d5d0f2d49798ae7fd94aa027773b4063aa2308f96ac095576a7d"
+    },
+    "musicbox": {
+      "label": "八音旧梦",
+      "bytes": 1920983,
+      "sha256": "909903203dd48f27a56716a5dbb62a6ee89fbfdfa8f4c8f06031f729a3a1c042"
+    },
+    "guzheng": {
+      "label": "弦上清音",
+      "bytes": 1920983,
+      "sha256": "a49e440d2ccf3a430cd2d051b76687c5a23f21bdb07dff1419487f4ce75a2180"
+    },
+    "crickets-night": {
+      "label": "夏夜虫吟",
+      "bytes": 1880859,
+      "sha256": "58ed2235572f58fd5525be2420b7197d797eaaec72ce1321aa62db837cd7f81b"
+    },
+    "rain-window": {
+      "label": "檐雨敲窗",
+      "bytes": 1729558,
+      "sha256": "3a254ea860819512627e11bcab709aaed0b9b20b44671f5df7231f69e8bb9711"
+    },
+    "stream": {
+      "label": "石上清泉",
+      "bytes": 2776545,
+      "sha256": "60e5b110dc69349c3f18bfce33c42650f94687b52b94e67dd6a8eb8a673fea61"
+    },
+    "rain-forest": {
+      "label": "夜雨空山",
+      "bytes": 2738929,
+      "sha256": "7d15d8462d19403fffcbe4812a31abac7ab011c2b854a860f8561ac47bccf421"
+    },
+    "bamboo": {
+      "label": "竹林听风",
+      "bytes": 1747112,
+      "sha256": "2b570a9af4d8354faaf91e8cd64e4db110156610c84e0cb93f134e12e394cd34"
+    },
+    "frogs": {
+      "label": "稻花蛙声",
+      "bytes": 2376141,
+      "sha256": "d862d62326ea02c12c2be29b995daf52338086a6f45e654b9821b56300f1fab9"
+    },
+    "cicadas": {
+      "label": "蝉鸣盛夏",
+      "bytes": 2509052,
+      "sha256": "2d9ebc1b293eaacd615f577bd917b16271471fd8972c30e92fb6c5a6e62d46c4"
+    },
+    "winter-wind": {
+      "label": "风雪夜归",
+      "bytes": 2645306,
+      "sha256": "c80051d3eea67e5cb88b15ab3ff2ed988fc66dd6d12e435f1edb457549f33abd"
+    },
+    "campfire": {
+      "label": "篝火星野",
+      "bytes": 2881035,
+      "sha256": "7ab96153216e1c7e8eb96cac804deea894037b70b05cbfc61a731364518e8c03"
+    },
+    "train": {
+      "label": "列车远行",
+      "bytes": 2019203,
+      "sha256": "da9d5f2ecc83a8f0eddc465c3f815f417923617ad93204514386e78040a86e36"
+    },
+    "library": {
+      "label": "书页静翻",
+      "bytes": 1903847,
+      "sha256": "96855cef98cf2fab2d7f97343229cce6e40825e04812d77eddf787ae8f44da57"
+    },
+    "chimes": {
+      "label": "风铃轻响",
+      "bytes": 1987438,
+      "sha256": "5b9b70ec5ea35e40fd49d382af59d2aae901618cf913813ca268f2e39275b2c3"
+    },
+    "piano-study": {
+      "label": "琴键伴读",
+      "bytes": 1943135,
+      "sha256": "4331888b3a952b55ca0efffe983fe8603d3c38c91c6af066ed17f0608c9eadd1"
+    },
+    "piano-clouds": {
+      "label": "云上琴音",
+      "bytes": 1769682,
+      "sha256": "0c64595cde94812e14f09831d458c33c6afd634a5b040a3c9832b7257f84bdc5"
+    },
+    "lofi-study": {
+      "label": "慢拍自习室",
+      "bytes": 1901757,
+      "sha256": "6d7cc83500edd95a4c55b1978fbc12a6e16214157a37bf1ec79c5a940c2aae64"
+    },
+    "lofi-lamp": {
+      "label": "灯下慢拍",
+      "bytes": 2881035,
+      "sha256": "e4d7e5ee0242182bdeb94fb8157600056dd6f57043ed46155ef982be237d6fee"
+    },
+    "bamboo-flute": {
+      "label": "竹笛牧歌",
+      "bytes": 2881035,
+      "sha256": "75cfb8807f30ee14a489d7b6056670096225dbc1faedd804e11d5a43b13d8ed3"
+    },
+    "guqin": {
+      "label": "高山流水",
+      "bytes": 2881035,
+      "sha256": "be9def50978e400203bfcdd153a4d4f8a27e13a47b13d31817da54c7e7101918"
+    },
+    "guitar": {
+      "label": "木吉他午后",
+      "bytes": 2065179,
+      "sha256": "777436e310b4ec04a0a69d37032720b56d2a257a90f3ac061ee4c2bf3585b14c"
+    },
+    "harp": {
+      "label": "竖琴星光",
+      "bytes": 2881035,
+      "sha256": "c5a7fbca3d8a96a433d687616f72dc159d449446ef9a08388249aac84475b46f"
+    }
+  }
+}
