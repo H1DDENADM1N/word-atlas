@@ -112,11 +112,11 @@ APK 不进仓库（`.gitignore` 已排除）。两种方式：
 
 | 产物 | 单词发音 | 用途 |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.4.apk` | 上游原版 ElevenLabs（CC BY 4.0） | 分享 / 公开分发 |
-| `word-atlas-android-v1.0.4_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
+| `word-atlas-android-v1.0.5.apk` | 上游原版 ElevenLabs（CC BY 4.0） | 分享 / 公开分发 |
+| `word-atlas-android-v1.0.5_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
 
 ```bash
-adb install -r word-atlas-android-v1.0.4.apk
+adb install -r word-atlas-android-v1.0.5.apk
 ```
 
 两个包同一包名，不能同时安装；切换时覆盖安装即可，学习记录保留。
@@ -125,11 +125,12 @@ adb install -r word-atlas-android-v1.0.4.apk
 
 ## 版本
 
-当前 **v1.0.4**（versionCode 5）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
+当前 **v1.0.5**（versionCode 6）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
 
 | 版本 | 一句话 |
 | :--- | :--- |
-| **v1.0.4** | 答题挖空与选项对齐；单词发音分原版分享包与 OALDPEX 私用包 |
+| **v1.0.5** | 一词两音按义项分开：tear 的 /teə/（撕）与 /tɪə/（眼泪）各有各的录音 |
+| v1.0.4 | 答题挖空与选项对齐；单词发音分原版分享包与 OALDPEX 私用包 |
 | v1.0.3 | 图鉴新增话题星座；环境声换成 30 条真实录音；词卡多了真题例句、音节与处处可点 |
 | v1.0.2 | 选项按拇指重排，作答卡能听、能点、能往下读 |
 | v1.0.1 | 学习页装进一屏，键盘不再挡内容 |
@@ -165,9 +166,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.4.apk      （分享版，原版发音）
-# → word-atlas-android-v1.0.4_O.apk    （私用版，OALDPEX 真人发音）
-adb install -r word-atlas-android-v1.0.4.apk
+# → word-atlas-android-v1.0.5.apk      （分享版，原版发音）
+# → word-atlas-android-v1.0.5_O.apk    （私用版，OALDPEX 真人发音）
+adb install -r word-atlas-android-v1.0.5.apk
 ```
 
 两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换单词音源；`--skip-web` 可以复用上一次的 `dist-android`。

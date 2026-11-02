@@ -60,8 +60,11 @@ python3 scripts/android/fetch_tts.py
 # 公开版音源：public/atlas/audio/{uk,us}（上游原版，CC BY 4.0）
 git fetch --depth 1 origin main
 git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
-# 私用版音源：private/audio/oaldpex/{uk,us}（OALDPEX，已在 .gitignore 中排除）
+# 同形异音的第二读音：public/atlas/audio/{uk2,us2}（14 词，分享版自己录）
+python3 scripts/atlas/gen_word_audio.py --pron
+# 私用版音源：private/audio/oaldpex/{uk,us,uk2,us2}（OALDPEX，已在 .gitignore 中排除）
 # 私用版导入：python3 scripts/atlas/import_audio.py --out private/audio/oaldpex
+python3 scripts/atlas/import_audio.py --heteronyms
 
 # 构建（默认同时出两个包；--flavors share / private 只出一个）
 python3 scripts/android/build_apk.py
@@ -69,10 +72,10 @@ python3 scripts/android/build_apk.py
 
 产物是仓库根目录的：
 
-- `word-atlas-android-v1.0.4.apk` — 分享版，上游原版发音；
-- `word-atlas-android-v1.0.4_O.apk` — 私用版，OALDPEX 真人发音，仅自用。
+- `word-atlas-android-v1.0.5.apk` — 分享版，上游原版发音；
+- `word-atlas-android-v1.0.5_O.apk` — 私用版，OALDPEX 真人发音，仅自用。
 
-两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换 `assets/www/atlas/audio/uk|us` 的来源。脚本会依次执行：`vite build`（相对路径 + 传统脚本）→ 生成内联数据 → `aapt2 compile/link` → `javac` → `d8` → 打包 assets 与 `lib/<abi>/*.so` → `zipalign` → `apksigner`（每个音源各签一次）。
+两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换 `assets/www/atlas/audio/{uk,us,uk2,us2}` 的来源。脚本会依次执行：`vite build`（相对路径 + 传统脚本）→ 生成内联数据 → `aapt2 compile/link` → `javac` → `d8` → 打包 assets 与 `lib/<abi>/*.so` → `zipalign` → `apksigner`（每个音源各签一次）。`uk2`/`us2` 是可选的：目录不存在就只打 `uk`/`us`。
 
 只想复用已有的 `dist-android/` 时加 `--skip-web`。想减小体积可以只保留一种 ABI：
 
@@ -85,9 +88,9 @@ python3 scripts/android/fetch_tts.py --force --abis arm64-v8a   # 省 29 MB
 安装：
 
 ```bash
-adb install -r word-atlas-android-v1.0.4.apk
+adb install -r word-atlas-android-v1.0.5.apk
 # 或私用版
-adb install -r word-atlas-android-v1.0.4_O.apk
+adb install -r word-atlas-android-v1.0.5_O.apk
 ```
 
 ## 发版：版本号怎么改
@@ -103,7 +106,7 @@ adb install -r word-atlas-android-v1.0.4_O.apk
 
 `versionCode` 忘了加：`adb install -r` 会失败（`INSTALL_FAILED_VERSION_DOWNGRADE`），或者装上去仍是旧版本——手机上看起来像"更新没生效"，实际是系统拒绝了同码或降码覆盖。版本名可以随意，code 必须单调递增。
 
-当前对应关系：`1.0.3` → `VERSION_CODE = 4`。
+当前对应关系：`1.0.5` → `VERSION_CODE = 6`。
 
 ## 与网页版的差异
 

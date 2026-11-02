@@ -1,6 +1,6 @@
 {
   "name": "word-atlas",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "description": "A beautiful, open IELTS vocabulary atlas: 7,000+ illustrated words with UK/US audio, original examples and FSRS spaced repetition.",
   "scripts": {
@@ -11,6 +11,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --import tsx --test src/**/*.test.ts",
     "check:atlas": "node scripts/check-atlas.mjs",
+    "check:pron": "python3 scripts/atlas/apply_pron.py --check",
+    "pron": "python3 scripts/atlas/apply_pron.py",
     "check:quiz": "node --import tsx scripts/check-quiz.ts",
     "build:atlas": "python3 scripts/atlas/build_atlas.py",
     "render:cards": "node scripts/render-cards.mjs",

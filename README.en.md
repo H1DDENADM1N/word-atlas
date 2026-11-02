@@ -97,11 +97,11 @@ The APKs are not committed (see `.gitignore`). Either check [Releases](https://g
 
 | Output | Word audio | Use |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.4.apk` | Upstream original ElevenLabs (CC BY 4.0) | Share / public release |
-| `word-atlas-android-v1.0.4_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
+| `word-atlas-android-v1.0.5.apk` | Upstream original ElevenLabs (CC BY 4.0) | Share / public release |
+| `word-atlas-android-v1.0.5_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
 
 ```bash
-adb install -r word-atlas-android-v1.0.4.apk
+adb install -r word-atlas-android-v1.0.5.apk
 ```
 
 Both packages share the same package name and signing key, so only one can be installed at a time; installing the other over it keeps your progress.
@@ -110,11 +110,12 @@ Android 7.0 (API 24) or newer; arm64 devices are fastest; about **2.5 GB** of fr
 
 ## Versions
 
-Current: **v1.0.4** (versionCode 5). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current: **v1.0.5** (versionCode 6). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
-| **v1.0.4** | Quiz blanks and choices stay aligned; original-audio share build and OALDPEX private build |
+| **v1.0.5** | Two readings of one spelling, by sense: tear /teə/ (rip) and /tɪə/ (cry), each with its own recording |
+| v1.0.4 | Quiz blanks and choices stay aligned; original-audio share build and OALDPEX private build |
 | v1.0.3 | Real exam sentences, syllable breaks, and words you can tap anywhere |
 | v1.0.2 | Answers sized for the thumb; a verdict card you can use |
 | v1.0.1 | A quiz that fits one screen; a keyboard that stays out of the way |
@@ -150,9 +151,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.4.apk      (share, original audio)
-# → word-atlas-android-v1.0.4_O.apk    (private, OALDPEX audio)
-adb install -r word-atlas-android-v1.0.4.apk
+# → word-atlas-android-v1.0.5.apk      (share, original audio)
+# → word-atlas-android-v1.0.5_O.apk    (private, OALDPEX audio)
+adb install -r word-atlas-android-v1.0.5.apk
 ```
 
 Both APKs reuse the same web bundle, inlined data, `base.apk` and `classes.dex`; only the word-audio set changes during packaging. `--skip-web` reuses the last `dist-android`.

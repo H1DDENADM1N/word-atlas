@@ -46,7 +46,7 @@ TTS = ANDROID / "vendor" / "tts"
 PKG = "tech.wordatlas.app"
 # Bump this for every release: Android only accepts an equal or higher code on
 # upgrade, so an APK that reuses the old one silently refuses to install over it.
-VERSION_CODE = 5
+VERSION_CODE = 6
 # The display version lives in package.json and nowhere else — the shell reads
 # it back from the package manager at runtime instead of hardcoding a copy.
 VERSION_NAME = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
@@ -271,20 +271,31 @@ def dex(java_home: Path, build_tools: Path, android_jar: Path, classes: Path) ->
     return out / "classes.dex"
 
 
-def audio_set(root: Path, label: str) -> tuple[Path, Path]:
-    """Validate one UK/US pair before a long packaging pass."""
-    uk, us = root / "uk", root / "us"
-    for accent, folder in (("UK", uk), ("US", us)):
+def audio_set(root: Path, label: str) -> dict[str, Path]:
+    """Validate one audio set before a long packaging pass.
+
+    `uk`/`us` are the ordinary recordings and must exist. `uk2`/`us2` hold the
+    second reading of the 14 heteronyms and are optional: the private build has
+    them from OALDPEX, the share build only once the second reading has been
+    voiced.
+    """
+    out: dict[str, Path] = {}
+    for accent, folder in (("uk", root / "uk"), ("us", root / "us")):
         if not folder.is_dir() or not any(folder.glob("*.mp3")):
             raise SystemExit(
-                f"{label} {accent} word audio is missing: {folder}\n"
+                f"{label} {accent.upper()} word audio is missing: {folder}\n"
                 "  share build: restore public/atlas/audio/{uk,us} from upstream\n"
                 "  private build: python3 scripts/atlas/import_audio.py --out private/audio/oaldpex"
             )
-    return uk, us
+        out[accent] = folder
+    for accent in ("uk2", "us2"):
+        folder = root / accent
+        if folder.is_dir() and any(folder.glob("*.mp3")):
+            out[accent] = folder
+    return out
 
 
-def web_assets(uk_audio: Path, us_audio: Path) -> list[tuple[Path, str]]:
+def web_assets(audio: dict[str, Path]) -> list[tuple[Path, str]]:
     """Every file that goes into assets/www, in archive order.
 
     The word-audio folders are skipped here and added from the chosen set, so
@@ -300,14 +311,14 @@ def web_assets(uk_audio: Path, us_audio: Path) -> list[tuple[Path, str]]:
                 continue
             if folder == "atlas":
                 rel = path.relative_to(PUBLIC / "atlas")
-                if len(rel.parts) >= 2 and rel.parts[0] == "audio" and rel.parts[1] in ("uk", "us"):
+                if len(rel.parts) >= 2 and rel.parts[0] == "audio" and rel.parts[1] in ("uk", "us", "uk2", "us2"):
                     continue
             # The ambience ships as `sfx/<name>.mp3.js`; keeping the raw mp3 too
             # would store 56 MB of audio twice.
             if folder == "sfx" and path.name.startswith("amb-") and path.suffix == ".mp3":
                 continue
             items.append((path, f"assets/www/{path.relative_to(PUBLIC).as_posix()}"))
-    for accent, root in (("uk", uk_audio), ("us", us_audio)):
+    for accent, root in sorted(audio.items()):
         for path in sorted(root.rglob("*.mp3")):
             rel = path.relative_to(root).as_posix()
             items.append((path, f"assets/www/atlas/audio/{accent}/{rel}"))
@@ -338,12 +349,12 @@ def native_and_voice() -> list[tuple[Path, str]]:
     return items
 
 
-def package_apk(base_apk: Path, dex_file: Path, data_js: Path, amb_js: Path, audio: tuple[Path, Path], tag: str) -> Path:
+def package_apk(base_apk: Path, dex_file: Path, data_js: Path, amb_js: Path, audio: dict[str, Path], tag: str) -> Path:
     log(f"packaging {tag} assets (this is the big step)")
     out = BUILD / f"unaligned-{tag}.apk"
     if out.exists():
         out.unlink()
-    assets = web_assets(*audio)
+    assets = web_assets(audio)
     assets.append((data_js, "assets/www/atlas-embed/data.js"))
     for path in sorted(amb_js.glob("*.js")):
         assets.append((path, f"assets/www/sfx/{path.name}"))
@@ -428,7 +439,7 @@ def main() -> None:
 
     # Resolve both audio sets before the expensive passes so a missing directory
     # fails now, not after the zip has been written.
-    audio_sets: list[tuple[str, tuple[Path, Path]]] = []
+    audio_sets: list[tuple[str, dict[str, Path]]] = []
     if args.flavors in ("both", "share"):
         audio_sets.append(("share", audio_set(Path(args.share_audio), "share")))
     if args.flavors in ("both", "private"):
@@ -442,8 +453,9 @@ def main() -> None:
     log(f"tools    {build_tools.name}")
     log(f"android  {android_jar}")
     log(f"jdk      {java_home}")
-    for flavor, (uk, us) in audio_sets:
-        log(f"audio {flavor:7s} uk={sum(1 for _ in uk.glob('*.mp3'))} us={sum(1 for _ in us.glob('*.mp3'))}")
+    for flavor, audio in audio_sets:
+        counts = " ".join(f"{k}={sum(1 for _ in v.glob('*.mp3'))}" for k, v in sorted(audio.items()))
+        log(f"audio {flavor:7s} {counts}")
 
     BUILD.mkdir(parents=True, exist_ok=True)
     aapt2 = build_tools / ("aapt2.exe" if os.name == "nt" else "aapt2")

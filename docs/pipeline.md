@@ -8,7 +8,8 @@
 4. **发音** `gen_word_audio.py`：ElevenLabs，英音 Alice、美音 Sarah。
 5. **例句朗读** `gen_sentence_audio.py`：为 `ex[0]` 合成朗读，按学习路线顺序。
 6. **编译** `build_atlas.py`：清洗字段、排序、切块，生成 `public/atlas/` 与 `data/`。
-7. **校验** `npm run check:atlas`：结构、顺序、引用与媒体文件存在性。
+7. **同形异音** `apply_pron.py`：把 [`pron.json`](../scripts/atlas/pron.json) 里的 14 个双读音词写进词条（`pron` + `senses[].v`），并把 `uk`/`us` 收敛成第一读音。`build_atlas.py` 不认识 `pron`，重建后必须再跑一次；`npm run check:pron` 可以查有没有漏。
+8. **校验** `npm run check:atlas`：结构、顺序、引用与媒体文件存在性。
 
 ```bash
 export SUB2_BASE_URL=... SUB2_API_KEY=... ELEVENLABS_API_KEY=...
@@ -17,10 +18,28 @@ python3 scripts/atlas/gen_images.py --workers 8 --follow
 python3 scripts/atlas/gen_word_audio.py
 python3 scripts/atlas/gen_sentence_audio.py --follow
 python3 scripts/atlas/build_atlas.py
+python3 scripts/atlas/apply_pron.py
 npm run check:atlas
 ```
 
 `SUB2_BASE_URL` 指向任意 OpenAI 兼容的接口。
+
+## 同形异音 / Two readings of one spelling
+
+`tear`（撕 / 眼泪）、`use`、`present` 等 14 个词，一个拼写两个读音，两个读音各有自己的录音。词条用 `pron` 存读音组、`senses[i].v` 指回其中一组：
+
+```json
+"pron": [{ "uk": "/teə/", "us": "/ter/" }, { "uk": "/tɪə/", "us": "/tɪr/" }],
+"senses": [{ "pos": "v.", "zh": "撕破；扯开" }, { "pos": "n.", "zh": "眼泪", "v": 1 }, …]
+```
+
+- 读音组的来源、义项归属、OALDPEX 的音频文件名都只写在 `scripts/atlas/pron.json`，`apply_pron.py` 负责落盘。
+- 第一读音的录音是 `audio/{uk,us}/<id>.mp3`，第二读音是 `audio/{uk,us}2/<id>.mp3`。
+- 分享版要自己录第二读音（14 词 × 2 音 = 28 条），放在 `public/atlas/audio/{uk,us}2/<id>.mp3`：`python3 scripts/atlas/gen_word_audio.py --pron`。它给每个词建一条 IPA 音素规则（ElevenLabs pronunciation dictionary），`npm run check:atlas` 的 `secondReadingAudio` 会一直数着缺口，归零就是补齐了。
+- **字典只是「大概率」**：`eleven_v4_turbo` 对 pronunciation dictionary 的遵循是概率性的，同一份规则重录一次可能就忽略掉（实测 `tear` 美音重录后仍是 /ter/）。所以这 28 条必须听检，别只看 `secondReadingAudio` 归零。
+- 单条读错时，改拼写比改字典可靠：`teer` / `tair` / `bough` 这类同音拼写每次都能读出想要的音，生成后写回 `<id>.mp3` 即可。`--force` 只影响已有文件是否跳过，`tmp.replace()` 才能在 Windows 上真正覆盖。
+- 私用版用 `import_audio.py --heteronyms` 从 OALDPEX 抽，两组都抽，因为 `bow` 的第一读音在 OALDPEX 里排在第二条。
+- 文件名不能按序号推：`use` 从 `gb_3` 起、`content` 存在 `xcontent` 名下、`object` 的美音是 `_rr` 重录。所以 `pron.json` 里存的是原样文件名。
 
 ## 质量边界
 
