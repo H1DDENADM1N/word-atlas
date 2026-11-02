@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: ~991 MB](https://img.shields.io/badge/APK-~991_MB-2F5D50?style=flat-square)
+![APK: 1.03 GB / 991 MB](https://img.shields.io/badge/APK-1.03_GB_%2F_991_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -49,7 +49,7 @@
 | 真题 | 无 | 「雅思语境」下面多一节**真题例句**，1,211 条剑桥雅思 4 原文与译文，标出处 |
 | 话题星座 | 无（只有词汇星图） | 图鉴里多一块**话题星座**面板，十九个话题各一个星座 |
 | 环境声 | 无 | **30 条**循环录音，配平响度，读词时自动压低 |
-| 体积 | 仓库约 1 GB 资源 | APK 约 **991 MB**（全部资源都在里面） |
+| 体积 | 仓库约 1 GB 资源 | 分享版 **1.03 GB** / 私用版 **991 MB**（全部资源都在里面） |
 | 更新方式 | `git pull` / 网站自动更新 | 重新构建并安装（换签名需先卸载） |
 | 构建工具 | Node + Vite | 再加 JDK 17 + Android SDK，**不需要 Gradle** |
 
@@ -94,25 +94,32 @@
 | 词条 | **7,298** 条，CEFR A1–C2，19 个话题 |
 | 例句 | **14,596** 条，日常与雅思语境，附中文翻译 |
 | 插画 | **7,298** 幅，512 px WebP，另带缩略图 |
-| 录音 | **22,905** 段：英音、美音、例句朗读（单词发音不进仓库，构建时从 OALDPEX 导入） |
+| 录音 | **22,905** 段：英音、美音、例句朗读（单词发音默认用上游原版；OALDPEX 真人版仅限私用构建） |
 | 复习 | TS-FSRS 间隔复习，目标记忆率可调 |
 | 功能 | 今日、图鉴、词卡、词汇星图（WebGL2）、四类练习、打字练习、导出 / 恢复备份（含与网页版互通） |
 | 数据存放 | 本地优先，无账号无服务器，记录只在这台设备上 |
 
 内容来源同样一致：释义、例句、搭配与大语言模型按统一词典规范撰写，插画由图像模型逐词绘制，例句朗读由 ElevenLabs 合成。经过自动结构与一致性校验，但**尚未逐条人工审校**，可能有错。不是官方雅思词表，也不承诺提分。
 
-单词的英音与美音是唯一的例外：它们来自《牛津高阶英语词典》数据包（OALDPEX）的真人录音，由 `scripts/atlas/import_audio.py` 在构建机上导入，**不进本仓库**（见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)），版权归牛津大学出版社，仅限自建自用。
+单词的英音与美音默认使用上游 Word Atlas 的原版录音（ElevenLabs，英音 Alice / 美音 Sarah），随词库以 CC BY 4.0 提供；公开发布包不包含 OALDPEX 的真人录音。`scripts/atlas/import_audio.py` 仍可用于私用构建，把 `uk/`、`us/` 替换成 OALDPEX 录音，但那批录音版权归牛津大学出版社，仅限自建自用、不得公开分发（见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)）。
 
 ## 安装
 
-APK 约 991 MB，不进仓库（`.gitignore` 已排除）。两种方式：
+APK 不进仓库（`.gitignore` 已排除）。两种方式：
 
 1. 看 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases) 有没有现成产物；
 2. 按下一节自己构建。
 
+| 产物 | 单词发音 | 用途 |
+| :--- | :--- | :--- |
+| `word-atlas-android-v1.0.4.apk` | 上游原版 ElevenLabs（CC BY 4.0） | 分享 / 公开分发 |
+| `word-atlas-android-v1.0.4_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
+
 ```bash
-adb install -r word-atlas-offline.apk
+adb install -r word-atlas-android-v1.0.4.apk
 ```
+
+两个包同一包名，不能同时安装；切换时覆盖安装即可，学习记录保留。
 
 要求 **Android 7.0（API 24）及以上**，arm64 设备体验最好；安装需要约 **2.5 GB** 空闲空间。
 
@@ -122,7 +129,7 @@ adb install -r word-atlas-offline.apk
 
 | 版本 | 一句话 |
 | :--- | :--- |
-| **v1.0.4** | 答题挖空与选项对齐：`so` 不再挖成 `soup`；听力选项不再同音；旧会话选项自动修复 |
+| **v1.0.4** | 答题挖空与选项对齐；单词发音分原版分享包与 OALDPEX 私用包 |
 | v1.0.3 | 图鉴新增话题星座；环境声换成 30 条真实录音；词卡多了真题例句、音节与处处可点 |
 | v1.0.2 | 选项按拇指重排，作答卡能听、能点、能往下读 |
 | v1.0.1 | 学习页装进一屏，键盘不再挡内容 |
@@ -142,20 +149,30 @@ npm ci
 # 一次性拉取离线语音运行时与音色（约 540 MB，校验 SHA-256，不进仓库）
 python3 scripts/android/fetch_tts.py
 
-# 单词的英音/美音不在仓库里：从 OALDPEX 数据包导入（14,518 个文件，60 MB）
-# 没有 OALDPEX 就跳过这一步：构建照常，单词改由内置 Kokoro 朗读
-python3 scripts/atlas/import_audio.py
+# 公开版音源：public/atlas/audio/{uk,us}（上游原版，CC BY 4.0）
+# 首次从上游 main 恢复（约 126 MB，不进 Git）：
+git fetch --depth 1 origin main
+git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
+# 私用版音源：private/audio/oaldpex/{uk,us}（OALDPEX，已在 .gitignore 中排除）
+# 私用版导入（只在有 OALDPEX 数据包时运行；不得公开分发）：
+# python3 scripts/atlas/import_audio.py --out private/audio/oaldpex
 
 export ANDROID_HOME=$HOME/.android-sdk
 export JAVA_HOME=/path/to/jdk-17
 
-# 出包 → 仓库根目录的 word-atlas-offline.apk
+# 默认同时出两个包；也可以只出其中一个
 python3 scripts/android/build_apk.py
+python3 scripts/android/build_apk.py --flavors share
+python3 scripts/android/build_apk.py --flavors private
 
-adb install -r word-atlas-offline.apk
+# → word-atlas-android-v1.0.4.apk      （分享版，原版发音）
+# → word-atlas-android-v1.0.4_O.apk    （私用版，OALDPEX 真人发音）
+adb install -r word-atlas-android-v1.0.4.apk
 ```
 
-脚本依次执行：`vite build --config vite.config.android.ts`（相对路径 + 传统 IIFE 脚本）→ 生成内联数据 → `aapt2 compile/link` → `javac` → `d8` → 打包 assets 与 `lib/<abi>/*.so` → `zipalign` → `apksigner`。
+两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换单词音源；`--skip-web` 可以复用上一次的 `dist-android`。
+
+脚本依次执行：`vite build --config vite.config.android.ts`（相对路径 + 传统 IIFE 脚本）→ 生成内联数据 → `aapt2 compile/link` → `javac` → `d8` → 打包 assets 与 `lib/<abi>/*.so` → `zipalign` → `apksigner`（每个音源各签一次）。
 
 只想跑网页版（和上游完全一样）：
 
@@ -180,16 +197,16 @@ npm run build        # 构建到 dist/
 | 离线语音：ONNX Runtime + JNI（arm64 / x86_64） | 55 MB |
 | 离线语音：Kokoro-82M 音色 + espeak 音素表 | 353 MB |
 | 前端 bundle、字体、图标 | ~1 MB |
-| **APK** | **约 991 MB** |
+| **APK** | **分享版 1.03 GB / 私用版 991 MB** |
 
 想瘦身：只保留 `thumb/`（省 203 MB）、把录音转低码率、只打一个 ABI，或换回 Piper 音色（`fetch_tts.py --voice piper`，省约 290 MB，音质明显下降）。
 
 ## 已知限制
 
 - **冷启动略慢**：首次要从 APK 里读取内联数据并解析。
-- **体积就是代价**：991 MB 是"全部资源装进 APK"的直接结果。
+- **体积就是代价**：分享版 1.03 GB、私用版 991 MB，是"全部资源装进 APK"的直接结果。
 - **内置语音的延迟**：模型加载约 0.9 s；一句 7.8 s 的雅思长句合成约 3.6 s。按钮一出现就预渲染，所以正常点按是零等待，页面刚打开立刻点仍要等。
-- **语音只是兜底**：22,905 段真人录音优先，TTS 只补第二条例句缺录音的那 6,287 个词。
+- **录音优先**：22,905 段原版录音（ElevenLabs 合成）优先，TTS 只补第二条例句缺录音的那 6,287 个词。
 - **真题例句只覆盖 30%**：来源词典只收了剑桥雅思 4 的四套题，2,216 / 7,298 个词条有例句；A1 日常词本来就不出现在学术文章里。
 - **音节标注只覆盖 64%**：4,672 个词条有标注，词典没标的（`study`、`hotel`、`river`、`city`）点词头不会有变化——切错了比不切更糟，所以不补写。
 - **释义里的中文不可点**：切词与查词索引都只认英文，中文释义是纯文本。
@@ -228,11 +245,12 @@ b2_environment = [w for w in words if w["cefr"] == "B2" and w["topic"] == "envir
 | 范围 | 许可 |
 | :--- | :--- |
 | 应用代码 | [MIT](LICENSE) |
-| 词库文本、插画与词条录音 | [CC BY 4.0](CONTENT_LICENSE.md)，署名 Word Atlas contributors（词光） |
+| 词库文本、插画与录音（单词 + 例句） | [CC BY 4.0](CONTENT_LICENSE.md)，署名 Word Atlas contributors（词光）；单词发音为原版 ElevenLabs（Alice / Sarah） |
+| 单词发音（OALDPEX 私用导入） | 牛津大学出版社 — 仅限本地构建，不得再分发 |
 | Kokoro-82M、sherpa-onnx | Apache-2.0 |
 | 第三方依赖与字体 | 遵循各自许可 |
 
-> 真题例句与音节标注分别导入自第三方的《雅思真题例句词典》与《牛津高阶》词典数据，**不在上表的 CC BY 4.0 范围内**；源文件不进仓库（`.gitignore` 已排除），随 APK 分发的只有导入后的索引。
+> 真题例句与音节标注分别导入自第三方的《雅思真题例句词典》与《牛津高阶》词典数据，**不在上表的 CC BY 4.0 范围内**；源文件不进仓库（`.gitignore` 已排除），随 APK 分发的只有导入后的索引。公开发布包的单词发音是上游原版，属于 CC BY 4.0；如私用导入 OALDPEX，则那批录音不在 CC BY 4.0 范围内，授权见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)。
 
 原版应用与全部内容由 [@designfuchen](https://github.com/designfuchen) 制作并开源，见 [designfuchen/word-atlas](https://github.com/designfuchen/word-atlas)。本仓库基于其 `main`（`99c00767`）派生，只做安卓离线封装；功劳归上游，问题归这里。
 

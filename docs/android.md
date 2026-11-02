@@ -40,7 +40,7 @@
 | 离线语音：Kokoro-82M 音色 + espeak 音素表 | 353 MB |
 | 真题例句 `atlas/ielts.json` + 音节标注 `atlas/syllables.json` | 0.6 MB |
 | 前端 bundle、字体、图标 | ~1 MB |
-| **APK** | **约 1005 MB** |
+| **APK** | **分享版 1.03 GB / 私用版 991 MB** |
 
 安装需要约 2.5 GB 空闲空间。图片和音频本身已压缩，打进 APK 时按原样存储（不再二次压缩），所以构建很快；`.onnx` 也不压缩，运行时可以直接映射。
 
@@ -57,11 +57,22 @@ export JAVA_HOME=/path/to/jdk-17
 # 一次性拉取离线语音运行时与音色（约 540 MB，校验 SHA-256，不进仓库）
 python3 scripts/android/fetch_tts.py
 
-# 构建
+# 公开版音源：public/atlas/audio/{uk,us}（上游原版，CC BY 4.0）
+git fetch --depth 1 origin main
+git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
+# 私用版音源：private/audio/oaldpex/{uk,us}（OALDPEX，已在 .gitignore 中排除）
+# 私用版导入：python3 scripts/atlas/import_audio.py --out private/audio/oaldpex
+
+# 构建（默认同时出两个包；--flavors share / private 只出一个）
 python3 scripts/android/build_apk.py
 ```
 
-产物是仓库根目录的 `word-atlas-offline.apk`。脚本会依次执行：`vite build`（相对路径 + 传统脚本）→ 生成内联数据 → `aapt2 compile/link` → `javac` → `d8` → 打包 assets 与 `lib/<abi>/*.so` → `zipalign` → `apksigner`。
+产物是仓库根目录的：
+
+- `word-atlas-android-v1.0.4.apk` — 分享版，上游原版发音；
+- `word-atlas-android-v1.0.4_O.apk` — 私用版，OALDPEX 真人发音，仅自用。
+
+两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换 `assets/www/atlas/audio/uk|us` 的来源。脚本会依次执行：`vite build`（相对路径 + 传统脚本）→ 生成内联数据 → `aapt2 compile/link` → `javac` → `d8` → 打包 assets 与 `lib/<abi>/*.so` → `zipalign` → `apksigner`（每个音源各签一次）。
 
 只想复用已有的 `dist-android/` 时加 `--skip-web`。想减小体积可以只保留一种 ABI：
 
@@ -74,7 +85,9 @@ python3 scripts/android/fetch_tts.py --force --abis arm64-v8a   # 省 29 MB
 安装：
 
 ```bash
-adb install -r word-atlas-offline.apk
+adb install -r word-atlas-android-v1.0.4.apk
+# 或私用版
+adb install -r word-atlas-android-v1.0.4_O.apk
 ```
 
 ## 发版：版本号怎么改
@@ -112,7 +125,7 @@ WebView 侧还关闭了 `file` 域的脚本访问（`setAllowFileAccessFromFileU
 
 ## 离线语音（内置 TTS）
 
-7,298 个词的英音、美音、第一条例句都有真人录音（22,905 段）。但**第二条例句（雅思语境）只有 1,011 个词有录音**，其余 6,287 个词词卡上第二个喇叭以前是走系统 `TextToSpeech` 的——在没装英文语音包的机器上就是「点了没声音」。现在改为 APK 内自带的引擎。
+7,298 个词的英音、美音、第一条例句都有录音（22,905 段）。但**第二条例句（雅思语境）只有 1,011 个词有录音**，其余 6,287 个词词卡上第二个喇叭以前是走系统 `TextToSpeech` 的——在没装英文语音包的机器上就是「点了没声音」。现在改为 APK 内自带的引擎。
 
 第一版用的是 Piper `-low` 音色（16 kHz、小模型），实测明显发闷、机械感重。既然 APK 体积不是约束，就换成了 **Kokoro-82M**：同一套 sherpa-onnx 运行时，24 kHz 输出，一个模型内含 11 个英文音色（英式 `bf_emma`、美式 `af_heart`），自然度是这类小模型里最好的一档。
 
@@ -449,7 +462,7 @@ node scripts/android/verify_speech.mjs budget
 ## 已知限制
 
 - **冷启动**比网页版慢一点：首次要从 APK 里读取内联数据并解析。
-- **APK 很大**：1005 MB 是「全部资源装进 APK」的直接代价，其中 353 MB 是 Kokoro 音色。想瘦身可以只保留 `thumb/`（省 203 MB）、把录音转成更低码率、只打一个 ABI，或者换回 Piper 音色（`fetch_tts.py --voice piper`，省约 290 MB，音质明显下降）。
+- **APK 很大**：分享版 1.03 GB、私用版 991 MB 是「全部资源装进 APK」的直接代价，其中 353 MB 是 Kokoro 音色。想瘦身可以只保留 `thumb/`（省 203 MB）、把录音转成更低码率、只打一个 ABI，或者换回 Piper 音色（`fetch_tts.py --voice piper`，省约 290 MB，音质明显下降）。
 - **内置语音的延迟**：模型加载约 0.9 s，合成一句 7.8 s 的雅思长句要 3.6 s。点按之所以感觉即时，是因为按钮一出现就预渲染了；如果页面刚打开就立刻点，仍要等那 3.6 s。模型常驻约 500 MB PSS，系统内存吃紧会自动释放，下次说话再加载。
-- 语音只是兜底：22,905 段真人录音优先，TTS 只补第二条例句缺失的那 6,287 个词。
-- 内容仍是开源版的 7,298 词，许可与网页版一致（代码 MIT，词库与插画录音 CC BY 4.0，Kokoro-82M Apache-2.0，sherpa-onnx Apache-2.0）。
+- 语音只是兜底：22,905 段录音优先（分享版是原版 ElevenLabs，`_O` 是 OALDPEX 真人）；TTS 只补第二条例句缺失的那 6,287 个词。
+- 内容仍是开源版的 7,298 词：代码 MIT，词库与分享版录音 CC BY 4.0，Kokoro-82M / sherpa-onnx Apache-2.0；`_O` 的单词音源版权归牛津大学出版社，仅限自用。

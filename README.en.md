@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: ~991 MB](https://img.shields.io/badge/APK-~991_MB-2F5D50?style=flat-square)
+![APK: 1.03 GB / 991 MB](https://img.shields.io/badge/APK-1.03_GB_%2F_991_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -47,7 +47,7 @@ In one line: **same content, different runtime.** Upstream is about learning the
 | Themes | Light / dark / system | Adds the aurora and starlight night skies, three English faces, and fixes "follow system" inside a WebView |
 | Word card | One transcription line | UK and US side by side; tap the headword for syllable breaks; words in examples, translations, collocations, families, synonyms and the gloss all open a lookup popover |
 | Exam sentences | None | A **real exam sentences** section under the IELTS-context example: 1,211 sentences from Cambridge IELTS 4 with translations and a source chip |
-| Size | ~1 GB of assets in the repo | APK of about **1005 MB** |
+| Size | ~1 GB of assets in the repo | Share **1.03 GB** / private **991 MB** |
 | Updating | `git pull` / the site updates itself | Rebuild and reinstall (a new signing key needs an uninstall) |
 | Toolchain | Node + Vite | Plus JDK 17 and the Android SDK, **no Gradle** |
 
@@ -82,22 +82,29 @@ Full implementation notes, size breakdown and per-bug write-ups: **[docs/android
 | Entries | **7,298**, CEFR A1–C2, 19 topics |
 | Examples | **14,596** with Chinese translations |
 | Illustrations | **7,298** at 512 px WebP, plus thumbnails |
-| Recordings | **22,905**: UK, US and example narration (word audio is not in the repo; imported at build time) |
+| Recordings | **22,905**: UK, US and example narration (word audio defaults to the upstream originals; OALDPEX is a private-build option) |
 | Review | TS-FSRS spaced repetition, adjustable retention |
 | Screens | Today, atlas, word card, WebGL2 word galaxy, four practice modes, typing, backup export/import |
 | Privacy | Local-first, no account, progress stays on the device |
 
 Content provenance is unchanged too: text and illustrations were generated for the project with AI, example narration with ElevenLabs, checked automatically but **not reviewed entry by entry**. This is not an official IELTS list and promises no score gain.
 
-The one exception is the UK/US pronunciation of each word: those are the real recordings from the *Oxford Advanced Learner's Dictionary* package (OALDPEX), imported on the build machine by `scripts/atlas/import_audio.py` and **not** part of this repository (see [CONTENT_LICENSE.md](CONTENT_LICENSE.md)). They belong to Oxford University Press and are for your own build only.
+The UK/US word audio defaults to upstream Word Atlas's original ElevenLabs recordings (Alice / Sarah), offered under CC BY 4.0 with the dataset; the public build does not contain OALDPEX's Oxford recordings. `scripts/atlas/import_audio.py` is still available for a private build, replacing `uk/` and `us/` with OALDPEX audio — those files belong to Oxford University Press, are for your own build only, and must not be redistributed (see [CONTENT_LICENSE.md](CONTENT_LICENSE.md)).
 
 ## Install
 
-The APK is about 1 GB and is not committed (see `.gitignore`). Either check [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases), or build it below.
+The APKs are not committed (see `.gitignore`). Either check [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases), or build them below.
+
+| Output | Word audio | Use |
+| :--- | :--- | :--- |
+| `word-atlas-android-v1.0.4.apk` | Upstream original ElevenLabs (CC BY 4.0) | Share / public release |
+| `word-atlas-android-v1.0.4_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
 
 ```bash
-adb install -r word-atlas-offline.apk
+adb install -r word-atlas-android-v1.0.4.apk
 ```
+
+Both packages share the same package name and signing key, so only one can be installed at a time; installing the other over it keeps your progress.
 
 Android 7.0 (API 24) or newer; arm64 devices are fastest; about **2.5 GB** of free space to install.
 
@@ -107,7 +114,7 @@ Current: **v1.0.4** (versionCode 5). Every release, with its checksums, is on [R
 
 | Version | In one line |
 | :--- | :--- |
-| **v1.0.4** | Quiz blanks and choices stay on the same word; no homophone choices; stale sessions repair themselves |
+| **v1.0.4** | Quiz blanks and choices stay aligned; original-audio share build and OALDPEX private build |
 | v1.0.3 | Real exam sentences, syllable breaks, and words you can tap anywhere |
 | v1.0.2 | Answers sized for the thumb; a verdict card you can use |
 | v1.0.1 | A quiz that fits one screen; a keyboard that stays out of the way |
@@ -127,17 +134,30 @@ npm ci
 # Once: fetch the speech runtime and voice (~540 MB, SHA-256 checked, not committed)
 python3 scripts/android/fetch_tts.py
 
-# Word audio is not in the repo: import it from the OALDPEX package (14,518 files, 60 MB).
-# Without the package, skip this — the build still works and words fall back to Kokoro.
-python3 scripts/atlas/import_audio.py
+# Share audio: public/atlas/audio/{uk,us} (upstream originals, CC BY 4.0)
+# First time: restore from upstream main (~126 MB, not committed):
+git fetch --depth 1 origin main
+git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
+# Private audio: private/audio/oaldpex/{uk,us} (OALDPEX, gitignored)
+# Import the private set only when the OALDPEX package is available (never redistribute):
+# python3 scripts/atlas/import_audio.py --out private/audio/oaldpex
 
 export ANDROID_HOME=$HOME/.android-sdk
 export JAVA_HOME=/path/to/jdk-17
 
-python3 scripts/android/build_apk.py     # → word-atlas-offline.apk
+# Build both by default; or pick one
+python3 scripts/android/build_apk.py
+python3 scripts/android/build_apk.py --flavors share
+python3 scripts/android/build_apk.py --flavors private
+
+# → word-atlas-android-v1.0.4.apk      (share, original audio)
+# → word-atlas-android-v1.0.4_O.apk    (private, OALDPEX audio)
+adb install -r word-atlas-android-v1.0.4.apk
 ```
 
-The script runs `vite build` with the Android config (relative paths, a classic IIFE bundle), generates the inlined data, then `aapt2` → `javac` → `d8` → assets and `lib/<abi>/*.so` → `zipalign` → `apksigner`.
+Both APKs reuse the same web bundle, inlined data, `base.apk` and `classes.dex`; only the word-audio set changes during packaging. `--skip-web` reuses the last `dist-android`.
+
+The script runs `vite build` with the Android config (relative paths, a classic IIFE bundle), generates the inlined data, then `aapt2` → `javac` → `d8` → assets and `lib/<abi>/*.so` → `zipalign` → `apksigner` (once per audio set).
 
 The plain web build is still upstream's:
 
@@ -161,16 +181,16 @@ npm run build
 | ONNX Runtime + JNI (arm64, x86_64) | 55 MB |
 | Kokoro-82M voice + espeak tables | 353 MB |
 | Bundle, fonts, icons | ~1 MB |
-| **APK** | **~1005 MB** |
+| **APK** | **share 1.03 GB / private 991 MB** |
 
 To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or switch back to Piper (`fetch_tts.py --voice piper`, saves ~290 MB with clearly worse quality).
 
 ## Known limits
 
 - Cold start is a little slower: the inlined data is parsed from the APK on first paint.
-- 1005 MB is the direct cost of putting every asset in the APK.
+- **Size is the price**: 1.03 GB for the share build and 991 MB for the private build is the direct cost of putting every asset in the APK.
 - Bundled speech loads in ~0.9 s and takes ~3.6 s for a 7.8 s sentence. Taps are instant because the sentence is pre-rendered as soon as the card appears; tapping immediately after opening the page is not.
-- Speech is only a fallback: the 22,905 recordings always win.
+- Speech is only a fallback: the 22,905 original recordings (ElevenLabs) always win.
 - Exam sentences reach 2,216 of 7,298 entries (30%): the source dictionary only covers the four Cambridge IELTS 4 tests, and A1 everyday words never appear in academic passages.
 - Syllable marks cover 4,672 entries (64%). Words the dictionary leaves unmarked (`study`, `hotel`, `river`, `city`) do nothing when tapped — a wrong break is worse than none, so nothing is guessed.
 - Chinese glosses are not tappable: the tokenizer and the lookup index are English-only.
@@ -197,10 +217,10 @@ To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or
 | | |
 | :--- | :--- |
 | Application code | [MIT](LICENSE) |
-| Vocabulary and illustrations | [CC BY 4.0](CONTENT_LICENSE.md), credit “Word Atlas contributors（词光）” |
-| Word pronunciations (UK/US) | Oxford University Press — local builds only, not redistributable |
+| Vocabulary, illustrations and recordings (words + examples) | [CC BY 4.0](CONTENT_LICENSE.md), credit “Word Atlas contributors（词光）”; word audio is the original ElevenLabs set (Alice / Sarah) |
+| Word pronunciations (OALDPEX private import) | Oxford University Press — local builds only, not redistributable |
 | Kokoro-82M, sherpa-onnx | Apache-2.0 |
 
-> The exam sentences and syllable marks are imported from third-party dictionaries (《雅思真题例句词典》, 《牛津高阶》) and are **not** covered by the CC BY 4.0 licence above. Their source files stay out of this repository (`.gitignore`); only the derived index ships in the APK.
+> The exam sentences and syllable marks are imported from third-party dictionaries (《雅思真题例句词典》, 《牛津高阶》) and are **not** covered by the CC BY 4.0 licence above. Their source files stay out of this repository (`.gitignore`); only the derived index ships in the APK. The public build's word audio is upstream's original set and is covered by CC BY 4.0; OALDPEX recordings, if imported for a private build, are outside that grant — see [CONTENT_LICENSE.md](CONTENT_LICENSE.md).
 
 The app and all of its content were made and open-sourced by [@designfuchen](https://github.com/designfuchen) in [designfuchen/word-atlas](https://github.com/designfuchen/word-atlas). This fork is derived from its `main` at `99c00767` and only adds the offline Android packaging. The credit is upstream's; the bugs in the shell are ours.

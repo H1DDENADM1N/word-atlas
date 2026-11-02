@@ -35,6 +35,11 @@ RES = MAIN / "res"
 BUILD = ANDROID / "build"
 DIST = ROOT / "dist-android"
 PUBLIC = ROOT / "public"
+# Two interchangeable word-audio sets. The share build uses upstream's original
+# ElevenLabs recordings (CC BY 4.0); the private build uses OALDPEX (OUP, never
+# redistribute). Both stay out of Git; the audio is selected per APK below.
+AUDIO_SHARE = PUBLIC / "atlas" / "audio"
+AUDIO_PRIVATE = ROOT / "private" / "audio" / "oaldpex"
 # Prebuilt offline TTS runtime + voices, populated by scripts/android/fetch_tts.py
 TTS = ANDROID / "vendor" / "tts"
 
@@ -266,8 +271,25 @@ def dex(java_home: Path, build_tools: Path, android_jar: Path, classes: Path) ->
     return out / "classes.dex"
 
 
-def web_assets() -> list[tuple[Path, str]]:
-    """Every file that goes into assets/www, in archive order."""
+def audio_set(root: Path, label: str) -> tuple[Path, Path]:
+    """Validate one UK/US pair before a long packaging pass."""
+    uk, us = root / "uk", root / "us"
+    for accent, folder in (("UK", uk), ("US", us)):
+        if not folder.is_dir() or not any(folder.glob("*.mp3")):
+            raise SystemExit(
+                f"{label} {accent} word audio is missing: {folder}\n"
+                "  share build: restore public/atlas/audio/{uk,us} from upstream\n"
+                "  private build: python3 scripts/atlas/import_audio.py --out private/audio/oaldpex"
+            )
+    return uk, us
+
+
+def web_assets(uk_audio: Path, us_audio: Path) -> list[tuple[Path, str]]:
+    """Every file that goes into assets/www, in archive order.
+
+    The word-audio folders are skipped here and added from the chosen set, so
+    the same web bundle can be packaged as a share or a private APK.
+    """
     items: list[tuple[Path, str]] = []
     for path in sorted(DIST.rglob("*")):
         if path.is_file():
@@ -276,11 +298,19 @@ def web_assets() -> list[tuple[Path, str]]:
         for path in sorted((PUBLIC / folder).rglob("*")):
             if not path.is_file():
                 continue
+            if folder == "atlas":
+                rel = path.relative_to(PUBLIC / "atlas")
+                if len(rel.parts) >= 2 and rel.parts[0] == "audio" and rel.parts[1] in ("uk", "us"):
+                    continue
             # The ambience ships as `sfx/<name>.mp3.js`; keeping the raw mp3 too
             # would store 56 MB of audio twice.
             if folder == "sfx" and path.name.startswith("amb-") and path.suffix == ".mp3":
                 continue
             items.append((path, f"assets/www/{path.relative_to(PUBLIC).as_posix()}"))
+    for accent, root in (("uk", uk_audio), ("us", us_audio)):
+        for path in sorted(root.rglob("*.mp3")):
+            rel = path.relative_to(root).as_posix()
+            items.append((path, f"assets/www/atlas/audio/{accent}/{rel}"))
     for name in ("favicon.svg", "icon-512.png", "manifest.webmanifest"):
         path = PUBLIC / name
         if path.exists():
@@ -308,12 +338,12 @@ def native_and_voice() -> list[tuple[Path, str]]:
     return items
 
 
-def package_apk(base_apk: Path, dex_file: Path, data_js: Path, amb_js: Path) -> Path:
-    log("packaging assets (this is the big step)")
-    out = BUILD / "unaligned.apk"
+def package_apk(base_apk: Path, dex_file: Path, data_js: Path, amb_js: Path, audio: tuple[Path, Path], tag: str) -> Path:
+    log(f"packaging {tag} assets (this is the big step)")
+    out = BUILD / f"unaligned-{tag}.apk"
     if out.exists():
         out.unlink()
-    assets = web_assets()
+    assets = web_assets(*audio)
     assets.append((data_js, "assets/www/atlas-embed/data.js"))
     for path in sorted(amb_js.glob("*.js")):
         assets.append((path, f"assets/www/sfx/{path.name}"))
@@ -357,18 +387,17 @@ def ensure_keystore(java_home: Path) -> None:
     ], stdout=subprocess.DEVNULL)
 
 
-def align_and_sign(build_tools: Path, java_home: Path, unaligned: Path) -> Path:
-    log("aligning")
-    aligned = BUILD / "aligned.apk"
+def align_and_sign(build_tools: Path, java_home: Path, unaligned: Path, out: Path) -> Path:
+    log(f"aligning {out.name}")
+    aligned = BUILD / f"aligned-{out.stem}.apk"
     if aligned.exists():
         aligned.unlink()
     run([build_tools / ("zipalign.exe" if os.name == "nt" else "zipalign"), "-f", "-p", "4", unaligned, aligned])
 
     ensure_keystore(java_home)
-    log("signing")
-    signed = ROOT / "word-atlas-offline.apk"
-    if signed.exists():
-        signed.unlink()
+    log(f"signing {out.name}")
+    if out.exists():
+        out.unlink()
     run([
         build_tools / ("apksigner.bat" if os.name == "nt" else "apksigner"),
         "sign",
@@ -379,20 +408,31 @@ def align_and_sign(build_tools: Path, java_home: Path, unaligned: Path) -> Path:
         "--v1-signing-enabled", "false",
         "--v2-signing-enabled", "true",
         "--v3-signing-enabled", "true",
-        "--out", signed,
+        "--out", out,
         aligned,
     ])
     run([
         build_tools / ("apksigner.bat" if os.name == "nt" else "apksigner"),
-        "verify", "--print-certs", signed,
+        "verify", "--print-certs", out,
     ])
-    return signed
+    return out
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build the offline Word Atlas APK")
     parser.add_argument("--skip-web", action="store_true", help="reuse dist-android instead of rebuilding")
+    parser.add_argument("--flavors", choices=("both", "share", "private"), default="both", help="which APK(s) to build")
+    parser.add_argument("--share-audio", default=str(AUDIO_SHARE), help="upstream-original UK/US audio root")
+    parser.add_argument("--private-audio", default=str(AUDIO_PRIVATE), help="OALDPEX UK/US audio root")
     args = parser.parse_args()
+
+    # Resolve both audio sets before the expensive passes so a missing directory
+    # fails now, not after the zip has been written.
+    audio_sets: list[tuple[str, tuple[Path, Path]]] = []
+    if args.flavors in ("both", "share"):
+        audio_sets.append(("share", audio_set(Path(args.share_audio), "share")))
+    if args.flavors in ("both", "private"):
+        audio_sets.append(("private", audio_set(Path(args.private_audio), "private")))
 
     sdk = find_sdk()
     build_tools = newest_dir(sdk / "build-tools")
@@ -402,6 +442,8 @@ def main() -> None:
     log(f"tools    {build_tools.name}")
     log(f"android  {android_jar}")
     log(f"jdk      {java_home}")
+    for flavor, (uk, us) in audio_sets:
+        log(f"audio {flavor:7s} uk={sum(1 for _ in uk.glob('*.mp3'))} us={sum(1 for _ in us.glob('*.mp3'))}")
 
     BUILD.mkdir(parents=True, exist_ok=True)
     aapt2 = build_tools / ("aapt2.exe" if os.name == "nt" else "aapt2")
@@ -412,10 +454,17 @@ def main() -> None:
     base_apk = aapt2_link(aapt2, android_jar, res_zip)
     classes = compile_java(java_home, android_jar)
     dex_file = dex(java_home, build_tools, android_jar, classes)
-    unaligned = package_apk(base_apk, dex_file, data_js, amb_js)
-    signed = align_and_sign(build_tools, java_home, unaligned)
 
-    log(f"done · {signed} · {human(signed.stat().st_size)}")
+    outputs: list[Path] = []
+    for flavor, audio in audio_sets:
+        suffix = "" if flavor == "share" else "_O"
+        out = ROOT / f"word-atlas-android-v{VERSION_NAME}{suffix}.apk"
+        unaligned = package_apk(base_apk, dex_file, data_js, amb_js, audio, flavor)
+        signed = align_and_sign(build_tools, java_home, unaligned, out)
+        outputs.append(signed)
+        log(f"done {flavor:7s} · {signed} · {human(signed.stat().st_size)}")
+
+    log("built " + " + ".join(p.name for p in outputs))
 
 
 if __name__ == "__main__":

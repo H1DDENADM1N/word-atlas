@@ -24,19 +24,19 @@ ended, and walk forward. Two further quirks matter:
     the key offsets double as a size table — including records that straddle a
     block boundary.
 
-The atlas stores one file per entry per accent —
-`public/atlas/audio/uk/<id>.mp3`, `public/atlas/audio/us/<id>.mp3` — so entries
-are matched to the dictionary by spelling, with the same loose fallback the
-syllable importer uses (`o'clock` vs `o’clock`).
+The atlas stores one file per entry per accent. The public/share build reads
+upstream's originals from `public/atlas/audio/{uk,us}`; this script writes a
+separate private set to `private/audio/oaldpex/{uk,us}` so importing OALDPEX
+never overwrites the shareable recordings.
 
 Rights: OALDPEX is a commercial dictionary. The recordings it carries are
 Oxford University Press's, not this project's — unlike the files the repo ships
-(ElevenLabs voices, CC BY 4.0). Run this for a private build; do not publish an
-APK or a commit that contains what it writes.
+(ElevenLabs voices, CC BY 4.0). Run this only for a private build; do not
+publish an APK or a commit that contains what it writes.
 
 Usage:
     python3 scripts/atlas/import_audio.py --report      # coverage only, no writes
-    python3 scripts/atlas/import_audio.py               # replace the recordings
+    python3 scripts/atlas/import_audio.py               # write private/audio/oaldpex
     python3 scripts/atlas/import_audio.py --only abandon,abide --report
 """
 from __future__ import annotations
@@ -52,7 +52,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PUB = ROOT / "public" / "atlas"
-AUDIO = PUB / "audio"
+OUT = ROOT / "private" / "audio" / "oaldpex"
 
 ZLIB_MAGIC = (b"\x78\x01", b"\x78\x9c", b"\x78\xda")
 CHUNK = 1 << 16
@@ -217,6 +217,7 @@ def letters(text: str) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dict", default=str(ROOT / "OALDPEX"))
+    ap.add_argument("--out", default=str(OUT), help="destination root for uk/ and us/")
     ap.add_argument("--report", action="store_true", help="report coverage, write nothing")
     ap.add_argument("--only", default="", help="comma-separated atlas ids, for a quick look")
     a = ap.parse_args()
@@ -280,6 +281,7 @@ def main() -> None:
 
     written = 0
     written_bytes = 0
+    out = Path(a.out)
     for i, jobs in sorted(todo.items()):
         part = parts[i]
         # In record order, so each block is decompressed once.
@@ -288,13 +290,13 @@ def main() -> None:
             data = part.read("\\" + name)
             if not data:
                 continue
-            (AUDIO / kind).mkdir(parents=True, exist_ok=True)
-            (AUDIO / kind / f"{eid}.mp3").write_bytes(data)
+            (out / kind).mkdir(parents=True, exist_ok=True)
+            (out / kind / f"{eid}.mp3").write_bytes(data)
             written += 1
             written_bytes += len(data)
     for part in parts:
         part.close()
-    print(f"wrote {written} files, {written_bytes / 1024 / 1024:.1f} MB")
+    print(f"wrote {written} files, {written_bytes / 1024 / 1024:.1f} MB -> {out}")
 
 
 if __name__ == "__main__":

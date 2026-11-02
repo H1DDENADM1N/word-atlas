@@ -117,7 +117,7 @@ export function About() {
               ，按固定 commit 取原文件，逐条校验哈希。每条都配平过响度，换曲不用重调音量；读单词时会自动压低，选过的那条下次打开还在。
             </li>
             <li>
-              <b>体积换自由。</b>安装包约 1.05 GB：{atlas.count.toLocaleString()} 幅插画、22,905
+              <b>体积换自由。</b>安装包约 1.03 GB：{atlas.count.toLocaleString()} 幅插画、22,905
               段录音、三十条环境声和语音模型全在里面。装一次，之后无论是在地铁里还是飞行模式，功能都不打折。
             </li>
           </ul>
@@ -126,7 +126,7 @@ export function About() {
         <section className="panel">
           <h3 className="eyebrow">和原版一样的地方</h3>
           <p className="muted">
-            词条数量、释义、两句原创例句、搭配、词族、易混提示、插画、复习算法，全部来自上游，没有重写也没有删减。唯一换掉的是单词的英音与美音，见下面「内容从哪里来」。今日、图鉴、词卡、星图、四类练习、打字练习、导出与恢复备份，都在。
+            词条数量、释义、两句原创例句、搭配、词族、易混提示、插画、单词发音、复习算法，全部来自上游，没有重写也没有删减。今日、图鉴、词卡、星图、四类练习、打字练习、导出与恢复备份，都在。
           </p>
           <p className="muted">
             仍然本地优先：没有账号，没有服务器，学习记录存在这台设备上。换机或清除数据前，记得先到「我的」导出备份。
@@ -139,10 +139,10 @@ export function About() {
         <section className="panel">
           <h3 className="eyebrow">内容从哪里来</h3>
           <p className="muted">
-            释义、例句、搭配和提示由大语言模型按统一词典规范撰写；插画由图像模型按统一画风逐词绘制；例句朗读由 ElevenLabs 合成。内容经过结构与一致性自动校验，但没有逐条人工审校，可能有错。这一版没有改动任何一条词条内容——看到问题请提到本仓库，能一并回馈上游。
+            释义、例句、搭配和提示由大语言模型按统一词典规范撰写；插画由图像模型按统一画风逐词绘制；单词与例句朗读由 ElevenLabs 合成（英音 Alice / 美音 Sarah）。内容经过结构与一致性自动校验，但没有逐条人工审校，可能有错。这一版没有改动任何一条词条内容——看到问题请提到本仓库，能一并回馈上游。
           </p>
           <p className="muted">
-            单词的英音与美音是唯一换掉的东西：由本地构建从《牛津高阶英语词典》数据包（OALDPEX）导入真人录音，覆盖 7,259 / 7,298 个词条；剩下 39 个（词典里是指向自己的跳转，或拼写另立词条）沿用原来的合成音。这批录音不属于本仓库的 CC BY 4.0，版权归牛津大学出版社，只在构建机上导入、不随仓库分发，也不要再对外传播。
+            公开发布的构建使用上游 Word Atlas 的原版单词发音：7,298 个英音与 7,298 个美音都由 ElevenLabs 合成，随上游录音以 CC BY 4.0 提供；公开发布包不包含《牛津高阶》数据包（OALDPEX）的真人录音。如果你自己构建私用版，可以运行 <code>scripts/atlas/import_audio.py</code> 把 OALDPEX 导入 <code>private/audio/oaldpex</code>；那批录音版权归牛津大学出版社，只能自用，不得公开分发。
           </p>
           <p className="muted">
             词卡里的「真题例句」是例外：它们来自第三方的《雅思真题例句词典》（剑桥雅思 4
@@ -164,7 +164,7 @@ export function About() {
             一条命令出包，JDK 17 与 Android SDK 就够。
           </p>
           <p className="muted">
-            应用代码 <b>MIT</b>；词库文本、插画与例句录音 <b>CC BY 4.0</b>，署名 Word Atlas contributors（词光）；单词的英音与美音来自牛津大学出版社，仅限本地构建，不随仓库分发。内置语音为
+            应用代码 <b>MIT</b>；词库文本、插画与录音（单词 + 例句）<b>CC BY 4.0</b>，署名 Word Atlas contributors（词光）；单词发音为 ElevenLabs 合成（Alice / Sarah）。OALDPEX 真人录音是可选的私用构建，版权归牛津大学出版社，不得再分发。内置语音为
             Kokoro-82M 与 sherpa-onnx，均为 Apache-2.0。环境声按上面的说明单独授权。
           </p>
           <p className="muted">
