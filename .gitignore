@@ -39,11 +39,11 @@ android/vendor/
 /雅思真题例句词典
 /OALDPEX
 
-# Word pronunciations are large and live outside Git:
-# - public/atlas/audio/{uk,us}: upstream originals (CC BY 4.0) for the share build
-# - private/audio/oaldpex/{uk,us}: OALDPEX replacements (OUP, private build only)
-/public/atlas/audio/uk/
-/public/atlas/audio/us/
+# Word pronunciations: the ElevenLabs takes ship with the repo, the OALDPEX
+# replacements do not.
+# - public/atlas/audio/{uk,us}: first reading, ~161 MB
+# - public/atlas/audio/{uk2,us2}: second reading of the 14 heteronyms
+# - private/audio/oaldpex/*: OALDPEX (OUP), private build only — never commit
 /private/
 /.workbuddy
 

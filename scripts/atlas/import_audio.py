@@ -38,6 +38,13 @@ Usage:
     python3 scripts/atlas/import_audio.py --report      # coverage only, no writes
     python3 scripts/atlas/import_audio.py               # write private/audio/oaldpex
     python3 scripts/atlas/import_audio.py --only abandon,abide --report
+    python3 scripts/atlas/import_audio.py --heteronyms  # the 14 two-reading words
+
+`--heteronyms` is the one place a headword needs two recordings. `pron.json`
+says which OALDPEX file belongs to which reading, so this mode copies by name
+instead of by "first match": `uk/<id>.mp3` gets reading 1, `uk2/<id>.mp3` gets
+reading 2. It also rewrites reading 1 for those words, because the first match
+is not always the reading the atlas teaches first — `bow` is filed noun-second.
 """
 from __future__ import annotations
 
@@ -53,6 +60,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PUB = ROOT / "public" / "atlas"
 OUT = ROOT / "private" / "audio" / "oaldpex"
+PRON = Path(__file__).resolve().parent / "pron.json"
 
 ZLIB_MAGIC = (b"\x78\x01", b"\x78\x9c", b"\x78\xda")
 CHUNK = 1 << 16
@@ -214,15 +222,74 @@ def letters(text: str) -> str:
     return re.sub(r"[^a-z]", "", text.lower())
 
 
+def import_heteronyms(d: Path, out: Path, report: bool) -> None:
+    """Copy both readings of the words in pron.json, by the names it lists.
+
+    Reading 1 goes to `uk/<id>.mp3` / `us/<id>.mp3` — overwriting whatever the
+    first-match import put there, which for `bow` is the other reading. Reading
+    2 goes to `uk2/` and `us2/`, the folders the app looks in for `pron[1]`.
+    """
+    table = json.loads(PRON.read_text(encoding="utf-8"))["words"]
+    parts = [Container(d / n) for n in ("oaldpex.mdd", "oaldpex.1.mdd", "oaldpex.2.mdd", "oaldpex.3.mdd")]
+    where: dict[str, int] = {}
+    for i, part in enumerate(parts):
+        for key in part.keys:
+            where.setdefault(key.rsplit("\\", 1)[-1], i)
+
+    jobs: dict[int, list[tuple[str, str, str]]] = {}
+    missing: list[str] = []
+    for word, spec in table.items():
+        for group, pron in enumerate(spec["pron"]):
+            for accent in ("uk", "us"):
+                name = pron["src"][accent]
+                i = where.get(name)
+                if i is None:
+                    missing.append(f"{word} 读音{group + 1} {accent}: {name}")
+                    continue
+                folder = accent if group == 0 else f"{accent}2"
+                jobs.setdefault(i, []).append((folder, name, word))
+
+    pairs = sum(len(v) for v in jobs.values())
+    print(f"{len(table)} words · {pairs} recordings found, {len(missing)} missing")
+    for line in missing:
+        print(f"  MISSING {line}")
+    if report:
+        for part in parts:
+            part.close()
+        return
+
+    written = 0
+    total = 0
+    for i, batch in sorted(jobs.items()):
+        part = parts[i]
+        batch.sort(key=lambda j: part.keys.get("\\" + j[1], 0))
+        for folder, name, word in batch:
+            data = part.read("\\" + name)
+            if not data:
+                print(f"  EMPTY {word} {name}")
+                continue
+            (out / folder).mkdir(parents=True, exist_ok=True)
+            (out / folder / f"{word}.mp3").write_bytes(data)
+            written += 1
+            total += len(data)
+    for part in parts:
+        part.close()
+    print(f"wrote {written} files, {total / 1024 / 1024:.1f} MB -> {out}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dict", default=str(ROOT / "OALDPEX"))
     ap.add_argument("--out", default=str(OUT), help="destination root for uk/ and us/")
     ap.add_argument("--report", action="store_true", help="report coverage, write nothing")
     ap.add_argument("--only", default="", help="comma-separated atlas ids, for a quick look")
+    ap.add_argument("--heteronyms", action="store_true", help="copy both readings of the 14 words in pron.json")
     a = ap.parse_args()
 
     d = Path(a.dict)
+    if a.heteronyms:
+        import_heteronyms(d, Path(a.out), a.report)
+        return
     index = json.loads((PUB / "index.json").read_text(encoding="utf-8"))
     id_at = index["fields"].index("id")
     word_at = index["fields"].index("word")
