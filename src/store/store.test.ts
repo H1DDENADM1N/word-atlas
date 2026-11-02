@@ -31,6 +31,30 @@ test("rejects other versions and unknown settings", () => {
   assert.equal(s.retention, 0.9);
 });
 
+test("drops malformed quiz steps and clamps the index instead of crashing", () => {
+  const p = sanitizeProgress(
+    {
+      version: 2,
+      session: {
+        id: "s1",
+        started: 1,
+        index: 9,
+        graded: { soup: 2, bad: 99 },
+        steps: [{ id: "soup", kind: "listen", options: ["so", "soup"] }, null, { id: "x", kind: "nope" }, { id: "y", kind: "spell" }],
+        newIds: ["soup", 3],
+        reviewIds: ["y"],
+        pending: { correct: true, value: "soup" },
+      },
+    },
+    "word-atlas-open",
+  );
+  assert.equal(p.session?.steps.length, 2);
+  assert.equal(p.session?.index, 2);
+  assert.deepEqual(Object.keys(p.session!.graded), ["soup"]);
+  assert.deepEqual(p.session?.newIds, ["soup"]);
+  assert.deepEqual(p.session?.pending, { correct: true, value: "soup" });
+});
+
 test("accepts the night skies and the three English faces", () => {
   assert.equal(sanitizeSettings({ theme: "aurora" }).theme, "aurora");
   assert.equal(sanitizeSettings({ theme: "starlight" }).theme, "starlight");

@@ -9,7 +9,7 @@ import { cue } from "../lib/sound";
 import { currentLocation, go, openWord } from "../lib/router";
 import { focusField, revealField } from "../lib/keyboard";
 import { gap, normalize } from "../lib/text";
-import { answer, advance, buildSession, gradeFor, sessionStats } from "../store/session";
+import { answer, advance, buildSession, gradeFor, quizOptions, sessionStats } from "../store/session";
 import { Rating } from "../store/srs";
 import { store, useStore, type ActiveSession, type QuizKind, type Step } from "../store/store";
 import { EntryView, Highlight } from "../ui/EntryView";
@@ -93,7 +93,7 @@ function useStepTimer() {
 
 function Intro({ step }: { step: Step }) {
   const atlas = useAtlas();
-  const { entry } = useEntry(step.id);
+  const { entry, error } = useEntry(step.id);
   const settings = useStore((s) => s.settings);
   const elapsed = useStepTimer();
   useEffect(() => {
@@ -111,6 +111,16 @@ function Intro({ step }: { step: Step }) {
     advance(elapsed());
   }, [elapsed]);
   useKeys({ Enter: next, " ": next });
+  if (error)
+    return (
+      <div className="intro">
+        <p className="stage-label">词条加载失败</p>
+        <p className="muted">{error}</p>
+        <button className="btn btn-primary" onClick={next}>
+          跳过 <ArrowRight size={20} />
+        </button>
+      </div>
+    );
   if (!entry) return <span className="spinner" />;
   return (
     <div className="intro">
@@ -140,12 +150,18 @@ const KIND_LABEL: Record<QuizKind, string> = {
 function Quiz({ step, session }: { step: Step & { kind: QuizKind }; session: ActiveSession }) {
   const atlas = useAtlas();
   const ref = atlas.byId.get(step.id)!;
-  const { entry } = useEntry(step.id);
+  const missing = !atlas.byId.has(step.id);
+  const { entry, error } = useEntry(step.id);
   const settings = useStore((s) => s.settings);
   const pending = session.pending;
   const elapsed = useStepTimer();
   const [hints, setHints] = useState(0);
-  const options = useMemo(() => (step.options ?? []).map((id) => atlas.byId.get(id)!).filter(Boolean), [atlas, step.options]);
+  // Stored options can be stale; quizOptions always puts the answer back and
+  // refills to four, so a question can never lose its own correct choice.
+  const options = useMemo(
+    () => (step.kind === "spell" ? [] : quizOptions(atlas, step).map((id) => atlas.byId.get(id)!).filter(Boolean)),
+    [atlas, step],
+  );
 
   const submit = useCallback(
     (value: string, correct: boolean) => {
@@ -179,14 +195,38 @@ function Quiz({ step, session }: { step: Step & { kind: QuizKind }; session: Act
   }, [step.kind, entry, atlas, settings.accent, pending]);
 
   const keys: Record<string, () => void> = {};
-  if (pending) {
-    keys.Enter = next;
-    keys[" "] = next;
-  } else if (step.kind !== "spell") {
-    options.forEach((o, i) => (keys[String(i + 1)] = () => submit(o.id, o.id === ref.id)));
+  if (!missing && !error) {
+    if (pending) {
+      keys.Enter = next;
+      keys[" "] = next;
+    } else if (step.kind !== "spell") {
+      options.forEach((o, i) => (keys[String(i + 1)] = () => submit(o.id, o.id === ref.id)));
+    }
   }
   useKeys(keys);
 
+  // A session can outlive a dataset: never leave the reader on a question
+  // whose word or recording is gone.
+  if (missing)
+    return (
+      <div className="quiz quiz-missing">
+        <p className="stage-label">这道题已失效</p>
+        <p className="muted">这个词不在当前词库里，跳过它继续。</p>
+        <button className="btn btn-primary" onClick={next}>
+          继续 <ArrowRight size={20} />
+        </button>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="quiz quiz-missing">
+        <p className="stage-label">词条加载失败</p>
+        <p className="muted">{error}</p>
+        <button className="btn btn-primary" onClick={next}>
+          跳过这一题 <ArrowRight size={20} />
+        </button>
+      </div>
+    );
   if (!entry) return <span className="spinner" />;
   const sentence = entry.ex[0] ? gap(entry.ex[0].en, entry.w) : null;
 
@@ -195,7 +235,7 @@ function Quiz({ step, session }: { step: Step & { kind: QuizKind }; session: Act
       <p className="stage-label">
         <span className={`dot ${step.retry ? "dot-retry" : "dot-review"}`} />
         {step.retry ? "再见一面 · " : ""}
-        {KIND_LABEL[step.kind]}
+        {step.kind === "picture" && !sentence ? "选出对应的单词" : KIND_LABEL[step.kind]}
       </p>
 
       <section className="prompt">

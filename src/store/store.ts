@@ -142,6 +142,15 @@ function write(key: string, value: unknown) {
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 const num = (v: unknown, lo = -Infinity, hi = Infinity) => typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi;
 
+const QUIZ_KINDS = new Set<QuizKind>(["meaning", "picture", "listen", "spell"]);
+
+function validStep(v: unknown): v is Step {
+  if (!isObj(v) || typeof v.id !== "string" || typeof v.kind !== "string") return false;
+  if (v.kind === "intro") return true;
+  if (!QUIZ_KINDS.has(v.kind as QuizKind)) return false;
+  return v.options === undefined || (Array.isArray(v.options) && v.options.every((x) => typeof x === "string"));
+}
+
 function validCard(v: unknown): v is CardState {
   return (
     isObj(v) &&
@@ -177,8 +186,29 @@ export function sanitizeProgress(v: unknown, datasetId: string): Progress {
       )
       .slice(-500);
   const s = v.session;
-  if (isObj(s) && typeof s.id === "string" && Array.isArray(s.steps) && num(s.index, 0) && isObj(s.graded))
-    out.session = s as unknown as ActiveSession;
+  if (isObj(s) && typeof s.id === "string" && Array.isArray(s.steps) && num(s.index, 0) && isObj(s.graded)) {
+    // A half-finished quiz is device state and can come from an older build or
+    // a hand-edited file. Drop malformed steps instead of crashing on them.
+    const steps = s.steps.filter(validStep);
+    if (steps.length) {
+      const graded = Object.fromEntries(Object.entries(s.graded).filter(([, g]) => [0, 1, 2, 3].includes(g as number)));
+      const pending =
+        isObj(s.pending) && typeof s.pending.correct === "boolean" && typeof s.pending.value === "string"
+          ? { correct: s.pending.correct, value: s.pending.value }
+          : undefined;
+      out.session = {
+        id: s.id,
+        started: num(s.started, 1) ? (s.started as number) : Date.now(),
+        steps,
+        index: Math.min(Math.floor(s.index as number), steps.length),
+        graded: graded as Record<string, Grade>,
+        newIds: Array.isArray(s.newIds) ? s.newIds.filter((x): x is string => typeof x === "string") : [],
+        reviewIds: Array.isArray(s.reviewIds) ? s.reviewIds.filter((x): x is string => typeof x === "string") : [],
+        pending,
+        finished: num(s.finished, 0) ? (s.finished as number) : undefined,
+      };
+    }
+  }
   return out;
 }
 
