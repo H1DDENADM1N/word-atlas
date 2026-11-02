@@ -103,11 +103,12 @@ Android 7.0 (API 24) or newer; arm64 devices are fastest; about **2.5 GB** of fr
 
 ## Versions
 
-Current: **v1.0.3** (versionCode 4). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current: **v1.0.4** (versionCode 5). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
-| **v1.0.3** | Real exam sentences, syllable breaks, and words you can tap anywhere |
+| **v1.0.4** | Quiz blanks and choices stay on the same word; no homophone choices; stale sessions repair themselves |
+| v1.0.3 | Real exam sentences, syllable breaks, and words you can tap anywhere |
 | v1.0.2 | Answers sized for the thumb; a verdict card you can use |
 | v1.0.1 | A quiz that fits one screen; a keyboard that stays out of the way |
 | v1.0.0 | The first fully offline build |

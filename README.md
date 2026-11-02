@@ -118,11 +118,12 @@ adb install -r word-atlas-offline.apk
 
 ## 版本
 
-当前 **v1.0.3**（versionCode 4）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
+当前 **v1.0.4**（versionCode 5）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
 
 | 版本 | 一句话 |
 | :--- | :--- |
-| **v1.0.3** | 图鉴新增话题星座；环境声换成 30 条真实录音；词卡多了真题例句、音节与处处可点 |
+| **v1.0.4** | 答题挖空与选项对齐：`so` 不再挖成 `soup`；听力选项不再同音；旧会话选项自动修复 |
+| v1.0.3 | 图鉴新增话题星座；环境声换成 30 条真实录音；词卡多了真题例句、音节与处处可点 |
 | v1.0.2 | 选项按拇指重排，作答卡能听、能点、能往下读 |
 | v1.0.1 | 学习页装进一屏，键盘不再挡内容 |
 | v1.0.0 | 第一个完全离线版 |
