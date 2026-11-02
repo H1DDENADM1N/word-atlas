@@ -1038,6 +1038,40 @@ code {
   flex-wrap: wrap;
   gap: 8px;
 }
+/* 同形异音：一个读音一行，行首的序号和义项列表里的序号是同一个。 */
+.pron-groups {
+  display: grid;
+  gap: 6px;
+}
+.pron-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pron-idx,
+.sense-v {
+  display: inline-grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  color: var(--ink-3);
+  font: 600 10.5px/1 var(--sans);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.senses.has-pron li {
+  grid-template-columns: 17px 44px 1fr;
+}
+.senses.has-pron .sense-v {
+  align-self: start;
+  margin-top: 4px;
+}
+.senses.has-pron .en {
+  grid-column: 3;
+}
 /* 词头可点：按词典的音节标注在字母之间加「·」。切换要瞬时完成——任何
    transition 或 :active 变暗都会让单词先暗一下再回弹，看着像闪了一次。
    这里也不改字距：点一下只该多出几个点，不该整行跟着跳一下。 */

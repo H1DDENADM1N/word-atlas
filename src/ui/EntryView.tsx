@@ -42,6 +42,37 @@ function Ipa({ text }: { text: string }) {
 export function Pronounce({ entry, refw }: { entry: Entry; refw: WordRef | Entry }) {
   const atlas = useAtlas();
   const accent = useStore((s) => s.settings.accent);
+  // Two readings of one spelling: a row per reading, both accents inside it,
+  // numbered so the sense list can point back at the sound it belongs to.
+  if (entry.pron?.length) {
+    const order = accent === "us" ? (["us", "uk"] as const) : (["uk", "us"] as const);
+    return (
+      <div className="pron pron-groups">
+        {entry.pron.map((p, i) => (
+          <div className="pron-group" key={i}>
+            <span className="pron-idx" title={`读音 ${i + 1}`} aria-label={`读音 ${i + 1}`}>
+              {i + 1}
+            </span>
+            {order.map((acc) => (
+              <Speak
+                key={acc}
+                url={atlas.audio(refw, acc, i)}
+                text={entry.w}
+                accent={acc}
+                size="sm"
+                label={
+                  <>
+                    <em>{acc === "uk" ? "英" : "美"}</em>
+                    <Ipa text={acc === "uk" ? p.uk || p.us : p.us || p.uk} />
+                  </>
+                }
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
   // Both accents are always offered, the preferred one first. When an accent
   // has no transcription of its own, it borrows the other's rather than
   // hiding the button — the recordings differ even when the IPA does not.
@@ -214,9 +245,14 @@ export function EntryView({ entry, mode = "detail", eager = true }: { entry: Ent
         </h2>
         <Pronounce entry={entry} refw={ref ?? entry} />
 
-        <ol className="senses">
+        <ol className={`senses${entry.pron?.length ? " has-pron" : ""}`}>
           {entry.senses.map((s, i) => (
             <li key={i}>
+              {entry.pron?.length ? (
+                <span className="sense-v" title={`读音 ${(s.v ?? 0) + 1}`} aria-label={`读音 ${(s.v ?? 0) + 1}`}>
+                  {(s.v ?? 0) + 1}
+                </span>
+              ) : null}
               <span className="pos">{s.pos}</span>
               <span className="zh">
                 <LookupText text={s.zh} />
