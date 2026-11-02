@@ -49,18 +49,32 @@ function quizKind(ref: WordRef, p: Progress, s: Settings, salt: number): QuizKin
   return roll < 50 ? "listen" : hasImg ? "picture" : "meaning";
 }
 
-/** Distractors that look plausible: same level, similar spelling or length, different meaning. */
+/** The text a choice shows: the meaning for a meaning quiz, the word otherwise. */
+const optionLabel = (w: WordRef, kind: QuizKind) => (kind === "meaning" ? w.zh : w.word).trim().replace(/\s+/g, " ").toLowerCase();
+
+/** Two words with the same transcription are both correct in a listening quiz. */
+const ipaKey = (s: string) => s.toLowerCase().replace(/[/[\]]/g, "").replace(/[ˈˌ]/g, "").trim();
+
+/** Distractors that look plausible: similar spelling or length, different meaning. */
 export function distractors(atlas: Atlas, ref: WordRef, kind: QuizKind, seed: number) {
   const target = normalize(ref.word);
+  const answerLabel = optionLabel(ref, kind);
+  const answerIpa = kind === "listen" ? ipaKey(ref.ipa) : "";
   const zhCore = ref.zh.replace(/^[a-z.]+\s*/, "").split(/[；;，,]/)[0];
   const scored: [number, WordRef][] = [];
-  const pool = atlas.words;
-  const start = Math.max(0, ref.order - 400);
-  for (let i = start; i < Math.min(pool.length, ref.order + 400); i++) {
-    const w = pool[i];
-    if (w.id === ref.id || normalize(w.word) === target) continue;
-    if (zhCore && w.zh.includes(zhCore)) continue;
+  const scanned = new Set<string>();
+
+  const scan = (w: WordRef) => {
+    if (scanned.has(w.id)) return;
+    scanned.add(w.id);
+    if (w.id === ref.id || normalize(w.word) === target) return;
+    if (optionLabel(w, kind) === answerLabel) return;
+    if (answerIpa && ipaKey(w.ipa) === answerIpa) return;
+    if (zhCore && w.zh.includes(zhCore)) return;
     let score = hashSeed(w.id + seed) % 100;
+    // Keep the old neighbourhood preference, but never let a small window
+    // leave the quiz with fewer than three choices.
+    if (Math.abs(w.order - ref.order) <= 400) score += 40;
     if (kind === "listen" || kind === "picture") {
       if (w.word[0]?.toLowerCase() === target[0]) score += 120;
       score += Math.max(0, 60 - Math.abs(w.word.length - target.length) * 20);
@@ -69,18 +83,97 @@ export function distractors(atlas: Atlas, ref: WordRef, kind: QuizKind, seed: nu
       if (w.zh.split(" ")[0] === ref.zh.split(" ")[0]) score += 60; // same part of speech
     }
     scored.push([score, w]);
+  };
+
+  for (const w of atlas.words) {
+    if (Math.abs(w.order - ref.order) <= 400) scan(w);
   }
-  scored.sort((a, b) => b[0] - a[0]);
-  const seen = new Set<string>();
-  const picks: string[] = [];
-  for (const [, w] of scored) {
-    const key = kind === "meaning" ? w.zh : normalize(w.word);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    picks.push(w.id);
-    if (picks.length === 3) break;
+  const choose = () => {
+    scored.sort((a, b) => b[0] - a[0]);
+    const labels = new Set<string>([answerLabel]);
+    const sounds = new Set<string>(answerIpa ? [answerIpa] : []);
+    const picks: string[] = [];
+    for (const [, w] of scored) {
+      const label = optionLabel(w, kind);
+      if (labels.has(label)) continue;
+      if (answerIpa) {
+        const sound = ipaKey(w.ipa);
+        if (sounds.has(sound)) continue;
+        sounds.add(sound);
+      }
+      labels.add(label);
+      picks.push(w.id);
+      if (picks.length === 3) break;
+    }
+    return picks;
+  };
+
+  let picks = choose();
+  if (picks.length < 3) {
+    // A short window (a small private set, or a word at the edge of the atlas)
+    // must not leave the question with fewer than four choices.
+    for (const w of atlas.words) scan(w);
+    picks = choose();
   }
   return shuffle([ref.id, ...picks], seed);
+}
+
+/**
+ * The four ids a quiz shows. A stored set can be stale (an older build, a
+ * dataset change, a hand-edited backup), so the correct id is always put back
+ * and a missing slot is refilled — the answer can never be absent from its own
+ * question.
+ */
+export function quizOptions(atlas: Atlas, step: Step & { kind: QuizKind }): string[] {
+  const ref = atlas.byId.get(step.id);
+  if (!ref) return [];
+  const kind = step.kind;
+  const stored = (step.options ?? []).filter((id) => atlas.byId.has(id));
+  const label = (id: string) => optionLabel(atlas.byId.get(id)!, kind);
+  const answerIpa = kind === "listen" ? ipaKey(ref.ipa) : "";
+  const sounds = new Set<string>(answerIpa ? [answerIpa] : []);
+  const homophone = (id: string) => !!answerIpa && id !== ref.id && sounds.has(ipaKey(atlas.byId.get(id)!.ipa));
+  if (
+    stored.length === 4 &&
+    stored.includes(ref.id) &&
+    new Set(stored.map(label)).size === 4 &&
+    (!answerIpa || new Set(stored.map((id) => ipaKey(atlas.byId.get(id)!.ipa))).size === 4)
+  )
+    return stored;
+
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const labels = new Set<string>();
+  const push = (id: string) => {
+    const w = atlas.byId.get(id);
+    if (!w || seen.has(id) || homophone(id)) return;
+    if (answerIpa) sounds.add(ipaKey(w.ipa));
+    const l = optionLabel(w, kind);
+    if (labels.has(l)) return;
+    seen.add(id);
+    labels.add(l);
+    out.push(id);
+  };
+
+  for (const id of stored) {
+    if (out.length === 4) break;
+    push(id);
+  }
+  if (!seen.has(ref.id)) {
+    if (out.length === 4) {
+      const dropped = out.pop()!;
+      seen.delete(dropped);
+      labels.delete(label(dropped));
+    }
+    push(ref.id);
+  }
+  if (out.length < 4) {
+    for (const id of distractors(atlas, ref, kind, hashSeed(`${step.id}:${kind}`))) {
+      push(id);
+      if (out.length === 4) break;
+    }
+  }
+  return out.length === 4 ? shuffle(out, hashSeed(`${step.id}:${kind}`)) : out;
 }
 
 export function buildSession(atlas: Atlas, p: Progress, s: Settings, opts?: { ids?: string[]; reviewOnly?: boolean }): ActiveSession {

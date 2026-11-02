@@ -143,6 +143,7 @@ The plain web build is still upstream's:
 ```bash
 npm run dev      # http://localhost:5188
 npm test
+npm run check:quiz   # whole-atlas quiz audit: cloze blanks and four choices
 npm run build
 ```
 

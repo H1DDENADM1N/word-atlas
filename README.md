@@ -161,6 +161,7 @@ adb install -r word-atlas-offline.apk
 ```bash
 npm run dev          # http://localhost:5188
 npm test             # 单元测试
+npm run check:quiz   # 全词库答题审计：挖空与四个选项
 npm run build        # 构建到 dist/
 ```
 
