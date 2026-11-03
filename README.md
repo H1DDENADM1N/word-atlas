@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0 + BY-SA](https://img.shields.io/badge/Dataset-CC_BY_4.0_%2B_BY--SA-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: 1.1 GB / 992 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_992_MB-2F5D50?style=flat-square)
+![APK: 1.4 GB / 1.3 GB](https://img.shields.io/badge/APK-1.4_GB_%2F_1.3_GB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -25,7 +25,7 @@
 
 这是 [word-atlas](https://github.com/designfuchen/word-atlas)（词光）的一个分支，只做一件事：**把同一个应用打包成完全离线的安卓 APK**。
 
-词库、插画、例句、复习算法来自上游。内容上有三处增补：单词录音给 105 个同形异音词补了第二读音（其中 76 个词的两个读音改用 Wikimedia Commons 的真人录音），另从第三方词典导入了 1,211 条真题例句与 4,672 条音节标注——授权与署名见「授权与致谢」。改的都是外壳——构建方式、数据加载、语音兜底、以及几处只有装在手机上才会暴露的问题。
+词库、插画、例句、复习算法来自上游。内容上有四处增补：单词录音给 105 个同形异音词补了第二读音（其中 76 个词的两个读音改用 Wikimedia Commons 的真人录音），雅思语境例句的录音从 1,011 条补齐到 7,298 条，另从第三方词典导入了 1,211 条真题例句与 4,672 条音节标注——授权与署名见「授权与致谢」。改的都是外壳——构建方式、数据加载、语音兜底、以及几处只有装在手机上才会暴露的问题。
 
 原版是网页优先的开源项目，跑在浏览器里，媒体文件按需从网络取；这个分支把它塞进安卓 WebView，用 `file://` 直接打开，再把所有"会联网"和"依赖系统组件"的环节逐个替换掉。装一次，之后无论是飞行模式还是地铁隧道，全部功能照常。
 
@@ -49,7 +49,7 @@
 | 真题 | 无 | 「雅思语境」下面多一节**真题例句**，1,211 条剑桥雅思 4 原文与译文，标出处 |
 | 话题星座 | 无（只有词汇星图） | 图鉴里多一块**话题星座**面板，十九个话题各一个星座 |
 | 环境声 | 无 | **30 条**循环录音，配平响度，读词时自动压低 |
-| 体积 | 仓库约 1 GB 资源 | 分享版 **1.03 GB** / 私用版 **992 MB**（全部资源都在里面） |
+| 体积 | 仓库约 1 GB 资源 | 分享版 **1.39 GB** / 私用版 **1.33 GB**（全部资源都在里面） |
 | 更新方式 | `git pull` / 网站自动更新 | 重新构建并安装（换签名需先卸载） |
 | 构建工具 | Node + Vite | 再加 JDK 17 + Android SDK，**不需要 Gradle** |
 
@@ -59,7 +59,7 @@
 | :--- | :--- |
 | **不能联网** | `AndroidManifest.xml` 里没有任何 `<uses-permission>`。缺少 `INTERNET`，系统内核拒绝为该 UID 创建 socket，代码层绕不过去。另设 `usesCleartextTraffic="false"` 与只信任系统证书的 Network Security Config。 |
 | **没有服务器** | 页面从 APK 内的 `assets/www` 直接以 `file://` 打开，图片和录音相对引用。整个应用不监听任何端口，不做请求拦截代理。 |
-| **没有运行时下载** | 词库索引、73 个词条分片、真题例句与音节标注索引、17 段界面音效在构建时内联；三十条环境声各打成一条按需注入的脚本（`file://` 下 `fetch()` 不可用），选中哪条才加载哪条；7,298 幅插画、7,298 张缩略图、23,115 段录音作为文件放进 APK。运行时没有一次网络请求。 |
+| **没有运行时下载** | 词库索引、73 个词条分片、真题例句与音节标注索引、17 段界面音效在构建时内联；三十条环境声各打成一条按需注入的脚本（`file://` 下 `fetch()` 不可用），选中哪条才加载哪条；7,298 幅插画、7,298 张缩略图、29,402 段录音作为文件放进 APK。运行时没有一次网络请求。 |
 
 另外：不含账号、埋点、统计或第三方 SDK。
 
@@ -78,7 +78,7 @@
 - **环境声是真的录音，不是合成的。** 30 条循环：雨、海、林、火、咖啡馆、虫鸣、蛙声、风雪、篝火、列车、琴键、竹笛、古琴、竖琴……来自另一个开源学习站 [gjenglish.com](https://gjenglish.com) 的[仓库](https://github.com/wenchester8-droid/english-starry-sky)，按固定 commit 取原文件（大部分是 Pixabay 录音，按 Pixabay Content License 使用；三条由上游自己合成）。每条都按上游的 dB 表配平过响度，换曲不用重调音量；读单词时自动压低到三成，选过的那条下次打开还在。`scripts/fetch_ambience.py` 负责取回并记录每条的字节数与 SHA-256，`--check` 可逐条复核。
 
 - **键盘不再挡内容。** 打字页用一个透明 `<input>` 接管输入，它在挂载时就已聚焦，之后再 `focus()` 是空操作——WebView 因此不再唤起输入法，真机上点屏幕没反应。现在先 `blur()` 再 `focus()`，并经原生桥接显式 `showKeyboard()`；`viewport` 补了 `interactive-widget=resizes-content`，键盘弹起时按缩小后的视口重排，拼写与打字的输入区始终在键盘上方。
-- **内置离线语音。** 第二条例句只有 1,011 个词有真人录音，其余 6,287 个词原先走系统 TTS——在没装英文语音包的机器上就是"点了没声音"。现在用 APK 自带的 Kokoro-82M 音色合成，24 kHz，点击前预渲染，按下即出声。
+- **内置离线语音。** 第二条例句（雅思语境）原先只有 1,011 个词有录音，其余 6,287 个词走系统 TTS——在没装英文语音包的机器上就是"点了没声音"，后来改由 APK 自带的 Kokoro-82M 合成。1.0.8 把缺的 6,287 条从上游公开站点按词条镜像补齐（句子与本地逐字一致，格式同为 44.1 kHz 单声道 64 kbps），现在两句例句都是真人录音，只剩真题例句仍交给 Kokoro 合成，24 kHz，点击前预渲染，按下即出声。
 - **分享卡片能用。** `file://` 下每个文档是独立不透明源，`drawImage` 会污染 canvas，`toBlob()` 直接返回 `null`。改成把插图读成 `data:` URL 再绘制；保存后由原生层用 `ACTION_SEND` 拉起系统分享面板（WebView 不支持 `navigator.share({files})`）。
 - **系统返回键有层级。** 先关查词小窗，再关词卡，再回上一页，最后才退出应用。
 - **主题跟着手机走。** WebView 的 `prefers-color-scheme` 回答的是"应用自己的主题"，所以「跟随系统」在浅色手机上曾经永远深色；现在由原生层读 `Configuration.uiMode` 主动同步给页面。
@@ -94,7 +94,7 @@
 | 词条 | **7,298** 条，CEFR A1–C2，19 个话题 |
 | 例句 | **14,596** 条，日常与雅思语境，附中文翻译 |
 | 插画 | **7,298** 幅，512 px WebP，另带缩略图 |
-| 录音 | **23,115** 段：英音、美音、例句朗读，以及 105 个同形异音词的第二读音（分享版里 76 个词的两个读音都用 Commons 真人录音；OALDPEX 真人版仅限私用构建） |
+| 录音 | **29,402** 段：英音、美音、两句例句朗读（日常 7,298 + 雅思语境 7,298），以及 105 个同形异音词的第二读音（分享版里 76 个词的两个读音都用 Commons 真人录音；OALDPEX 真人版仅限私用构建） |
 | 复习 | TS-FSRS 间隔复习，目标记忆率可调 |
 | 功能 | 今日、图鉴、词卡、词汇星图（WebGL2）、四类练习、打字练习、导出 / 恢复备份（含与网页版互通） |
 | 数据存放 | 本地优先，无账号无服务器，记录只在这台设备上 |
@@ -114,23 +114,24 @@ APK 不进仓库（`.gitignore` 已排除）。两种方式：
 
 | 产物 | 单词发音 | 用途 |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.7.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
-| `word-atlas-android-v1.0.7_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
+| `word-atlas-android-v1.0.8.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
+| `word-atlas-android-v1.0.8_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
 
 ```bash
-adb install -r word-atlas-android-v1.0.7.apk
+adb install -r word-atlas-android-v1.0.8.apk
 ```
 
 两个包同一包名，不能同时安装；切换时覆盖安装即可，学习记录保留。
 
-要求 **Android 7.0（API 24）及以上**，arm64 设备体验最好；安装需要约 **3 GB** 空闲空间。
+要求 **Android 7.0（API 24）及以上**，arm64 设备体验最好；安装需要约 **3.5 GB** 空闲空间。
 
 ## 版本
 
-当前 **v1.0.7**（versionCode 8）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
+当前 **v1.0.8**（versionCode 9）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
 
 | 版本 | 一句话 |
 | :--- | :--- |
+| **v1.0.8** | 雅思语境例句的录音从 1,011 条补齐到 7,298 条：两句例句都能离线听真人朗读，只剩真题例句交给内置语音 |
 | **v1.0.7** | 中文搜索能查到单词的全部义项：搜「缠绕」「蜿蜒」也能找到 wind，结果里显示命中的那条释义 |
 | **v1.0.6** | 105 个同形异音词补齐第二读音，其中 76 个换成真人录音（Commons，CC BY-SA）；合成音在卡片上标「合成」 |
 | v1.0.5 | 一词两音按义项分开：tear 的 /teə/（撕）与 /tɪə/（眼泪）各有各的录音 |
@@ -160,6 +161,8 @@ python3 scripts/android/fetch_tts.py
 git fetch --depth 1 origin main
 git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
 # 第二读音：public/atlas/audio/{uk2,us2}（105 个词，随仓库提供）
+# 雅思语境例句：public/atlas/audio/ex2（7,298 条）。万一缺失，可从上游公开站点补齐：
+# python3 scripts/atlas/fill_ielts_audio.py
 # 私用版音源：private/audio/oaldpex/{uk,us}（OALDPEX，已在 .gitignore 中排除）
 # 私用版导入（只在有 OALDPEX 数据包时运行；不得公开分发）：
 # python3 scripts/atlas/import_audio.py --out private/audio/oaldpex
@@ -172,9 +175,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.7.apk      （分享版，原版发音）
-# → word-atlas-android-v1.0.7_O.apk    （私用版，OALDPEX 真人发音）
-adb install -r word-atlas-android-v1.0.7.apk
+# → word-atlas-android-v1.0.8.apk      （分享版，原版发音）
+# → word-atlas-android-v1.0.8_O.apk    （私用版，OALDPEX 真人发音）
+adb install -r word-atlas-android-v1.0.8.apk
 ```
 
 两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换单词音源；`--skip-web` 可以复用上一次的 `dist-android`。
@@ -196,7 +199,7 @@ npm run build        # 构建到 dist/
 | :--- | ---: |
 | 插画 `atlas/img`（512 px WebP） | 203 MB |
 | 缩略图 `atlas/thumb` | 88 MB |
-| 录音（英音 79 / 美音 82 / 例句 267） | 428 MB |
+| 录音（英音 79 / 美音 82 / 例句 633） | 796 MB |
 | 词库 `atlas/entries` + `index.json` | 7.1 MB |
 | 真题例句 `atlas/ielts.json` + 音节标注 `atlas/syllables.json` | 0.6 MB |
 | 界面音效（17 段） | 0.3 MB |
@@ -204,7 +207,7 @@ npm run build        # 构建到 dist/
 | 离线语音：ONNX Runtime + JNI（arm64 / x86_64） | 55 MB |
 | 离线语音：Kokoro-82M 音色 + espeak 音素表 | 353 MB |
 | 前端 bundle、字体、图标 | ~1 MB |
-| **APK** | **分享版 1.03 GB / 私用版 992 MB** |
+| **APK** | **分享版 1.39 GB / 私用版 1.33 GB** |
 
 > 上表是分享版的构成。私用版把单词音源换成 OALDPEX（英音 49 / 美音 48），整包小 63 MB 左右。
 
@@ -213,9 +216,9 @@ npm run build        # 构建到 dist/
 ## 已知限制
 
 - **冷启动略慢**：首次要从 APK 里读取内联数据并解析。
-- **体积就是代价**：分享版 1.03 GB、私用版 992 MB，是"全部资源装进 APK"的直接结果。
+- **体积就是代价**：分享版 1.39 GB、私用版 1.33 GB，是"全部资源装进 APK"的直接结果。
 - **内置语音的延迟**：模型加载约 0.9 s；一句 7.8 s 的雅思长句合成约 3.6 s。按钮一出现就预渲染，所以正常点按是零等待，页面刚打开立刻点仍要等。
-- **录音优先**：23,115 段录音优先，TTS 只补第二条例句缺录音的那 6,287 个词。
+- **录音优先**：29,402 段录音优先，TTS 只补没有录音的真题例句。
 - **真题例句只覆盖 30%**：来源词典只收了剑桥雅思 4 的四套题，2,216 / 7,298 个词条有例句；A1 日常词本来就不出现在学术文章里。
 - **音节标注只覆盖 64%**：4,672 个词条有标注，词典没标的（`study`、`hotel`、`river`、`city`）点词头不会有变化——切错了比不切更糟，所以不补写。
 - **释义里的中文不可点**：切词与查词索引都只认英文，中文释义是纯文本。

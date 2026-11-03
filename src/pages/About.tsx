@@ -30,6 +30,9 @@ const EXAM_SENTENCES = "1,211";
  */
 const SYLLABLE_WORDS = "4,672";
 
+/** Size of the share build; printed at the end of `scripts/android/build_apk.py`. */
+const APK_SIZE = "1.4 GB";
+
 export function About() {
   const atlas = useAtlas();
   return (
@@ -76,7 +79,8 @@ export function About() {
               打开，不起本地服务、不监听端口；词库索引和音效在构建时内联，插画与录音随 APK 一起装好，运行时没有一次网络请求。
             </li>
             <li>
-              <b>不用自备语音。</b>第二条例句只有 1,011 个词配了录音，其余 6,287 个词由 APK 内置的 Kokoro-82M
+              <b>不用自备语音。</b>两句例句都配了录音：日常例句 7,298 条、雅思语境例句 7,298
+              条，都是 ElevenLabs 原声。只有「真题例句」没有录音，交给 APK 内置的 Kokoro-82M
               音色合成，既不走系统 TTS，也不需要用户在手机里装语音包。
             </li>
             <li>
@@ -117,7 +121,7 @@ export function About() {
               ，按固定 commit 取原文件，逐条校验哈希。每条都配平过响度，换曲不用重调音量；读单词时会自动压低，选过的那条下次打开还在。
             </li>
             <li>
-              <b>体积换自由。</b>安装包约 1.03 GB：{atlas.count.toLocaleString()} 幅插画、22,905
+              <b>体积换自由。</b>安装包约 {APK_SIZE}：{atlas.count.toLocaleString()} 幅插画、29,402
               段录音、三十条环境声和语音模型全在里面。装一次，之后无论是在地铁里还是飞行模式，功能都不打折。
             </li>
           </ul>

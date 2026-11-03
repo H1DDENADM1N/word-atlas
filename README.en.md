@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0 + BY-SA](https://img.shields.io/badge/Dataset-CC_BY_4.0_%2B_BY--SA-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: 1.1 GB / 992 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_992_MB-2F5D50?style=flat-square)
+![APK: 1.4 GB / 1.3 GB](https://img.shields.io/badge/APK-1.4_GB_%2F_1.3_GB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -27,7 +27,7 @@
 
 A fork of [word-atlas](https://github.com/designfuchen/word-atlas) that does exactly one thing: **packs the same app into a fully offline Android APK**.
 
-The vocabulary, illustrations, examples and review algorithm come from upstream. Three things were added: a second reading for the 105 heteronyms (76 of them now use human recordings from Wikimedia Commons for both readings), plus 1,211 exam sentences and 4,672 syllable marks imported from third-party dictionaries — licences and credit under “License and credit”. What changed is the shell: how it is built, how data is loaded, what speaks when there is no recording, and a handful of problems that only appear once the app lives on a phone.
+The vocabulary, illustrations, examples and review algorithm come from upstream. Four things were added: a second reading for the 105 heteronyms (76 of them now use human recordings from Wikimedia Commons for both readings), IELTS-context example recordings completed from 1,011 to all 7,298 words, plus 1,211 exam sentences and 4,672 syllable marks imported from third-party dictionaries — licences and credit under “License and credit”. What changed is the shell: how it is built, how data is loaded, what speaks when there is no recording, and a handful of problems that only appear once the app lives on a phone.
 
 Upstream is web-first: it runs in a browser and pulls media over the network. This fork puts the same front end inside an Android WebView, opens it over `file://`, and replaces every place that reaches for the network or for a system component. Install once; aeroplane mode and underground tunnels make no difference afterwards.
 
@@ -47,7 +47,7 @@ In one line: **same content, different runtime.** Upstream is about learning the
 | Themes | Light / dark / system | Adds the aurora and starlight night skies, three English faces, and fixes "follow system" inside a WebView |
 | Word card | One transcription line | UK and US side by side; tap the headword for syllable breaks; words in examples, translations, collocations, families, synonyms and the gloss all open a lookup popover |
 | Exam sentences | None | A **real exam sentences** section under the IELTS-context example: 1,211 sentences from Cambridge IELTS 4 with translations and a source chip |
-| Size | ~1 GB of assets in the repo | Share **1.03 GB** / private **992 MB** |
+| Size | ~1 GB of assets in the repo | Share **1.39 GB** / private **1.33 GB** |
 | Updating | `git pull` / the site updates itself | Rebuild and reinstall (a new signing key needs an uninstall) |
 | Toolchain | Node + Vite | Plus JDK 17 and the Android SDK, **no Gradle** |
 
@@ -55,7 +55,7 @@ In one line: **same content, different runtime.** Upstream is about learning the
 
 - **It cannot reach the network.** The manifest declares no permissions at all. Without `INTERNET` the kernel refuses to create sockets for this UID; there is no code path around it. Cleartext traffic is off and a network security config trusts system CAs only.
 - **There is no server.** The page is opened from `assets/www` over `file://`, with images and audio referenced relatively. Nothing listens on a port.
-- **Nothing is downloaded at runtime.** The index, 73 word shards, the exam-sentence and syllable indexes, and 17 sound cues are inlined; 7,298 illustrations, 7,298 thumbnails and 23,115 recordings ship as files. There is not a single `fetch` at runtime.
+- **Nothing is downloaded at runtime.** The index, 73 word shards, the exam-sentence and syllable indexes, and 17 sound cues are inlined; 7,298 illustrations, 7,298 thumbnails and 29,402 recordings ship as files. There is not a single `fetch` at runtime.
 
 No accounts, no analytics, no third-party SDKs.
 
@@ -66,7 +66,7 @@ No accounts, no analytics, no third-party SDKs.
 - **Real exam sentences under the entry.** 1,211 sentences from Cambridge IELTS 4 — English and Chinese — were imported from the third-party 雅思真题例句词典 and matched to 2,216 entries. Below the IELTS-context example the card now shows a 真题例句 section tagged with its source (`C04T2L3` is book 4, Test 2, Listening Part 3), with a 换一句 button to walk through the rest. These have no recording, so the speaker hands them to the bundled Kokoro voice. `scripts/atlas/import_ielts.py` keeps only the sentences that actually contain the word: the dictionary also links `visitor` to a sentence about "a variety of shopping", which under a headword only confuses.
 - **Tap the headword to see its syllables.** Tapping the big word on a card puts a `·` between its syllables — `ex·hib·ition` — and tapping again puts it back. The breaks are not guessed: they come from the `syllable` attribute OALDPEX keeps on its own headword elements (`scripts/atlas/import_syllables.py` pulls out 4,672 of them), so they match the printed dictionary. A splitter trained on that same data only reproduced 82% of even the two-syllable breaks, so nothing is invented for the entries the dictionary leaves unmarked — `study` and `hotel` simply do not change when tapped.
 - **The keyboard no longer covers the page.** The typing stages drive an invisible `<input>` that is focused from the moment they mount, and a WebView ignores `focus()` on an already-focused element — so on a real phone tapping the stage did nothing at all. It now blurs before focusing and asks the shell for `showKeyboard()`; the viewport also carries `interactive-widget=resizes-content`, so the layout reflows into the space above the keyboard instead of hiding the field behind it.
-- **Bundled speech.** Only 1,011 words have a recording for their second example; the other 6,287 used to fall back to system TTS, which is silence on a phone without an English voice. They are now synthesised by the bundled Kokoro-82M voice, pre-rendered before you tap.
+- **Bundled speech.** Only 1,011 words used to have a recording for their second (IELTS-context) example; the other 6,287 fell back to system TTS, which is silence on a phone without an English voice, and later to the bundled Kokoro-82M voice. 1.0.8 mirrors the missing 6,287 clips from the upstream public site — the sentences are identical to ours, the format the same 44.1 kHz mono 64 kbps — so both examples are now narrated. Only the exam sentences still go through Kokoro, pre-rendered before you tap.
 - **Share cards work.** Under `file://` every document is its own opaque origin, so `drawImage` taints the canvas and `toBlob()` hands back `null`. Illustrations are now read as `data:` URLs, and the native layer opens the system share sheet afterwards (a WebView has no `navigator.share({files})`).
 - **The back button has layers.** Close the lookup popover, then the word card, then the previous page, and only then leave the app.
 - **Themes follow the phone.** A WebView answers `prefers-color-scheme` from the app's own theme, which is why "follow system" used to stay dark on a light phone; the native layer now reports `Configuration.uiMode`.
@@ -82,7 +82,7 @@ Full implementation notes, size breakdown and per-bug write-ups: **[docs/android
 | Entries | **7,298**, CEFR A1–C2, 19 topics |
 | Examples | **14,596** with Chinese translations |
 | Illustrations | **7,298** at 512 px WebP, plus thumbnails |
-| Recordings | **23,115**: UK, US, example narration, and a second reading for the 105 heteronyms (in the share build, 76 of them use Commons recordings for both readings; OALDPEX is a private-build option) |
+| Recordings | **29,402**: UK, US, both example narrations (7,298 everyday + 7,298 IELTS-context), and a second reading for the 105 heteronyms (in the share build, 76 of them use Commons recordings for both readings; OALDPEX is a private-build option) |
 | Review | TS-FSRS spaced repetition, adjustable retention |
 | Screens | Today, atlas, word card, WebGL2 word galaxy, four practice modes, typing, backup export/import |
 | Privacy | Local-first, no account, progress stays on the device |
@@ -99,23 +99,24 @@ The APKs are not committed (see `.gitignore`). Either check [Releases](https://g
 
 | Output | Word audio | Use |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.7.apk` | ElevenLabs originals + 76 Commons recordings | Share / public release |
-| `word-atlas-android-v1.0.7_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
+| `word-atlas-android-v1.0.8.apk` | ElevenLabs originals + 76 Commons recordings | Share / public release |
+| `word-atlas-android-v1.0.8_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
 
 ```bash
-adb install -r word-atlas-android-v1.0.7.apk
+adb install -r word-atlas-android-v1.0.8.apk
 ```
 
 Both packages share the same package name and signing key, so only one can be installed at a time; installing the other over it keeps your progress.
 
-Android 7.0 (API 24) or newer; arm64 devices are fastest; about **3 GB** of free space to install.
+Android 7.0 (API 24) or newer; arm64 devices are fastest; about **3.5 GB** of free space to install.
 
 ## Versions
 
-Current: **v1.0.7** (versionCode 8). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current: **v1.0.8** (versionCode 9). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
+| **v1.0.8** | IELTS-context example recordings completed from 1,011 to all 7,298 words: both examples are now narrated, only the exam sentences still use the bundled voice |
 | **v1.0.7** | Chinese search reaches every sense of a word: 缠绕 and 蜿蜒 now find wind, and results show the sense that matched |
 | **v1.0.6** | 105 heteronyms get their second reading; 76 of them use human recordings from Wikimedia Commons, the rest are synthesised and marked `合成` on the card |
 | v1.0.5 | Two readings of one spelling, by sense: tear /teə/ (rip) and /tɪə/ (cry), each with its own recording |
@@ -144,6 +145,7 @@ python3 scripts/android/fetch_tts.py
 # First time: restore from upstream main (~126 MB, not committed):
 git fetch --depth 1 origin main
 git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
+# IELTS-context examples: public/atlas/audio/ex2 (7,298). If any are missing:/n# python3 scripts/atlas/fill_ielts_audio.py
 # Private audio: private/audio/oaldpex/{uk,us} (OALDPEX, gitignored)
 # Import the private set only when the OALDPEX package is available (never redistribute):
 # python3 scripts/atlas/import_audio.py --out private/audio/oaldpex
@@ -156,9 +158,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.7.apk      (share, original audio)
-# → word-atlas-android-v1.0.7_O.apk    (private, OALDPEX audio)
-adb install -r word-atlas-android-v1.0.7.apk
+# → word-atlas-android-v1.0.8.apk      (share, original audio)
+# → word-atlas-android-v1.0.8_O.apk    (private, OALDPEX audio)
+adb install -r word-atlas-android-v1.0.8.apk
 ```
 
 Both APKs reuse the same web bundle, inlined data, `base.apk` and `classes.dex`; only the word-audio set changes during packaging. `--skip-web` reuses the last `dist-android`.
@@ -180,14 +182,14 @@ npm run build
 | :--- | ---: |
 | Illustrations (512 px WebP) | 203 MB |
 | Thumbnails | 88 MB |
-| Recordings (UK 79 / US 82 / examples 267) | 428 MB |
+| Recordings (UK 79 / US 82 / examples 633) | 796 MB |
 | Word data | 7.1 MB |
 | Exam sentences + syllable marks | 0.6 MB |
 | Sound cues and music | 4.4 MB |
 | ONNX Runtime + JNI (arm64, x86_64) | 55 MB |
 | Kokoro-82M voice + espeak tables | 353 MB |
 | Bundle, fonts, icons | ~1 MB |
-| **APK** | **share 1.03 GB / private 992 MB** |
+| **APK** | **share 1.39 GB / private 1.33 GB** |
 
 > The table describes the share build. The private build swaps word audio for OALDPEX (UK 49 / US 48), which makes the APK about 63 MB smaller.
 
@@ -196,9 +198,9 @@ To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or
 ## Known limits
 
 - Cold start is a little slower: the inlined data is parsed from the APK on first paint.
-- **Size is the price**: 1.03 GB for the share build and 992 MB for the private build is the direct cost of putting every asset in the APK.
+- **Size is the price**: 1.39 GB for the share build and 1.33 GB for the private build is the direct cost of putting every asset in the APK.
 - Bundled speech loads in ~0.9 s and takes ~3.6 s for a 7.8 s sentence. Taps are instant because the sentence is pre-rendered as soon as the card appears; tapping immediately after opening the page is not.
-- Speech is only a fallback: the 23,115 recordings always win.
+- Speech is only a fallback: the 29,402 recordings always win.
 - Exam sentences reach 2,216 of 7,298 entries (30%): the source dictionary only covers the four Cambridge IELTS 4 tests, and A1 everyday words never appear in academic passages.
 - Syllable marks cover 4,672 entries (64%). Words the dictionary leaves unmarked (`study`, `hotel`, `river`, `city`) do nothing when tapped — a wrong break is worse than none, so nothing is guessed.
 - Chinese glosses are not tappable: the tokenizer and the lookup index are English-only.
