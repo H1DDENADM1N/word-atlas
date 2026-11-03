@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: 1.1 GB / 993 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_993_MB-2F5D50?style=flat-square)
+![APK: 1.1 GB / 992 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_992_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -47,7 +47,7 @@ In one line: **same content, different runtime.** Upstream is about learning the
 | Themes | Light / dark / system | Adds the aurora and starlight night skies, three English faces, and fixes "follow system" inside a WebView |
 | Word card | One transcription line | UK and US side by side; tap the headword for syllable breaks; words in examples, translations, collocations, families, synonyms and the gloss all open a lookup popover |
 | Exam sentences | None | A **real exam sentences** section under the IELTS-context example: 1,211 sentences from Cambridge IELTS 4 with translations and a source chip |
-| Size | ~1 GB of assets in the repo | Share **1.03 GB** / private **991 MB** |
+| Size | ~1 GB of assets in the repo | Share **1.03 GB** / private **992 MB** |
 | Updating | `git pull` / the site updates itself | Rebuild and reinstall (a new signing key needs an uninstall) |
 | Toolchain | Node + Vite | Plus JDK 17 and the Android SDK, **no Gradle** |
 
@@ -99,11 +99,11 @@ The APKs are not committed (see `.gitignore`). Either check [Releases](https://g
 
 | Output | Word audio | Use |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.6.apk` | ElevenLabs originals + 76 Commons recordings | Share / public release |
-| `word-atlas-android-v1.0.6_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
+| `word-atlas-android-v1.0.7.apk` | ElevenLabs originals + 76 Commons recordings | Share / public release |
+| `word-atlas-android-v1.0.7_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
 
 ```bash
-adb install -r word-atlas-android-v1.0.6.apk
+adb install -r word-atlas-android-v1.0.7.apk
 ```
 
 Both packages share the same package name and signing key, so only one can be installed at a time; installing the other over it keeps your progress.
@@ -112,10 +112,11 @@ Android 7.0 (API 24) or newer; arm64 devices are fastest; about **3 GB** of free
 
 ## Versions
 
-Current: **v1.0.6** (versionCode 7). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current: **v1.0.7** (versionCode 8). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
+| **v1.0.7** | Chinese search reaches every sense of a word: 缠绕 and 蜿蜒 now find wind, and results show the sense that matched |
 | **v1.0.6** | 105 heteronyms get their second reading; 76 of them use human recordings from Wikimedia Commons, the rest are synthesised and marked `合成` on the card |
 | v1.0.5 | Two readings of one spelling, by sense: tear /teə/ (rip) and /tɪə/ (cry), each with its own recording |
 | v1.0.4 | Quiz blanks and choices stay aligned; original-audio share build and OALDPEX private build |
@@ -154,9 +155,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.6.apk      (share, original audio)
-# → word-atlas-android-v1.0.6_O.apk    (private, OALDPEX audio)
-adb install -r word-atlas-android-v1.0.6.apk
+# → word-atlas-android-v1.0.7.apk      (share, original audio)
+# → word-atlas-android-v1.0.7_O.apk    (private, OALDPEX audio)
+adb install -r word-atlas-android-v1.0.7.apk
 ```
 
 Both APKs reuse the same web bundle, inlined data, `base.apk` and `classes.dex`; only the word-audio set changes during packaging. `--skip-web` reuses the last `dist-android`.
@@ -179,20 +180,20 @@ npm run build
 | Illustrations (512 px WebP) | 203 MB |
 | Thumbnails | 88 MB |
 | Recordings (UK 49 / US 48 / examples 267) | 364 MB |
-| Word data | 6.9 MB |
+| Word data | 7.1 MB |
 | Exam sentences + syllable marks | 0.6 MB |
 | Sound cues and music | 4.4 MB |
 | ONNX Runtime + JNI (arm64, x86_64) | 55 MB |
 | Kokoro-82M voice + espeak tables | 353 MB |
 | Bundle, fonts, icons | ~1 MB |
-| **APK** | **share 1.03 GB / private 991 MB** |
+| **APK** | **share 1.03 GB / private 992 MB** |
 
 To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or switch back to Piper (`fetch_tts.py --voice piper`, saves ~290 MB with clearly worse quality).
 
 ## Known limits
 
 - Cold start is a little slower: the inlined data is parsed from the APK on first paint.
-- **Size is the price**: 1.03 GB for the share build and 991 MB for the private build is the direct cost of putting every asset in the APK.
+- **Size is the price**: 1.03 GB for the share build and 992 MB for the private build is the direct cost of putting every asset in the APK.
 - Bundled speech loads in ~0.9 s and takes ~3.6 s for a 7.8 s sentence. Taps are instant because the sentence is pre-rendered as soon as the card appears; tapping immediately after opening the page is not.
 - Speech is only a fallback: the 23,115 recordings always win.
 - Exam sentences reach 2,216 of 7,298 entries (30%): the source dictionary only covers the four Cambridge IELTS 4 tests, and A1 everyday words never appear in academic passages.

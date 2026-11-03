@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: 1.1 GB / 993 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_993_MB-2F5D50?style=flat-square)
+![APK: 1.1 GB / 992 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_992_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -49,7 +49,7 @@
 | 真题 | 无 | 「雅思语境」下面多一节**真题例句**，1,211 条剑桥雅思 4 原文与译文，标出处 |
 | 话题星座 | 无（只有词汇星图） | 图鉴里多一块**话题星座**面板，十九个话题各一个星座 |
 | 环境声 | 无 | **30 条**循环录音，配平响度，读词时自动压低 |
-| 体积 | 仓库约 1 GB 资源 | 分享版 **1.03 GB** / 私用版 **991 MB**（全部资源都在里面） |
+| 体积 | 仓库约 1 GB 资源 | 分享版 **1.03 GB** / 私用版 **992 MB**（全部资源都在里面） |
 | 更新方式 | `git pull` / 网站自动更新 | 重新构建并安装（换签名需先卸载） |
 | 构建工具 | Node + Vite | 再加 JDK 17 + Android SDK，**不需要 Gradle** |
 
@@ -114,11 +114,11 @@ APK 不进仓库（`.gitignore` 已排除）。两种方式：
 
 | 产物 | 单词发音 | 用途 |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.6.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
-| `word-atlas-android-v1.0.6_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
+| `word-atlas-android-v1.0.7.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
+| `word-atlas-android-v1.0.7_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
 
 ```bash
-adb install -r word-atlas-android-v1.0.6.apk
+adb install -r word-atlas-android-v1.0.7.apk
 ```
 
 两个包同一包名，不能同时安装；切换时覆盖安装即可，学习记录保留。
@@ -127,10 +127,11 @@ adb install -r word-atlas-android-v1.0.6.apk
 
 ## 版本
 
-当前 **v1.0.6**（versionCode 7）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
+当前 **v1.0.7**（versionCode 8）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
 
 | 版本 | 一句话 |
 | :--- | :--- |
+| **v1.0.7** | 中文搜索能查到单词的全部义项：搜「缠绕」「蜿蜒」也能找到 wind，结果里显示命中的那条释义 |
 | **v1.0.6** | 105 个同形异音词补齐第二读音，其中 76 个换成真人录音（Commons，CC BY-SA）；合成音在卡片上标「合成」 |
 | v1.0.5 | 一词两音按义项分开：tear 的 /teə/（撕）与 /tɪə/（眼泪）各有各的录音 |
 | v1.0.4 | 答题挖空与选项对齐；单词发音分原版分享包与 OALDPEX 私用包 |
@@ -170,9 +171,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.6.apk      （分享版，原版发音）
-# → word-atlas-android-v1.0.6_O.apk    （私用版，OALDPEX 真人发音）
-adb install -r word-atlas-android-v1.0.6.apk
+# → word-atlas-android-v1.0.7.apk      （分享版，原版发音）
+# → word-atlas-android-v1.0.7_O.apk    （私用版，OALDPEX 真人发音）
+adb install -r word-atlas-android-v1.0.7.apk
 ```
 
 两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换单词音源；`--skip-web` 可以复用上一次的 `dist-android`。
@@ -195,21 +196,21 @@ npm run build        # 构建到 dist/
 | 插画 `atlas/img`（512 px WebP） | 203 MB |
 | 缩略图 `atlas/thumb` | 88 MB |
 | 录音（英音 49 / 美音 48 / 例句 267） | 364 MB |
-| 词库 `atlas/entries` + `index.json` | 6.9 MB |
+| 词库 `atlas/entries` + `index.json` | 7.1 MB |
 | 真题例句 `atlas/ielts.json` + 音节标注 `atlas/syllables.json` | 0.6 MB |
 | 界面音效（17 段） | 0.3 MB |
 | 环境声（30 条循环） | 56 MB |
 | 离线语音：ONNX Runtime + JNI（arm64 / x86_64） | 55 MB |
 | 离线语音：Kokoro-82M 音色 + espeak 音素表 | 353 MB |
 | 前端 bundle、字体、图标 | ~1 MB |
-| **APK** | **分享版 1.03 GB / 私用版 991 MB** |
+| **APK** | **分享版 1.03 GB / 私用版 992 MB** |
 
 想瘦身：只保留 `thumb/`（省 203 MB）、把录音转低码率、只打一个 ABI，或换回 Piper 音色（`fetch_tts.py --voice piper`，省约 290 MB，音质明显下降）。
 
 ## 已知限制
 
 - **冷启动略慢**：首次要从 APK 里读取内联数据并解析。
-- **体积就是代价**：分享版 1.03 GB、私用版 991 MB，是"全部资源装进 APK"的直接结果。
+- **体积就是代价**：分享版 1.03 GB、私用版 992 MB，是"全部资源装进 APK"的直接结果。
 - **内置语音的延迟**：模型加载约 0.9 s；一句 7.8 s 的雅思长句合成约 3.6 s。按钮一出现就预渲染，所以正常点按是零等待，页面刚打开立刻点仍要等。
 - **录音优先**：23,115 段录音优先，TTS 只补第二条例句缺录音的那 6,287 个词。
 - **真题例句只覆盖 30%**：来源词典只收了剑桥雅思 4 的四套题，2,216 / 7,298 个词条有例句；A1 日常词本来就不出现在学术文章里。
