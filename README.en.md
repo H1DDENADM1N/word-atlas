@@ -9,7 +9,7 @@
 7,298 IELTS words · original illustrations · bundled UK & US speech · zero permissions · works with no network
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
-[![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
+[![Dataset: CC BY 4.0 + BY-SA](https://img.shields.io/badge/Dataset-CC_BY_4.0_%2B_BY--SA-AD5038?style=flat-square)](CONTENT_LICENSE.md)
 ![APK: 1.1 GB / 992 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_992_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
@@ -27,7 +27,7 @@
 
 A fork of [word-atlas](https://github.com/designfuchen/word-atlas) that does exactly one thing: **packs the same app into a fully offline Android APK**.
 
-The vocabulary, illustrations, recordings, examples and review algorithm all come from upstream — not a single entry was changed. What changed is the shell: how it is built, how data is loaded, what speaks when there is no recording, and a handful of problems that only appear once the app lives on a phone.
+The vocabulary, illustrations, examples and review algorithm come from upstream. Three things were added: a second reading for the 105 heteronyms (76 of them now use human recordings from Wikimedia Commons for both readings), plus 1,211 exam sentences and 4,672 syllable marks imported from third-party dictionaries — licences and credit under “License and credit”. What changed is the shell: how it is built, how data is loaded, what speaks when there is no recording, and a handful of problems that only appear once the app lives on a phone.
 
 Upstream is web-first: it runs in a browser and pulls media over the network. This fork puts the same front end inside an Android WebView, opens it over `file://`, and replaces every place that reaches for the network or for a system component. Install once; aeroplane mode and underground tunnels make no difference afterwards.
 
@@ -82,14 +82,14 @@ Full implementation notes, size breakdown and per-bug write-ups: **[docs/android
 | Entries | **7,298**, CEFR A1–C2, 19 topics |
 | Examples | **14,596** with Chinese translations |
 | Illustrations | **7,298** at 512 px WebP, plus thumbnails |
-| Recordings | **23,115**: UK, US, example narration, and a second reading for the 105 heteronyms (76 of them Commons recordings in the share build; OALDPEX is a private-build option) |
+| Recordings | **23,115**: UK, US, example narration, and a second reading for the 105 heteronyms (in the share build, 76 of them use Commons recordings for both readings; OALDPEX is a private-build option) |
 | Review | TS-FSRS spaced repetition, adjustable retention |
 | Screens | Today, atlas, word card, WebGL2 word galaxy, four practice modes, typing, backup export/import |
 | Privacy | Local-first, no account, progress stays on the device |
 
 Content provenance is unchanged too: text and illustrations were generated for the project with AI, example narration with ElevenLabs, checked automatically but **not reviewed entry by entry**. This is not an official IELTS list and promises no score gain.
 
-Word audio comes from two places. The **76 heteronyms** use human recordings from Wikimedia Commons (Wiktionary and Lingua Libre; file-by-file credit and licence in [docs/audio-credits.md](docs/audio-credits.md)); the other **7,222 words** use upstream's original ElevenLabs recordings (Alice / Sarah, CC BY 4.0). **29** of the heteronyms have only one recording on Commons, so their second reading is still synthesised and the card says so with a `合成` chip — the human take for those exists only in the private build.
+Word audio comes from two places. The **76 heteronyms** use human recordings from Wikimedia Commons for **both** readings (Wiktionary and Lingua Libre; CC BY-SA 3.0 / 4.0, CC0 or public domain, file-by-file credit in [docs/audio-credits.md](docs/audio-credits.md)); the other **7,222 words** use upstream's original ElevenLabs recordings (Alice / Sarah, CC BY 4.0). **29** of the heteronyms have only one recording on Commons, so their second reading is still synthesised and the card says so with a `合成` chip — the human take for those exists only in the private build.
 
 The public build contains no OALDPEX audio. `scripts/atlas/import_audio.py` still builds a private flavour, replacing `uk/` and `us/` with OALDPEX recordings (418 second readings included) — those files belong to Oxford University Press, are for your own build only, and must not be redistributed (see [CONTENT_LICENSE.md](CONTENT_LICENSE.md)).
 
@@ -139,7 +139,8 @@ npm ci
 # Once: fetch the speech runtime and voice (~540 MB, SHA-256 checked, not committed)
 python3 scripts/android/fetch_tts.py
 
-# Share audio: public/atlas/audio/{uk,us} (upstream originals, CC BY 4.0)
+# Share audio: public/atlas/audio/{uk,us} (upstream originals, CC BY 4.0; the 76 heteronyms' 152 files
+# come from Commons under their own CC BY-SA / CC0 / public-domain terms, see docs/audio-credits.md)
 # First time: restore from upstream main (~126 MB, not committed):
 git fetch --depth 1 origin main
 git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
@@ -179,7 +180,7 @@ npm run build
 | :--- | ---: |
 | Illustrations (512 px WebP) | 203 MB |
 | Thumbnails | 88 MB |
-| Recordings (UK 49 / US 48 / examples 267) | 364 MB |
+| Recordings (UK 79 / US 82 / examples 267) | 428 MB |
 | Word data | 7.1 MB |
 | Exam sentences + syllable marks | 0.6 MB |
 | Sound cues and music | 4.4 MB |
@@ -187,6 +188,8 @@ npm run build
 | Kokoro-82M voice + espeak tables | 353 MB |
 | Bundle, fonts, icons | ~1 MB |
 | **APK** | **share 1.03 GB / private 992 MB** |
+
+> The table describes the share build. The private build swaps word audio for OALDPEX (UK 49 / US 48), which makes the APK about 63 MB smaller.
 
 To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or switch back to Piper (`fetch_tts.py --voice piper`, saves ~290 MB with clearly worse quality).
 
@@ -222,10 +225,13 @@ To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or
 | | |
 | :--- | :--- |
 | Application code | [MIT](LICENSE) |
-| Vocabulary, illustrations and recordings (words + examples) | [CC BY 4.0](CONTENT_LICENSE.md), credit “Word Atlas contributors（词光）”; word audio is the original ElevenLabs set (Alice / Sarah) |
+| Vocabulary, illustrations and example narration | [CC BY 4.0](CONTENT_LICENSE.md), credit “Word Atlas contributors（词光）” |
+| Word audio: 7,222 words | Upstream's original ElevenLabs set (Alice / Sarah), CC BY 4.0 via upstream |
+| Word audio: the synthesised second reading of 29 heteronyms | Made for this repo with ElevenLabs, CC BY 4.0 |
+| Word audio: both readings of 76 heteronyms (152 files) | Wikimedia Commons: CC BY-SA 3.0 (70), CC BY-SA 4.0 (59), public domain (16), CC0 (6), CC BY 4.0 (1); file-by-file credit in [docs/audio-credits.md](docs/audio-credits.md). CC BY-SA files must keep the same licence when redistributed |
 | Word pronunciations (OALDPEX private import) | Oxford University Press — local builds only, not redistributable |
 | Kokoro-82M, sherpa-onnx | Apache-2.0 |
 
-> The exam sentences and syllable marks are imported from third-party dictionaries (《雅思真题例句词典》, 《牛津高阶》) and are **not** covered by the CC BY 4.0 licence above. Their source files stay out of this repository (`.gitignore`); only the derived index ships in the APK. The public build's word audio is upstream's original set and is covered by CC BY 4.0; OALDPEX recordings, if imported for a private build, are outside that grant — see [CONTENT_LICENSE.md](CONTENT_LICENSE.md).
+> The exam sentences and syllable marks are imported from third-party dictionaries (《雅思真题例句词典》, 《牛津高阶》) and are **not** covered by the CC BY 4.0 licence above. Their source files stay out of this repository (`.gitignore`); only the derived index ships in the APK. Most of the public build's word audio is upstream's original set (CC BY 4.0), but the 152 files behind the 76 heteronyms come from Wikimedia Commons under their own CC BY-SA / CC0 / public-domain terms and are **not** CC BY 4.0; OALDPEX recordings, if imported for a private build, are outside that grant too — see [CONTENT_LICENSE.md](CONTENT_LICENSE.md).
 
-The app and all of its content were made and open-sourced by [@designfuchen](https://github.com/designfuchen) in [designfuchen/word-atlas](https://github.com/designfuchen/word-atlas). This fork is derived from its `main` at `99c00767` and only adds the offline Android packaging. The credit is upstream's; the bugs in the shell are ours.
+The app and the vocabulary were made and open-sourced by [@designfuchen](https://github.com/designfuchen) in [designfuchen/word-atlas](https://github.com/designfuchen/word-atlas); the 76 heteronyms' Commons recordings are credited separately in [docs/audio-credits.md](docs/audio-credits.md). This fork is derived from its `main` at `99c00767` and only adds the offline Android packaging. The credit is upstream's; the bugs in the shell are ours.

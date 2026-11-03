@@ -9,7 +9,7 @@
 7,298 个雅思词条 · 原创插画 · 内置英美语音 · 零权限 · 断网可用
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
-[![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
+[![Dataset: CC BY 4.0 + BY-SA](https://img.shields.io/badge/Dataset-CC_BY_4.0_%2B_BY--SA-AD5038?style=flat-square)](CONTENT_LICENSE.md)
 ![APK: 1.1 GB / 992 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_992_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
@@ -25,7 +25,7 @@
 
 这是 [word-atlas](https://github.com/designfuchen/word-atlas)（词光）的一个分支，只做一件事：**把同一个应用打包成完全离线的安卓 APK**。
 
-词库、插画、录音、例句、复习算法全部来自上游，一条内容都没有改动。改的都是外壳——构建方式、数据加载、语音兜底、以及几处只有装在手机上才会暴露的问题。
+词库、插画、例句、复习算法来自上游。内容上有三处增补：单词录音给 105 个同形异音词补了第二读音（其中 76 个词的两个读音改用 Wikimedia Commons 的真人录音），另从第三方词典导入了 1,211 条真题例句与 4,672 条音节标注——授权与署名见「授权与致谢」。改的都是外壳——构建方式、数据加载、语音兜底、以及几处只有装在手机上才会暴露的问题。
 
 原版是网页优先的开源项目，跑在浏览器里，媒体文件按需从网络取；这个分支把它塞进安卓 WebView，用 `file://` 直接打开，再把所有"会联网"和"依赖系统组件"的环节逐个替换掉。装一次，之后无论是飞行模式还是地铁隧道，全部功能照常。
 
@@ -94,14 +94,14 @@
 | 词条 | **7,298** 条，CEFR A1–C2，19 个话题 |
 | 例句 | **14,596** 条，日常与雅思语境，附中文翻译 |
 | 插画 | **7,298** 幅，512 px WebP，另带缩略图 |
-| 录音 | **23,115** 段：英音、美音、例句朗读，以及 105 个同形异音词的第二读音（分享版 76 个词用 Commons 真人录音；OALDPEX 真人版仅限私用构建） |
+| 录音 | **23,115** 段：英音、美音、例句朗读，以及 105 个同形异音词的第二读音（分享版里 76 个词的两个读音都用 Commons 真人录音；OALDPEX 真人版仅限私用构建） |
 | 复习 | TS-FSRS 间隔复习，目标记忆率可调 |
 | 功能 | 今日、图鉴、词卡、词汇星图（WebGL2）、四类练习、打字练习、导出 / 恢复备份（含与网页版互通） |
 | 数据存放 | 本地优先，无账号无服务器，记录只在这台设备上 |
 
 内容来源同样一致：释义、例句、搭配与大语言模型按统一词典规范撰写，插画由图像模型逐词绘制，例句朗读由 ElevenLabs 合成。经过自动结构与一致性校验，但**尚未逐条人工审校**，可能有错。不是官方雅思词表，也不承诺提分。
 
-单词录音分两类。**76 个同形异音词**用 Wikimedia Commons 上的真人录音（Wiktionary 与 Lingua Libre，逐条授权与署名见 [docs/audio-credits.md](docs/audio-credits.md)）；其余 **7,222 个词**用上游原版 ElevenLabs 录音（英音 Alice / 美音 Sarah，CC BY 4.0）。还有 **29 个**词在 Commons 上找不到第二个读音，仍是合成音，卡片上标「合成」——这批词的真人音只存在于私用版。
+单词录音有两种来源。**76 个同形异音词**的两个读音都用 Wikimedia Commons 上的真人录音（Wiktionary 与 Lingua Libre；CC BY-SA 3.0 / 4.0、CC0 或公有领域，逐条授权与署名见 [docs/audio-credits.md](docs/audio-credits.md)）；其余 **7,222 个词**的读音用上游原版 ElevenLabs 录音（英音 Alice / 美音 Sarah，CC BY 4.0）。其中 **29 个**同形异音词在 Commons 上找不到第二个读音，第二个读音仍是合成音，卡片上标「合成」——这批词的真人第二读音只存在于私用版。
 
 公开发布包不包含 OALDPEX 的真人录音。`scripts/atlas/import_audio.py` 仍可用于私用构建，把 `uk/`、`us/` 换成 OALDPEX 录音（含这 105 个词的 418 条第二读音），但那批录音版权归牛津大学出版社，仅限自建自用、不得公开分发（见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)）。
 
@@ -154,7 +154,8 @@ npm ci
 # 一次性拉取离线语音运行时与音色（约 540 MB，校验 SHA-256，不进仓库）
 python3 scripts/android/fetch_tts.py
 
-# 公开版音源：public/atlas/audio/{uk,us}（上游原版，CC BY 4.0）
+# 公开版音源：public/atlas/audio/{uk,us}（上游原版 CC BY 4.0；76 个同形异音词的 152 个文件来自 Commons，
+# 按各自 CC BY-SA / CC0 / 公有领域授权，见 docs/audio-credits.md）
 # 首次从上游 main 恢复（约 126 MB，不进 Git）：
 git fetch --depth 1 origin main
 git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
@@ -195,7 +196,7 @@ npm run build        # 构建到 dist/
 | :--- | ---: |
 | 插画 `atlas/img`（512 px WebP） | 203 MB |
 | 缩略图 `atlas/thumb` | 88 MB |
-| 录音（英音 49 / 美音 48 / 例句 267） | 364 MB |
+| 录音（英音 79 / 美音 82 / 例句 267） | 428 MB |
 | 词库 `atlas/entries` + `index.json` | 7.1 MB |
 | 真题例句 `atlas/ielts.json` + 音节标注 `atlas/syllables.json` | 0.6 MB |
 | 界面音效（17 段） | 0.3 MB |
@@ -204,6 +205,8 @@ npm run build        # 构建到 dist/
 | 离线语音：Kokoro-82M 音色 + espeak 音素表 | 353 MB |
 | 前端 bundle、字体、图标 | ~1 MB |
 | **APK** | **分享版 1.03 GB / 私用版 992 MB** |
+
+> 上表是分享版的构成。私用版把单词音源换成 OALDPEX（英音 49 / 美音 48），整包小 63 MB 左右。
 
 想瘦身：只保留 `thumb/`（省 203 MB）、把录音转低码率、只打一个 ABI，或换回 Piper 音色（`fetch_tts.py --voice piper`，省约 290 MB，音质明显下降）。
 
@@ -251,14 +254,17 @@ b2_environment = [w for w in words if w["cefr"] == "B2" and w["topic"] == "envir
 | 范围 | 许可 |
 | :--- | :--- |
 | 应用代码 | [MIT](LICENSE) |
-| 词库文本、插画与录音（单词 + 例句） | [CC BY 4.0](CONTENT_LICENSE.md)，署名 Word Atlas contributors（词光）；单词发音为原版 ElevenLabs（Alice / Sarah） |
+| 词库文本、插画与例句录音 | [CC BY 4.0](CONTENT_LICENSE.md)，署名 Word Atlas contributors（词光） |
+| 单词发音：7,222 个词的读音 | 上游原版 ElevenLabs（Alice / Sarah），随上游以 CC BY 4.0 提供 |
+| 单词发音：29 个同形异音词的合成第二读音 | 本仓库用 ElevenLabs 合成，随本项目以 CC BY 4.0 提供 |
+| 单词发音：76 个同形异音词的两个读音（152 个文件） | Wikimedia Commons：CC BY-SA 3.0（70）、CC BY-SA 4.0（59）、公有领域（16）、CC0（6）、CC BY 4.0（1）；逐条署名见 [docs/audio-credits.md](docs/audio-credits.md)，CC BY-SA 部分再分发时须保留同样的授权 |
 | 单词发音（OALDPEX 私用导入） | 牛津大学出版社 — 仅限本地构建，不得再分发 |
 | Kokoro-82M、sherpa-onnx | Apache-2.0 |
 | 第三方依赖与字体 | 遵循各自许可 |
 
-> 真题例句与音节标注分别导入自第三方的《雅思真题例句词典》与《牛津高阶》词典数据，**不在上表的 CC BY 4.0 范围内**；源文件不进仓库（`.gitignore` 已排除），随 APK 分发的只有导入后的索引。公开发布包的单词发音是上游原版，属于 CC BY 4.0；如私用导入 OALDPEX，则那批录音不在 CC BY 4.0 范围内，授权见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)。
+> 真题例句与音节标注分别导入自第三方的《雅思真题例句词典》与《牛津高阶》词典数据，**不在上表的 CC BY 4.0 范围内**；源文件不进仓库（`.gitignore` 已排除），随 APK 分发的只有导入后的索引。公开发布包的单词发音大部分是上游原版（CC BY 4.0），但 76 个同形异音词的 152 个文件来自 Wikimedia Commons，按各自的 CC BY-SA / CC0 / 公有领域授权分发，**不属于 CC BY 4.0**；如私用导入 OALDPEX，那批录音同样不在 CC BY 4.0 范围内。完整说明见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)。
 
-原版应用与全部内容由 [@designfuchen](https://github.com/designfuchen) 制作并开源，见 [designfuchen/word-atlas](https://github.com/designfuchen/word-atlas)。本仓库基于其 `main`（`99c00767`）派生，只做安卓离线封装；功劳归上游，问题归这里。
+原版应用与词库内容由 [@designfuchen](https://github.com/designfuchen) 制作并开源，见 [designfuchen/word-atlas](https://github.com/designfuchen/word-atlas)（76 个同形异音词的 Commons 录音除外，作者与授权见 [docs/audio-credits.md](docs/audio-credits.md)）。本仓库基于其 `main`（`99c00767`）派生，只做安卓离线封装；功劳归上游，问题归这里。
 
 ---
 
