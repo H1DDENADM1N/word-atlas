@@ -9,3 +9,7 @@ output/
 .DS_Store
 .playwright-cli/
 *.tsbuildinfo
+
+# 图片检查器：产出清单与两份文档都只留本地，不入库
+review-marks*.md
+docs/image-checker-*.md
