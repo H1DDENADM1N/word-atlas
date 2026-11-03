@@ -6,28 +6,18 @@
 
 **把词光装进手机：完全离线的安卓版。**
 
-7,298 个雅思词条 · 原创插画 · 内置英美语音 · 零权限 · 断网可用
+7,298 个雅思词条 · 原创插画 · 内置英美语音 · 真题例句 · 零权限 · 断网可用
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0 + BY-SA](https://img.shields.io/badge/Dataset-CC_BY_4.0_%2B_BY--SA-AD5038?style=flat-square)](CONTENT_LICENSE.md)
 ![APK: 1.4 GB / 1.3 GB](https://img.shields.io/badge/APK-1.4_GB_%2F_1.3_GB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
-[![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
-**本仓库**：<https://github.com/H1DDENADM1N/word-atlas-android>
-**上游原版**：<https://github.com/designfuchen/word-atlas>
+[English](README.en.md)
 
 </div>
 
 ---
-
-## 这是什么
-
-这是 [word-atlas](https://github.com/designfuchen/word-atlas)（词光）的一个分支，只做一件事：**把同一个应用打包成完全离线的安卓 APK**。
-
-词库、插画、例句、复习算法来自上游。内容上有四处增补：单词录音给 105 个同形异音词补了第二读音（其中 76 个词的两个读音改用 Wikimedia Commons 的真人录音），雅思语境例句的录音从 1,011 条补齐到 7,298 条，另从第三方词典导入了 1,211 条真题例句与 4,672 条音节标注——授权与署名见「授权与致谢」。改的都是外壳——构建方式、数据加载、语音兜底、以及几处只有装在手机上才会暴露的问题。
-
-原版是网页优先的开源项目，跑在浏览器里，媒体文件按需从网络取；这个分支把它塞进安卓 WebView，用 `file://` 直接打开，再把所有"会联网"和"依赖系统组件"的环节逐个替换掉。装一次，之后无论是飞行模式还是地铁隧道，全部功能照常。
 
 ## 与上游 word-atlas 的区别
 
@@ -39,18 +29,18 @@
 | :--- | :--- | :--- |
 | 交付形态 | 网页应用 + 开放词库 | 安卓 APK（内含同一份前端） |
 | 运行环境 | 浏览器访问网站或 `npm run dev` | 安卓 WebView，`file:///android_asset/www/index.html` |
-| 网络 | 需要：媒体按需加载，可缓存供离线使用 | **完全不需要**：清单里没有任何权限，含 `INTERNET` |
+| 网络 | 需要：媒体按需加载，可缓存供离线使用 | **完全不需要**：清单里没有任何权限，不含 `INTERNET` |
 | 本地服务 | Vite dev server / 静态托管 | 不启动服务、不监听端口 |
 | 数据加载 | `fetch()` 拉分词片 | 构建期内联为 `atlas-embed/data.js`，资源随包 |
-| 语音兜底 | 浏览器 `speechSynthesis` / 系统 TTS | APK 内置 Kokoro-82M（sherpa-onnx），不用系统 TTS |
+| 语音兜底 | 浏览器 `speechSynthesis` / 系统 TTS | APK 内置 Kokoro-82M（sherpa-onnx），不需要系统 TTS |
 | 保存与分享 | 浏览器下载链接 | 存到「下载 / Word Atlas」，随后拉起系统分享面板 |
-| 界面主题 | 浅色 / 深色 / 跟随系统 | 追加极光、星光两套夜空与三种英文字体；修复「跟随系统」在 WebView 下恒为深色的问题 |
-| 词卡 | 单个音标行 | 英音与美音并列；点词头看音节；例句、译文、搭配、词族、近义与释义里的词都能点开小窗 |
-| 真题 | 无 | 「雅思语境」下面多一节**真题例句**，1,211 条剑桥雅思 4 原文与译文，标出处 |
+| 界面主题 | 浅色 / 深色 / 跟随系统 | 追加极光、星光两套夜空与三种英文字体 |
+| 词卡 | 单个音标行 | 支持同形异音，英音与美音并列；点词头看音节；例句、译文、搭配、词族、近义与释义里的词都能点开小窗 |
+| 真题 | 无 | 「雅思语境」下面多一节**真题例句**，1,211 条剑桥雅思 4 原文与译文，含出处 |
 | 话题星座 | 无（只有词汇星图） | 图鉴里多一块**话题星座**面板，十九个话题各一个星座 |
 | 环境声 | 无 | **30 条**循环录音，配平响度，读词时自动压低 |
-| 体积 | 仓库约 1 GB 资源 | 分享版 **1.39 GB** / 私用版 **1.33 GB**（全部资源都在里面） |
-| 更新方式 | `git pull` / 网站自动更新 | 重新构建并安装（换签名需先卸载） |
+| 体积 | 仓库约 1 GB 资源 | 分享版 **1.39 GB** / 私用版 **1.33 GB** |
+| 更新方式 | `git pull` / 网站自动更新 | 重新构建并安装（换签名需先卸载，别忘了提前导出备份） |
 | 构建工具 | Node + Vite | 再加 JDK 17 + Android SDK，**不需要 Gradle** |
 
 ### 三条硬保证
@@ -271,4 +261,4 @@ b2_environment = [w for w in words if w["cefr"] == "B2" and w["topic"] == "envir
 
 ---
 
-如果这个离线版对你有用，给[上游](https://github.com/designfuchen/word-atlas)点个 Star，也欢迎给本仓库提 Issue。
+如果这个离线版对你有用，请给本分支点个 Star。
