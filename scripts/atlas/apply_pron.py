@@ -35,8 +35,18 @@ COMPACT = {"ensure_ascii": False, "separators": (",", ":")}
 
 
 def readings(word, spec):
-    """The public shape of one word's groups: IPA only, no file names."""
-    return [{"uk": g["uk"], "us": g["us"]} for g in spec["pron"]]
+    """The public shape of one word's groups: IPA only, no file names.
+
+    `voice` is "tts" when the recording was generated, and the card says so —
+    a machine take should not pass for a human one.
+    """
+    out = []
+    for g in spec["pron"]:
+        item = {"uk": g["uk"], "us": g["us"]}
+        if spec.get("voice") == "tts":
+            item["tts"] = True
+        out.append(item)
+    return out
 
 
 def apply_entry(entry, spec):

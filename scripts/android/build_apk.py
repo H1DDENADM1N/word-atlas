@@ -46,7 +46,7 @@ TTS = ANDROID / "vendor" / "tts"
 PKG = "tech.wordatlas.app"
 # Bump this for every release: Android only accepts an equal or higher code on
 # upgrade, so an APK that reuses the old one silently refuses to install over it.
-VERSION_CODE = 6
+VERSION_CODE = 7
 # The display version lives in package.json and nowhere else — the shell reads
 # it back from the package manager at runtime instead of hardcoding a copy.
 VERSION_NAME = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]

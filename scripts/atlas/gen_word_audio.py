@@ -22,10 +22,12 @@ import time
 import pathlib
 import urllib.request
 
+from ipa2arp import to_arpabet, to_arpabet_word
 from common import FORGE, ROOT, load_env, with_retry
 
 VOICES = {"uk": "Xb7hH8MSUJpSbSDYk0k2", "us": "EXAVITQu4vr4xnSDxMaL"}  # Alice, Sarah
 MODEL = "eleven_v4_turbo"
+PHONEME_MODEL = "eleven_turbo_v2"
 
 PRON = pathlib.Path(__file__).resolve().parent / "pron.json"
 WORD_AUDIO = ROOT / "public" / "atlas" / "audio"
@@ -47,10 +49,14 @@ def credits_left(key):
     return d["character_limit"] - d["character_count"]
 
 
-def synth(key, voice, text, out, locator=None):
-    payload = {"text": text, "model_id": MODEL, "language_code": "en"}
+def synth(key, voice, text, out, locator=None, prev=None, model=MODEL):
+    payload = {"text": text, "model_id": model}
     if locator:
         payload["pronunciation_dictionary_locators"] = [locator]
+    # Context decides the word class, and the word class decides the reading:
+    # "They record" can only be the verb. The dictionary alone is a hint.
+    if prev:
+        payload["previous_text"] = prev
     req = urllib.request.Request(
         f"{API}/v1/text-to-speech/{voice}?output_format=mp3_44100_64",
         data=json.dumps(payload).encode(),
@@ -106,13 +112,37 @@ def rules_hash(rules):
     return hashlib.sha1(json.dumps(rules, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:8]
 
 
+CUE = {"n.": "The", "v.": "They", "adj.": "It is", "adv.": "He spoke", "num.": "The", "det.": "The"}
+
+
+def group_cues():
+    """word -> {group: previous_text} using the part of speech of its senses."""
+    out = {}
+    for path in sorted((ROOT / "public" / "atlas" / "entries").glob("*.json")):
+        for entry in json.loads(path.read_text(encoding="utf-8")):
+            if not entry.get("pron"):
+                continue
+            cues = {}
+            for sense in entry["senses"]:
+                group = sense.get("v") or 0
+                cue = CUE.get(sense["pos"])
+                if cue and group not in cues:
+                    cues[group] = cue
+            out[entry["w"]] = cues
+    return out
+
+
 def pron_main(key, workers, force):
     table = json.loads(PRON.read_text(encoding="utf-8"))["words"]
     jobs = []
     for accent in ("uk", "us"):
         for group in (0, 1):
             folder = WORD_AUDIO / (accent if group == 0 else f"{accent}2")
-            for word in table:
+            for word, spec in table.items():
+                # A human recording from Commons is better than anything this
+                # script can make; never overwrite one.
+                if spec.get("voice") == "commons":
+                    continue
                 out = folder / f"{word}.mp3"
                 if out.exists() and not force:
                     continue
@@ -134,6 +164,7 @@ def pron_main(key, workers, force):
     finally:
         probe.unlink(missing_ok=True)
 
+    cues = group_cues()
     batches = {}
     for job in jobs:
         batches.setdefault((job[0], job[1]), []).append(job)
@@ -145,8 +176,20 @@ def pron_main(key, workers, force):
         print(f"{accent}{'' if group == 0 else '2'}: {len(batch)} clips", flush=True)
 
         def work(job, locator=locator, accent=accent):
-            _, _, word, out = job
-            synth(key, VOICES[accent], word + ".", out, locator)
+            _, group, word, out = job
+            # `<phoneme>` beats the dictionary on the older models, and it wants
+            # ARPAbet: the IPA in the table is converted first.
+            ipa = table[word]["pron"][group][accent]
+            # A hand-written ARPAbet wins: CMUdict does not cover every word.
+            arp = (table[word].get("arp") or [None, None])[group] or to_arpabet_word(word, ipa)
+            if arp:
+                # Alice hums before a bare tag ("Emmm excess"); Sarah does not.
+                # A synthetic take is already marked on the card, so both
+                # accents use the voice that reads the tag cleanly.
+                text = f'<phoneme alphabet="cmu-arpabet" ph="{arp}">{word}</phoneme>'
+                synth(key, VOICES["us"], text, out, model=PHONEME_MODEL)
+            else:
+                synth(key, VOICES[accent], word + ".", out, locator, cues.get(word, {}).get(group))
 
         with cf.ThreadPoolExecutor(workers) as ex:
             for fut in cf.as_completed([ex.submit(work, j) for j in batch]):

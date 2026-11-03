@@ -240,6 +240,11 @@ def import_heteronyms(d: Path, out: Path, report: bool) -> None:
     missing: list[str] = []
     for word, spec in table.items():
         for group, pron in enumerate(spec["pron"]):
+            if "src" not in pron:
+                # `relay` has no OALDPEX take for /rɪˈleɪ/; the share build's
+                # recording stays in place for that reading.
+                missing.append(f"{word} 读音{group + 1}: no src")
+                continue
             for accent in ("uk", "us"):
                 name = pron["src"][accent]
                 i = where.get(name)

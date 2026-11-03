@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: 1.03 GB / 991 MB](https://img.shields.io/badge/APK-1.03_GB_%2F_991_MB-2F5D50?style=flat-square)
+![APK: 1.1 GB / 993 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_993_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -55,7 +55,7 @@ In one line: **same content, different runtime.** Upstream is about learning the
 
 - **It cannot reach the network.** The manifest declares no permissions at all. Without `INTERNET` the kernel refuses to create sockets for this UID; there is no code path around it. Cleartext traffic is off and a network security config trusts system CAs only.
 - **There is no server.** The page is opened from `assets/www` over `file://`, with images and audio referenced relatively. Nothing listens on a port.
-- **Nothing is downloaded at runtime.** The index, 73 word shards, the exam-sentence and syllable indexes, and 24 sound cues are inlined; 7,298 illustrations, 7,298 thumbnails and 22,905 recordings ship as files. There is not a single `fetch` at runtime.
+- **Nothing is downloaded at runtime.** The index, 73 word shards, the exam-sentence and syllable indexes, and 17 sound cues are inlined; 7,298 illustrations, 7,298 thumbnails and 23,115 recordings ship as files. There is not a single `fetch` at runtime.
 
 No accounts, no analytics, no third-party SDKs.
 
@@ -82,14 +82,16 @@ Full implementation notes, size breakdown and per-bug write-ups: **[docs/android
 | Entries | **7,298**, CEFR A1–C2, 19 topics |
 | Examples | **14,596** with Chinese translations |
 | Illustrations | **7,298** at 512 px WebP, plus thumbnails |
-| Recordings | **22,905**: UK, US and example narration (word audio defaults to the upstream originals; OALDPEX is a private-build option) |
+| Recordings | **23,115**: UK, US, example narration, and a second reading for the 105 heteronyms (76 of them Commons recordings in the share build; OALDPEX is a private-build option) |
 | Review | TS-FSRS spaced repetition, adjustable retention |
 | Screens | Today, atlas, word card, WebGL2 word galaxy, four practice modes, typing, backup export/import |
 | Privacy | Local-first, no account, progress stays on the device |
 
 Content provenance is unchanged too: text and illustrations were generated for the project with AI, example narration with ElevenLabs, checked automatically but **not reviewed entry by entry**. This is not an official IELTS list and promises no score gain.
 
-The UK/US word audio defaults to upstream Word Atlas's original ElevenLabs recordings (Alice / Sarah), offered under CC BY 4.0 with the dataset; the public build does not contain OALDPEX's Oxford recordings. `scripts/atlas/import_audio.py` is still available for a private build, replacing `uk/` and `us/` with OALDPEX audio — those files belong to Oxford University Press, are for your own build only, and must not be redistributed (see [CONTENT_LICENSE.md](CONTENT_LICENSE.md)).
+Word audio comes from two places. The **76 heteronyms** use human recordings from Wikimedia Commons (Wiktionary and Lingua Libre; file-by-file credit and licence in [docs/audio-credits.md](docs/audio-credits.md)); the other **7,222 words** use upstream's original ElevenLabs recordings (Alice / Sarah, CC BY 4.0). **29** of the heteronyms have only one recording on Commons, so their second reading is still synthesised and the card says so with a `合成` chip — the human take for those exists only in the private build.
+
+The public build contains no OALDPEX audio. `scripts/atlas/import_audio.py` still builds a private flavour, replacing `uk/` and `us/` with OALDPEX recordings (418 second readings included) — those files belong to Oxford University Press, are for your own build only, and must not be redistributed (see [CONTENT_LICENSE.md](CONTENT_LICENSE.md)).
 
 ## Install
 
@@ -97,24 +99,25 @@ The APKs are not committed (see `.gitignore`). Either check [Releases](https://g
 
 | Output | Word audio | Use |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.5.apk` | Upstream original ElevenLabs (CC BY 4.0) | Share / public release |
-| `word-atlas-android-v1.0.5_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
+| `word-atlas-android-v1.0.6.apk` | ElevenLabs originals + 76 Commons recordings | Share / public release |
+| `word-atlas-android-v1.0.6_O.apk` | OALDPEX (Oxford University Press) | Private use only; do not redistribute |
 
 ```bash
-adb install -r word-atlas-android-v1.0.5.apk
+adb install -r word-atlas-android-v1.0.6.apk
 ```
 
 Both packages share the same package name and signing key, so only one can be installed at a time; installing the other over it keeps your progress.
 
-Android 7.0 (API 24) or newer; arm64 devices are fastest; about **2.5 GB** of free space to install.
+Android 7.0 (API 24) or newer; arm64 devices are fastest; about **3 GB** of free space to install.
 
 ## Versions
 
-Current: **v1.0.5** (versionCode 6). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current: **v1.0.6** (versionCode 7). Every release, with its checksums, is on [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
-| **v1.0.5** | Two readings of one spelling, by sense: tear /teə/ (rip) and /tɪə/ (cry), each with its own recording |
+| **v1.0.6** | 105 heteronyms get their second reading; 76 of them use human recordings from Wikimedia Commons, the rest are synthesised and marked `合成` on the card |
+| v1.0.5 | Two readings of one spelling, by sense: tear /teə/ (rip) and /tɪə/ (cry), each with its own recording |
 | v1.0.4 | Quiz blanks and choices stay aligned; original-audio share build and OALDPEX private build |
 | v1.0.3 | Real exam sentences, syllable breaks, and words you can tap anywhere |
 | v1.0.2 | Answers sized for the thumb; a verdict card you can use |
@@ -151,9 +154,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.5.apk      (share, original audio)
-# → word-atlas-android-v1.0.5_O.apk    (private, OALDPEX audio)
-adb install -r word-atlas-android-v1.0.5.apk
+# → word-atlas-android-v1.0.6.apk      (share, original audio)
+# → word-atlas-android-v1.0.6_O.apk    (private, OALDPEX audio)
+adb install -r word-atlas-android-v1.0.6.apk
 ```
 
 Both APKs reuse the same web bundle, inlined data, `base.apk` and `classes.dex`; only the word-audio set changes during packaging. `--skip-web` reuses the last `dist-android`.
@@ -191,7 +194,7 @@ To slim it down: ship only `thumb/`, transcode the audio, build a single ABI, or
 - Cold start is a little slower: the inlined data is parsed from the APK on first paint.
 - **Size is the price**: 1.03 GB for the share build and 991 MB for the private build is the direct cost of putting every asset in the APK.
 - Bundled speech loads in ~0.9 s and takes ~3.6 s for a 7.8 s sentence. Taps are instant because the sentence is pre-rendered as soon as the card appears; tapping immediately after opening the page is not.
-- Speech is only a fallback: the 22,905 original recordings (ElevenLabs) always win.
+- Speech is only a fallback: the 23,115 recordings always win.
 - Exam sentences reach 2,216 of 7,298 entries (30%): the source dictionary only covers the four Cambridge IELTS 4 tests, and A1 everyday words never appear in academic passages.
 - Syllable marks cover 4,672 entries (64%). Words the dictionary leaves unmarked (`study`, `hotel`, `river`, `city`) do nothing when tapped — a wrong break is worse than none, so nothing is guessed.
 - Chinese glosses are not tappable: the tokenizer and the lookup index are English-only.

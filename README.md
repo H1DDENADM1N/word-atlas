@@ -10,7 +10,7 @@
 
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-17283B?style=flat-square)](LICENSE)
 [![Dataset: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-AD5038?style=flat-square)](CONTENT_LICENSE.md)
-![APK: 1.03 GB / 991 MB](https://img.shields.io/badge/APK-1.03_GB_%2F_991_MB-2F5D50?style=flat-square)
+![APK: 1.1 GB / 993 MB](https://img.shields.io/badge/APK-1.1_GB_%2F_993_MB-2F5D50?style=flat-square)
 ![Permissions: none](https://img.shields.io/badge/Permissions-none-2F5D50?style=flat-square)
 [![Upstream](https://img.shields.io/badge/Upstream-designfuchen%2Fword--atlas-17283B?style=flat-square&logo=github)](https://github.com/designfuchen/word-atlas)
 
@@ -59,7 +59,7 @@
 | :--- | :--- |
 | **不能联网** | `AndroidManifest.xml` 里没有任何 `<uses-permission>`。缺少 `INTERNET`，系统内核拒绝为该 UID 创建 socket，代码层绕不过去。另设 `usesCleartextTraffic="false"` 与只信任系统证书的 Network Security Config。 |
 | **没有服务器** | 页面从 APK 内的 `assets/www` 直接以 `file://` 打开，图片和录音相对引用。整个应用不监听任何端口，不做请求拦截代理。 |
-| **没有运行时下载** | 词库索引、73 个词条分片、真题例句与音节标注索引、17 段界面音效在构建时内联；三十条环境声各打成一条按需注入的脚本（`file://` 下 `fetch()` 不可用），选中哪条才加载哪条；7,298 幅插画、7,298 张缩略图、22,905 段录音作为文件放进 APK。运行时没有一次网络请求。 |
+| **没有运行时下载** | 词库索引、73 个词条分片、真题例句与音节标注索引、17 段界面音效在构建时内联；三十条环境声各打成一条按需注入的脚本（`file://` 下 `fetch()` 不可用），选中哪条才加载哪条；7,298 幅插画、7,298 张缩略图、23,115 段录音作为文件放进 APK。运行时没有一次网络请求。 |
 
 另外：不含账号、埋点、统计或第三方 SDK。
 
@@ -94,14 +94,16 @@
 | 词条 | **7,298** 条，CEFR A1–C2，19 个话题 |
 | 例句 | **14,596** 条，日常与雅思语境，附中文翻译 |
 | 插画 | **7,298** 幅，512 px WebP，另带缩略图 |
-| 录音 | **22,905** 段：英音、美音、例句朗读（单词发音默认用上游原版；OALDPEX 真人版仅限私用构建） |
+| 录音 | **23,115** 段：英音、美音、例句朗读，以及 105 个同形异音词的第二读音（分享版 76 个词用 Commons 真人录音；OALDPEX 真人版仅限私用构建） |
 | 复习 | TS-FSRS 间隔复习，目标记忆率可调 |
 | 功能 | 今日、图鉴、词卡、词汇星图（WebGL2）、四类练习、打字练习、导出 / 恢复备份（含与网页版互通） |
 | 数据存放 | 本地优先，无账号无服务器，记录只在这台设备上 |
 
 内容来源同样一致：释义、例句、搭配与大语言模型按统一词典规范撰写，插画由图像模型逐词绘制，例句朗读由 ElevenLabs 合成。经过自动结构与一致性校验，但**尚未逐条人工审校**，可能有错。不是官方雅思词表，也不承诺提分。
 
-单词的英音与美音默认使用上游 Word Atlas 的原版录音（ElevenLabs，英音 Alice / 美音 Sarah），随词库以 CC BY 4.0 提供；公开发布包不包含 OALDPEX 的真人录音。`scripts/atlas/import_audio.py` 仍可用于私用构建，把 `uk/`、`us/` 替换成 OALDPEX 录音，但那批录音版权归牛津大学出版社，仅限自建自用、不得公开分发（见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)）。
+单词录音分两类。**76 个同形异音词**用 Wikimedia Commons 上的真人录音（Wiktionary 与 Lingua Libre，逐条授权与署名见 [docs/audio-credits.md](docs/audio-credits.md)）；其余 **7,222 个词**用上游原版 ElevenLabs 录音（英音 Alice / 美音 Sarah，CC BY 4.0）。还有 **29 个**词在 Commons 上找不到第二个读音，仍是合成音，卡片上标「合成」——这批词的真人音只存在于私用版。
+
+公开发布包不包含 OALDPEX 的真人录音。`scripts/atlas/import_audio.py` 仍可用于私用构建，把 `uk/`、`us/` 换成 OALDPEX 录音（含这 105 个词的 418 条第二读音），但那批录音版权归牛津大学出版社，仅限自建自用、不得公开分发（见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)）。
 
 ## 安装
 
@@ -112,24 +114,25 @@ APK 不进仓库（`.gitignore` 已排除）。两种方式：
 
 | 产物 | 单词发音 | 用途 |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.5.apk` | 上游原版 ElevenLabs（CC BY 4.0） | 分享 / 公开分发 |
-| `word-atlas-android-v1.0.5_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
+| `word-atlas-android-v1.0.6.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
+| `word-atlas-android-v1.0.6_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
 
 ```bash
-adb install -r word-atlas-android-v1.0.5.apk
+adb install -r word-atlas-android-v1.0.6.apk
 ```
 
 两个包同一包名，不能同时安装；切换时覆盖安装即可，学习记录保留。
 
-要求 **Android 7.0（API 24）及以上**，arm64 设备体验最好；安装需要约 **2.5 GB** 空闲空间。
+要求 **Android 7.0（API 24）及以上**，arm64 设备体验最好；安装需要约 **3 GB** 空闲空间。
 
 ## 版本
 
-当前 **v1.0.5**（versionCode 6）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
+当前 **v1.0.6**（versionCode 7）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
 
 | 版本 | 一句话 |
 | :--- | :--- |
-| **v1.0.5** | 一词两音按义项分开：tear 的 /teə/（撕）与 /tɪə/（眼泪）各有各的录音 |
+| **v1.0.6** | 105 个同形异音词补齐第二读音，其中 76 个换成真人录音（Commons，CC BY-SA）；合成音在卡片上标「合成」 |
+| v1.0.5 | 一词两音按义项分开：tear 的 /teə/（撕）与 /tɪə/（眼泪）各有各的录音 |
 | v1.0.4 | 答题挖空与选项对齐；单词发音分原版分享包与 OALDPEX 私用包 |
 | v1.0.3 | 图鉴新增话题星座；环境声换成 30 条真实录音；词卡多了真题例句、音节与处处可点 |
 | v1.0.2 | 选项按拇指重排，作答卡能听、能点、能往下读 |
@@ -154,6 +157,7 @@ python3 scripts/android/fetch_tts.py
 # 首次从上游 main 恢复（约 126 MB，不进 Git）：
 git fetch --depth 1 origin main
 git archive --format=tar origin/main public/atlas/audio/uk public/atlas/audio/us | tar -xf -
+# 第二读音：public/atlas/audio/{uk2,us2}（105 个词，随仓库提供）
 # 私用版音源：private/audio/oaldpex/{uk,us}（OALDPEX，已在 .gitignore 中排除）
 # 私用版导入（只在有 OALDPEX 数据包时运行；不得公开分发）：
 # python3 scripts/atlas/import_audio.py --out private/audio/oaldpex
@@ -166,9 +170,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.5.apk      （分享版，原版发音）
-# → word-atlas-android-v1.0.5_O.apk    （私用版，OALDPEX 真人发音）
-adb install -r word-atlas-android-v1.0.5.apk
+# → word-atlas-android-v1.0.6.apk      （分享版，原版发音）
+# → word-atlas-android-v1.0.6_O.apk    （私用版，OALDPEX 真人发音）
+adb install -r word-atlas-android-v1.0.6.apk
 ```
 
 两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换单词音源；`--skip-web` 可以复用上一次的 `dist-android`。
@@ -207,7 +211,7 @@ npm run build        # 构建到 dist/
 - **冷启动略慢**：首次要从 APK 里读取内联数据并解析。
 - **体积就是代价**：分享版 1.03 GB、私用版 991 MB，是"全部资源装进 APK"的直接结果。
 - **内置语音的延迟**：模型加载约 0.9 s；一句 7.8 s 的雅思长句合成约 3.6 s。按钮一出现就预渲染，所以正常点按是零等待，页面刚打开立刻点仍要等。
-- **录音优先**：22,905 段原版录音（ElevenLabs 合成）优先，TTS 只补第二条例句缺录音的那 6,287 个词。
+- **录音优先**：23,115 段录音优先，TTS 只补第二条例句缺录音的那 6,287 个词。
 - **真题例句只覆盖 30%**：来源词典只收了剑桥雅思 4 的四套题，2,216 / 7,298 个词条有例句；A1 日常词本来就不出现在学术文章里。
 - **音节标注只覆盖 64%**：4,672 个词条有标注，词典没标的（`study`、`hotel`、`river`、`city`）点词头不会有变化——切错了比不切更糟，所以不补写。
 - **释义里的中文不可点**：切词与查词索引都只认英文，中文释义是纯文本。

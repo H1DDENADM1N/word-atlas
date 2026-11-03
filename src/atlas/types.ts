@@ -19,6 +19,8 @@ export interface Sense {
 export interface Pron {
   uk: string;
   us: string;
+  /** True when the recording was generated rather than spoken by a person. */
+  tts?: boolean;
 }
 
 export interface Example {

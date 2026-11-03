@@ -442,11 +442,13 @@
   "pron": [
    {
     "uk": "/juːz/",
-    "us": "/juːz/"
+    "us": "/juːz/",
+    "tts": true
    },
    {
     "uk": "/juːs/",
-    "us": "/juːs/"
+    "us": "/juːs/",
+    "tts": true
    }
   ],
   "senses": [
@@ -508,11 +510,13 @@
   "pron": [
    {
     "uk": "/ˈmɪnɪt/",
-    "us": "/ˈmɪnɪt/"
+    "us": "/ˈmɪnɪt/",
+    "tts": true
    },
    {
     "uk": "/maɪˈnjuːt/",
-    "us": "/maɪˈnuːt/"
+    "us": "/maɪˈnuːt/",
+    "tts": true
    }
   ],
   "senses": [
@@ -7598,6 +7602,16 @@
   "w": "that",
   "uk": "/ðæt/",
   "us": "/ðæt/",
+  "pron": [
+   {
+    "uk": "/ðæt/",
+    "us": "/ðæt/"
+   },
+   {
+    "uk": "/ðət/",
+    "us": "/ðət/"
+   }
+  ],
   "senses": [
    {
     "pos": "det.",
@@ -7612,7 +7626,8 @@
    {
     "pos": "conj.",
     "zh": "引导陈述性从句",
-    "en": "introduces a clause expressing a statement, belief, or fact"
+    "en": "introduces a clause expressing a statement, belief, or fact",
+    "v": 1
    }
   ],
   "ex": [
@@ -7778,6 +7793,16 @@
   "w": "second",
   "uk": "/ˈsekənd/",
   "us": "/ˈsekənd/",
+  "pron": [
+   {
+    "uk": "/ˈsekənd/",
+    "us": "/ˈsekənd/"
+   },
+   {
+    "uk": "/sɪˈkɒnd/",
+    "us": "/sɪˈkɑːnd/"
+   }
+  ],
   "senses": [
    {
     "pos": "num.",
@@ -7792,7 +7817,8 @@
    {
     "pos": "v.",
     "zh": "附议；支持提议",
-    "en": "To formally support a proposal made by someone else."
+    "en": "To formally support a proposal made by someone else.",
+    "v": 1
    }
   ],
   "ex": [
@@ -9902,6 +9928,16 @@
   "w": "outside",
   "uk": "/ˌaʊtˈsaɪd/",
   "us": "/ˌaʊtˈsaɪd/",
+  "pron": [
+   {
+    "uk": "/ˌaʊtˈsaɪd/",
+    "us": "/ˌaʊtˈsaɪd/"
+   },
+   {
+    "uk": "/ˈaʊtsaɪd/",
+    "us": "/ˈaʊtsaɪd/"
+   }
+  ],
   "senses": [
    {
     "pos": "adv.",
@@ -9916,7 +9952,8 @@
    {
     "pos": "adj.",
     "zh": "外面的；外部的",
-    "en": "Located on the outer part or coming from elsewhere."
+    "en": "Located on the outer part or coming from elsewhere.",
+    "v": 1
    }
   ],
   "ex": [
@@ -13246,6 +13283,16 @@
   "w": "house",
   "uk": "/haʊs/",
   "us": "/haʊs/",
+  "pron": [
+   {
+    "uk": "/haʊs/",
+    "us": "/haʊs/"
+   },
+   {
+    "uk": "/haʊz/",
+    "us": "/haʊz/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -13255,7 +13302,8 @@
    {
     "pos": "v.",
     "zh": "为……提供住所；容纳",
-    "en": "To provide a place for people or things to stay."
+    "en": "To provide a place for people or things to stay.",
+    "v": 1
    }
   ],
   "ex": [
@@ -18673,11 +18721,13 @@
   "pron": [
    {
     "uk": "/maʊθ/",
-    "us": "/maʊθ/"
+    "us": "/maʊθ/",
+    "tts": true
    },
    {
     "uk": "/maʊð/",
-    "us": "/maʊð/"
+    "us": "/maʊð/",
+    "tts": true
    }
   ],
   "senses": [
@@ -20728,11 +20778,13 @@
   "pron": [
    {
     "uk": "/lɪv/",
-    "us": "/lɪv/"
+    "us": "/lɪv/",
+    "tts": true
    },
    {
     "uk": "/laɪv/",
-    "us": "/laɪv/"
+    "us": "/laɪv/",
+    "tts": true
    }
   ],
   "senses": [
@@ -30056,11 +30108,13 @@
   "pron": [
    {
     "uk": "/kləʊz/",
-    "us": "/kloʊz/"
+    "us": "/kloʊz/",
+    "tts": true
    },
    {
     "uk": "/kləʊs/",
-    "us": "/kloʊs/"
+    "us": "/kloʊs/",
+    "tts": true
    }
   ],
   "senses": [
@@ -37813,6 +37867,18 @@
   "w": "underground",
   "uk": "/ˌʌndəˈɡraʊnd/",
   "us": "/ˌʌndərˈɡraʊnd/",
+  "pron": [
+   {
+    "uk": "/ˌʌndəˈɡraʊnd/",
+    "us": "/ˌʌndərˈɡraʊnd/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈʌndəɡraʊnd/",
+    "us": "/ˈʌndərɡraʊnd/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -37827,7 +37893,8 @@
    {
     "pos": "n.",
     "zh": "地铁",
-    "en": "A railway system running mainly beneath a city."
+    "en": "A railway system running mainly beneath a city.",
+    "v": 1
    }
   ],
   "ex": [
@@ -37861,6 +37928,16 @@
   "w": "refuse",
   "uk": "/rɪˈfjuːz/",
   "us": "/rɪˈfjuːz/",
+  "pron": [
+   {
+    "uk": "/rɪˈfjuːz/",
+    "us": "/rɪˈfjuːz/"
+   },
+   {
+    "uk": "/ˈrefjuːs/",
+    "us": "/ˈrefjuːs/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -37870,7 +37947,8 @@
    {
     "pos": "n.",
     "zh": "垃圾；废弃物",
-    "en": "unwanted waste material that people throw away"
+    "en": "unwanted waste material that people throw away",
+    "v": 1
    }
   ],
   "ex": [
@@ -41499,6 +41577,16 @@
   "w": "record",
   "uk": "/ˈrekɔːd/",
   "us": "/ˈrekərd/",
+  "pron": [
+   {
+    "uk": "/ˈrekɔːd/",
+    "us": "/ˈrekərd/"
+   },
+   {
+    "uk": "/rɪˈkɔːd/",
+    "us": "/rɪˈkɔːrd/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -41508,7 +41596,8 @@
    {
     "pos": "v.",
     "zh": "记录；录音；录像",
-    "en": "To store information, sounds, or images for future use."
+    "en": "To store information, sounds, or images for future use.",
+    "v": 1
    },
    {
     "pos": "n.",
@@ -43588,6 +43677,16 @@
   "w": "subject",
   "uk": "/ˈsʌbdʒɪkt/",
   "us": "/ˈsʌbdʒɪkt/",
+  "pron": [
+   {
+    "uk": "/ˈsʌbdʒɪkt/",
+    "us": "/ˈsʌbdʒɪkt/"
+   },
+   {
+    "uk": "/səbˈdʒekt/",
+    "us": "/səbˈdʒekt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -43602,7 +43701,8 @@
    {
     "pos": "v.",
     "zh": "使遭受；使经历",
-    "en": "To make someone experience something, especially something unpleasant."
+    "en": "To make someone experience something, especially something unpleasant.",
+    "v": 1
    }
   ],
   "ex": [
@@ -49582,6 +49682,16 @@
   "w": "document",
   "uk": "/ˈdɒkjumənt/",
   "us": "/ˈdɑːkjumənt/",
+  "pron": [
+   {
+    "uk": "/ˈdɒkjumənt/",
+    "us": "/ˈdɑːkjumənt/"
+   },
+   {
+    "uk": "/ˈdɒkjument/",
+    "us": "/ˈdɑːkjument/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -49591,7 +49701,8 @@
    {
     "pos": "v.",
     "zh": "记录；记载",
-    "en": "record information about something in writing, photographs, or other forms"
+    "en": "record information about something in writing, photographs, or other forms",
+    "v": 1
    }
   ],
   "ex": [
@@ -49947,16 +50058,18 @@
  },
  {
   "w": "present",
-  "uk": "/ˈprezənt/",
-  "us": "/ˈprezənt/",
+  "uk": "/ˈpreznt/",
+  "us": "/ˈpreznt/",
   "pron": [
    {
-    "uk": "/ˈprezənt/",
-    "us": "/ˈprezənt/"
+    "uk": "/ˈpreznt/",
+    "us": "/ˈpreznt/",
+    "tts": true
    },
    {
     "uk": "/prɪˈzent/",
-    "us": "/prɪˈzent/"
+    "us": "/prɪˈzent/",
+    "tts": true
    }
   ],
   "senses": [
@@ -59306,6 +59419,16 @@
   "w": "download",
   "uk": "/ˌdaʊnˈləʊd/",
   "us": "/ˌdaʊnˈloʊd/",
+  "pron": [
+   {
+    "uk": "/ˌdaʊnˈləʊd/",
+    "us": "/ˌdaʊnˈloʊd/"
+   },
+   {
+    "uk": "/ˈdaʊnləʊd/",
+    "us": "/ˈdaʊnloʊd/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -59315,7 +59438,8 @@
    {
     "pos": "n.",
     "zh": "下载；下载的文件",
-    "en": "the act of downloading, or a file obtained this way"
+    "en": "the act of downloading, or a file obtained this way",
+    "v": 1
    }
   ],
   "ex": [
@@ -61353,6 +61477,16 @@
   "w": "excuse",
   "uk": "/ɪkˈskjuːs/",
   "us": "/ɪkˈskjuːs/",
+  "pron": [
+   {
+    "uk": "/ɪkˈskjuːs/",
+    "us": "/ɪkˈskjuːs/"
+   },
+   {
+    "uk": "/ɪkˈskjuːz/",
+    "us": "/ɪkˈskjuːz/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -61362,12 +61496,14 @@
    {
     "pos": "v.",
     "zh": "原谅；宽恕",
-    "en": "forgive someone for a mistake or impolite behaviour"
+    "en": "forgive someone for a mistake or impolite behaviour",
+    "v": 1
    },
    {
     "pos": "v.",
     "zh": "准许免做；准许离开",
-    "en": "allow someone to avoid a duty or leave"
+    "en": "allow someone to avoid a duty or leave",
+    "v": 1
    }
   ],
   "ex": [
@@ -63123,11 +63259,13 @@
   "pron": [
    {
     "uk": "/ˈprɒdʒekt/",
-    "us": "/ˈprɑːdʒekt/"
+    "us": "/ˈprɑːdʒekt/",
+    "tts": true
    },
    {
     "uk": "/prəˈdʒekt/",
-    "us": "/prəˈdʒekt/"
+    "us": "/prəˈdʒekt/",
+    "tts": true
    }
   ],
   "senses": [
@@ -66218,6 +66356,16 @@
   "w": "transport",
   "uk": "/ˈtrænspɔːt/",
   "us": "/ˈtrænspɔːrt/",
+  "pron": [
+   {
+    "uk": "/ˈtrænspɔːt/",
+    "us": "/ˈtrænspɔːrt/"
+   },
+   {
+    "uk": "/trænˈspɔːt/",
+    "us": "/trænˈspɔːrt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -66227,7 +66375,8 @@
    {
     "pos": "v.",
     "zh": "运输；运送",
-    "en": "To move people or goods from one place to another."
+    "en": "To move people or goods from one place to another.",
+    "v": 1
    }
   ],
   "ex": [
@@ -69563,6 +69712,16 @@
   "w": "pan",
   "uk": "/pæn/",
   "us": "/pæn/",
+  "pron": [
+   {
+    "uk": "/pæn/",
+    "us": "/pæn/"
+   },
+   {
+    "uk": "/pɑːn/",
+    "us": "/pɑːn/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -69577,7 +69736,8 @@
    {
     "pos": "v.",
     "zh": "摇摄；转动镜头",
-    "en": "to turn a camera slowly across a scene"
+    "en": "to turn a camera slowly across a scene",
+    "v": 1
    }
   ],
   "ex": [
@@ -71369,7 +71529,17 @@
  {
   "w": "perfect",
   "uk": "/ˈpɜːfɪkt/",
-  "us": "/ˈpɝːfɪkt/",
+  "us": "/ˈpɜːrfɪkt/",
+  "pron": [
+   {
+    "uk": "/ˈpɜːfɪkt/",
+    "us": "/ˈpɜːrfɪkt/"
+   },
+   {
+    "uk": "/pəˈfekt/",
+    "us": "/pərˈfekt/"
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -71379,7 +71549,8 @@
    {
     "pos": "v.",
     "zh": "使完善；使精通",
-    "en": "to improve something until it is as good as possible"
+    "en": "to improve something until it is as good as possible",
+    "v": 1
    },
    {
     "pos": "adj.",
@@ -76506,11 +76677,13 @@
   "pron": [
    {
     "uk": "/wɪnd/",
-    "us": "/wɪnd/"
+    "us": "/wɪnd/",
+    "tts": true
    },
    {
     "uk": "/waɪnd/",
-    "us": "/waɪnd/"
+    "us": "/waɪnd/",
+    "tts": true
    }
   ],
   "senses": [
@@ -80162,6 +80335,16 @@
   "w": "increase",
   "uk": "/ɪnˈkriːs/",
   "us": "/ɪnˈkriːs/",
+  "pron": [
+   {
+    "uk": "/ɪnˈkriːs/",
+    "us": "/ɪnˈkriːs/"
+   },
+   {
+    "uk": "/ˈɪŋkriːs/",
+    "us": "/ˈɪŋkriːs/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -80171,7 +80354,8 @@
    {
     "pos": "n.",
     "zh": "增加；增长",
-    "en": "A rise in the amount, size, or level of something"
+    "en": "A rise in the amount, size, or level of something",
+    "v": 1
    }
   ],
   "ex": [
@@ -82524,11 +82708,13 @@
   "pron": [
    {
     "uk": "/ˈkɒntent/",
-    "us": "/ˈkɑːntent/"
+    "us": "/ˈkɑːntent/",
+    "tts": true
    },
    {
     "uk": "/kənˈtent/",
-    "us": "/kənˈtent/"
+    "us": "/kənˈtent/",
+    "tts": true
    }
   ],
   "senses": [
@@ -84076,6 +84262,16 @@
   "w": "update",
   "uk": "/ˌʌpˈdeɪt/",
   "us": "/ˌʌpˈdeɪt/",
+  "pron": [
+   {
+    "uk": "/ˌʌpˈdeɪt/",
+    "us": "/ˌʌpˈdeɪt/"
+   },
+   {
+    "uk": "/ˈʌpdeɪt/",
+    "us": "/ˈʌpdeɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -84085,7 +84281,8 @@
    {
     "pos": "n.",
     "zh": "最新消息；更新",
-    "en": "new information or a change that makes something more current"
+    "en": "new information or a change that makes something more current",
+    "v": 1
    }
   ],
   "ex": [
@@ -86112,6 +86309,18 @@
   "w": "decrease",
   "uk": "/dɪˈkriːs/",
   "us": "/dɪˈkriːs/",
+  "pron": [
+   {
+    "uk": "/dɪˈkriːs/",
+    "us": "/dɪˈkriːs/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈdiːkriːs/",
+    "us": "/ˈdiːkriːs/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -86121,7 +86330,8 @@
    {
     "pos": "n.",
     "zh": "减少；减少量",
-    "en": "A reduction in the size, number, or amount of something."
+    "en": "A reduction in the size, number, or amount of something.",
+    "v": 1
    }
   ],
   "ex": [
@@ -93139,6 +93349,16 @@
   "w": "graduate",
   "uk": "/ˈɡrædʒuət/",
   "us": "/ˈɡrædʒuət/",
+  "pron": [
+   {
+    "uk": "/ˈɡrædʒuət/",
+    "us": "/ˈɡrædʒuət/"
+   },
+   {
+    "uk": "/ˈɡrædʒueɪt/",
+    "us": "/ˈɡrædʒueɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -93148,7 +93368,8 @@
    {
     "pos": "v.",
     "zh": "毕业；获得学位",
-    "en": "to successfully complete a course at a school or university"
+    "en": "to successfully complete a course at a school or university",
+    "v": 1
    }
   ],
   "ex": [
@@ -93494,7 +93715,17 @@
  {
   "w": "desert",
   "uk": "/ˈdezət/",
-  "us": "/ˈdezɚt/",
+  "us": "/ˈdezərt/",
+  "pron": [
+   {
+    "uk": "/ˈdezət/",
+    "us": "/ˈdezərt/"
+   },
+   {
+    "uk": "/dɪˈzɜːt/",
+    "us": "/dɪˈzɜːrt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -93504,7 +93735,8 @@
    {
     "pos": "v.",
     "zh": "抛弃；擅离",
-    "en": "to leave someone or somewhere you should stay with"
+    "en": "to leave someone or somewhere you should stay with",
+    "v": 1
    }
   ],
   "ex": [
@@ -94089,6 +94321,16 @@
   "w": "protest",
   "uk": "/ˈprəʊtest/",
   "us": "/ˈproʊtest/",
+  "pron": [
+   {
+    "uk": "/ˈprəʊtest/",
+    "us": "/ˈproʊtest/"
+   },
+   {
+    "uk": "/prəˈtest/",
+    "us": "/prəˈtest/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -94098,7 +94340,8 @@
    {
     "pos": "v.",
     "zh": "抗议；反对",
-    "en": "Express strong disagreement with something."
+    "en": "Express strong disagreement with something.",
+    "v": 1
    }
   ],
   "ex": [
@@ -94699,8 +94942,18 @@
  },
  {
   "w": "transfer",
-  "uk": "/trænsˈfɜː(r)/",
-  "us": "/trænsˈfɝː/",
+  "uk": "/trænsˈfɜː/",
+  "us": "/trænsˈfɜːr/",
+  "pron": [
+   {
+    "uk": "/trænsˈfɜː/",
+    "us": "/trænsˈfɜːr/"
+   },
+   {
+    "uk": "/ˈtrænsfɜː/",
+    "us": "/ˈtrænsfɜːr/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -94715,7 +94968,8 @@
    {
     "pos": "n.",
     "zh": "转移；调动；转账",
-    "en": "The act of moving something or someone to another place."
+    "en": "The act of moving something or someone to another place.",
+    "v": 1
    }
   ],
   "ex": [
@@ -101742,6 +101996,16 @@
   "w": "accent",
   "uk": "/ˈæksent/",
   "us": "/ˈæksent/",
+  "pron": [
+   {
+    "uk": "/ˈæksent/",
+    "us": "/ˈæksent/"
+   },
+   {
+    "uk": "/ækˈsent/",
+    "us": "/ækˈsent/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -101756,7 +102020,8 @@
    {
     "pos": "v.",
     "zh": "强调；突出",
-    "en": "to give special emphasis or prominence to something"
+    "en": "to give special emphasis or prominence to something",
+    "v": 1
    }
   ],
   "ex": [
@@ -101914,6 +102179,16 @@
   "w": "export",
   "uk": "/ɪkˈspɔːt/",
   "us": "/ɪkˈspɔːrt/",
+  "pron": [
+   {
+    "uk": "/ɪkˈspɔːt/",
+    "us": "/ɪkˈspɔːrt/"
+   },
+   {
+    "uk": "/ˈekspɔːt/",
+    "us": "/ˈekspɔːrt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -101923,7 +102198,8 @@
    {
     "pos": "n.",
     "zh": "出口；出口商品",
-    "en": "selling goods abroad, or goods sold to another country"
+    "en": "selling goods abroad, or goods sold to another country",
+    "v": 1
    },
    {
     "pos": "v.",
@@ -103465,11 +103741,13 @@
   "pron": [
    {
     "uk": "/teə/",
-    "us": "/ter/"
+    "us": "/ter/",
+    "tts": true
    },
    {
     "uk": "/tɪə/",
-    "us": "/tɪr/"
+    "us": "/tɪr/",
+    "tts": true
    }
   ],
   "senses": [
@@ -104125,6 +104403,18 @@
   "w": "upset",
   "uk": "/ʌpˈset/",
   "us": "/ʌpˈset/",
+  "pron": [
+   {
+    "uk": "/ʌpˈset/",
+    "us": "/ʌpˈset/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈʌpset/",
+    "us": "/ˈʌpset/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -104140,6 +104430,12 @@
     "pos": "v.",
     "zh": "打乱；扰乱",
     "en": "To disturb the usual arrangement or balance of something."
+   },
+   {
+    "pos": "n.",
+    "zh": "意外失败；爆冷",
+    "en": "An unexpected defeat of a team or player expected to win.",
+    "v": 1
    }
   ],
   "ex": [
@@ -104685,6 +104981,16 @@
   "w": "progress",
   "uk": "/ˈprəʊɡres/",
   "us": "/ˈprɑːɡres/",
+  "pron": [
+   {
+    "uk": "/ˈprəʊɡres/",
+    "us": "/ˈprɑːɡres/"
+   },
+   {
+    "uk": "/prəˈɡres/",
+    "us": "/prəˈɡres/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -104694,7 +105000,8 @@
    {
     "pos": "v.",
     "zh": "进步；逐步发展",
-    "en": "to improve or move towards a more advanced stage"
+    "en": "to improve or move towards a more advanced stage",
+    "v": 1
    }
   ],
   "ex": [
@@ -107296,7 +107603,17 @@
  {
   "w": "survey",
   "uk": "/ˈsɜːveɪ/",
-  "us": "/ˈsɝːveɪ/",
+  "us": "/ˈsɜːrveɪ/",
+  "pron": [
+   {
+    "uk": "/ˈsɜːveɪ/",
+    "us": "/ˈsɜːrveɪ/"
+   },
+   {
+    "uk": "/səˈveɪ/",
+    "us": "/sərˈveɪ/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -107306,12 +107623,14 @@
    {
     "pos": "v.",
     "zh": "调查",
-    "en": "Collect information by asking people questions."
+    "en": "Collect information by asking people questions.",
+    "v": 1
    },
    {
     "pos": "v.",
     "zh": "勘测；测量",
-    "en": "Examine and measure land or buildings in detail."
+    "en": "Examine and measure land or buildings in detail.",
+    "v": 1
    }
   ],
   "ex": [
@@ -112748,6 +113067,16 @@
   "w": "frequent",
   "uk": "/ˈfriːkwənt/",
   "us": "/ˈfriːkwənt/",
+  "pron": [
+   {
+    "uk": "/ˈfriːkwənt/",
+    "us": "/ˈfriːkwənt/"
+   },
+   {
+    "uk": "/friˈkwent/",
+    "us": "/friˈkwent/"
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -112757,7 +113086,8 @@
    {
     "pos": "v.",
     "zh": "常去；常到访",
-    "en": "Visit a particular place regularly"
+    "en": "Visit a particular place regularly",
+    "v": 1
    }
   ],
   "ex": [
@@ -114968,6 +115298,16 @@
   "w": "combine",
   "uk": "/kəmˈbaɪn/",
   "us": "/kəmˈbaɪn/",
+  "pron": [
+   {
+    "uk": "/kəmˈbaɪn/",
+    "us": "/kəmˈbaɪn/"
+   },
+   {
+    "uk": "/ˈkɒmbaɪn/",
+    "us": "/ˈkɑːmbaɪn/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -114977,7 +115317,8 @@
    {
     "pos": "n.",
     "zh": "联合收割机",
-    "en": "A farm machine that harvests grain and separates the seeds."
+    "en": "A farm machine that harvests grain and separates the seeds.",
+    "v": 1
    }
   ],
   "ex": [
@@ -116524,6 +116865,16 @@
   "w": "contest",
   "uk": "/ˈkɒntest/",
   "us": "/ˈkɑːntest/",
+  "pron": [
+   {
+    "uk": "/ˈkɒntest/",
+    "us": "/ˈkɑːntest/"
+   },
+   {
+    "uk": "/kənˈtest/",
+    "us": "/kənˈtest/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -116533,12 +116884,14 @@
    {
     "pos": "v.",
     "zh": "质疑；对……提出异议",
-    "en": "to formally challenge a decision, claim, or result"
+    "en": "to formally challenge a decision, claim, or result",
+    "v": 1
    },
    {
     "pos": "v.",
     "zh": "争夺；参加竞选",
-    "en": "to compete for a position, prize, or political seat"
+    "en": "to compete for a position, prize, or political seat",
+    "v": 1
    }
   ],
   "ex": [
@@ -117751,6 +118104,16 @@
   "w": "lead",
   "uk": "/liːd/",
   "us": "/liːd/",
+  "pron": [
+   {
+    "uk": "/liːd/",
+    "us": "/liːd/"
+   },
+   {
+    "uk": "/led/",
+    "us": "/led/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -117765,7 +118128,8 @@
    {
     "pos": "n.",
     "zh": "铅",
-    "en": "A soft, heavy, grey metal that can be poisonous"
+    "en": "A soft, heavy, grey metal that can be poisonous",
+    "v": 1
    }
   ],
   "ex": [
@@ -120869,8 +121233,20 @@
  },
  {
   "w": "grown-up",
-  "uk": "/ˈɡrəʊn ʌp/",
-  "us": "/ˈɡroʊn ʌp/",
+  "uk": "/ˈɡrəʊnʌp/",
+  "us": "/ˈɡroʊnʌp/",
+  "pron": [
+   {
+    "uk": "/ˈɡrəʊnʌp/",
+    "us": "/ˈɡroʊnʌp/",
+    "tts": true
+   },
+   {
+    "uk": "/ˌɡrəʊnˈʌp/",
+    "us": "/ˌɡroʊnˈʌp/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -120880,7 +121256,8 @@
    {
     "pos": "adj.",
     "zh": "成年的；成熟的",
-    "en": "Adult, or behaving in a sensible and responsible way."
+    "en": "Adult, or behaving in a sensible and responsible way.",
+    "v": 1
    }
   ],
   "ex": [
@@ -126438,11 +126815,13 @@
   "pron": [
    {
     "uk": "/ˈseprət/",
-    "us": "/ˈseprət/"
+    "us": "/ˈseprət/",
+    "tts": true
    },
    {
     "uk": "/ˈsepəreɪt/",
-    "us": "/ˈsepəreɪt/"
+    "us": "/ˈsepəreɪt/",
+    "tts": true
    }
   ],
   "senses": [
@@ -127358,6 +127737,18 @@
   "w": "compliment",
   "uk": "/ˈkɒmplɪmənt/",
   "us": "/ˈkɑːmplɪmənt/",
+  "pron": [
+   {
+    "uk": "/ˈkɒmplɪmənt/",
+    "us": "/ˈkɑːmplɪmənt/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈkɒmplɪment/",
+    "us": "/ˈkɑːmplɪment/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -127367,7 +127758,8 @@
    {
     "pos": "v.",
     "zh": "称赞；赞美",
-    "en": "To tell someone that you admire something about them."
+    "en": "To tell someone that you admire something about them.",
+    "v": 1
    }
   ],
   "ex": [
@@ -127405,6 +127797,16 @@
   "w": "refund",
   "uk": "/ˈriːfʌnd/",
   "us": "/ˈriːfʌnd/",
+  "pron": [
+   {
+    "uk": "/ˈriːfʌnd/",
+    "us": "/ˈriːfʌnd/"
+   },
+   {
+    "uk": "/rɪˈfʌnd/",
+    "us": "/rɪˈfʌnd/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -127414,7 +127816,8 @@
    {
     "pos": "v.",
     "zh": "退还款项",
-    "en": "To return money paid for something."
+    "en": "To return money paid for something.",
+    "v": 1
    }
   ],
   "ex": [
@@ -129066,6 +129469,16 @@
   "w": "upload",
   "uk": "/ˌʌpˈləʊd/",
   "us": "/ˌʌpˈloʊd/",
+  "pron": [
+   {
+    "uk": "/ˌʌpˈləʊd/",
+    "us": "/ˌʌpˈloʊd/"
+   },
+   {
+    "uk": "/ˈʌpləʊd/",
+    "us": "/ˈʌploʊd/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -129075,7 +129488,8 @@
    {
     "pos": "n.",
     "zh": "上传；上传的文件",
-    "en": "the transfer of a file online, or the file itself"
+    "en": "the transfer of a file online, or the file itself",
+    "v": 1
    }
   ],
   "ex": [
@@ -134614,7 +135028,17 @@
  {
   "w": "permit",
   "uk": "/pəˈmɪt/",
-  "us": "/pɚˈmɪt/",
+  "us": "/pərˈmɪt/",
+  "pron": [
+   {
+    "uk": "/pəˈmɪt/",
+    "us": "/pərˈmɪt/"
+   },
+   {
+    "uk": "/ˈpɜːmɪt/",
+    "us": "/ˈpɜːrmɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -134624,7 +135048,8 @@
    {
     "pos": "n.",
     "zh": "许可证；通行证",
-    "en": "an official document allowing a particular activity"
+    "en": "an official document allowing a particular activity",
+    "v": 1
    },
    {
     "pos": "v.",
@@ -140775,6 +141200,16 @@
   "w": "row",
   "uk": "/rəʊ/",
   "us": "/roʊ/",
+  "pron": [
+   {
+    "uk": "/rəʊ/",
+    "us": "/roʊ/"
+   },
+   {
+    "uk": "/raʊ/",
+    "us": "/raʊ/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -140789,7 +141224,8 @@
    {
     "pos": "n.",
     "zh": "争吵；吵闹",
-    "en": "a noisy argument or loud disturbance"
+    "en": "a noisy argument or loud disturbance",
+    "v": 1
    }
   ],
   "ex": [
@@ -144404,7 +144840,19 @@
  {
   "w": "experiment",
   "uk": "/ɪkˈsperɪmənt/",
-  "us": "/ɪkˈsperəmənt/",
+  "us": "/ɪkˈsperɪmənt/",
+  "pron": [
+   {
+    "uk": "/ɪkˈsperɪmənt/",
+    "us": "/ɪkˈsperɪmənt/",
+    "tts": true
+   },
+   {
+    "uk": "/ɪkˈsperɪment/",
+    "us": "/ɪkˈsperɪment/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -144414,7 +144862,8 @@
    {
     "pos": "v.",
     "zh": "做实验；尝试",
-    "en": "test ideas or methods to see what happens"
+    "en": "test ideas or methods to see what happens",
+    "v": 1
    }
   ],
   "ex": [
@@ -148286,7 +148735,17 @@
  {
   "w": "implement",
   "uk": "/ˈɪmplɪment/",
-  "us": "/ˈɪmpləment/",
+  "us": "/ˈɪmplɪment/",
+  "pron": [
+   {
+    "uk": "/ˈɪmplɪment/",
+    "us": "/ˈɪmplɪment/"
+   },
+   {
+    "uk": "/ˈɪmplɪmənt/",
+    "us": "/ˈɪmplɪmənt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -148296,7 +148755,8 @@
    {
     "pos": "n.",
     "zh": "工具；器具",
-    "en": "a tool used for a particular task"
+    "en": "a tool used for a particular task",
+    "v": 1
    }
   ],
   "ex": [
@@ -151071,6 +151531,16 @@
   "w": "ally",
   "uk": "/ˈælaɪ/",
   "us": "/ˈælaɪ/",
+  "pron": [
+   {
+    "uk": "/ˈælaɪ/",
+    "us": "/ˈælaɪ/"
+   },
+   {
+    "uk": "/əˈlaɪ/",
+    "us": "/əˈlaɪ/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -151080,7 +151550,8 @@
    {
     "pos": "v.",
     "zh": "结盟；联合",
-    "en": "To join with someone for a shared purpose."
+    "en": "To join with someone for a shared purpose.",
+    "v": 1
    }
   ],
   "ex": [
@@ -158414,6 +158885,16 @@
   "w": "defect",
   "uk": "/ˈdiːfekt/",
   "us": "/ˈdiːfekt/",
+  "pron": [
+   {
+    "uk": "/ˈdiːfekt/",
+    "us": "/ˈdiːfekt/"
+   },
+   {
+    "uk": "/dɪˈfekt/",
+    "us": "/dɪˈfekt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -158423,7 +158904,8 @@
    {
     "pos": "v.",
     "zh": "叛离；投奔另一方",
-    "en": "To leave a country or group and join an opposing one."
+    "en": "To leave a country or group and join an opposing one.",
+    "v": 1
    }
   ],
   "ex": [
@@ -159020,6 +159502,16 @@
   "w": "conduct",
   "uk": "/kənˈdʌkt/",
   "us": "/kənˈdʌkt/",
+  "pron": [
+   {
+    "uk": "/kənˈdʌkt/",
+    "us": "/kənˈdʌkt/"
+   },
+   {
+    "uk": "/ˈkɒndʌkt/",
+    "us": "/ˈkɑːndʌkt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -159034,7 +159526,8 @@
    {
     "pos": "n.",
     "zh": "行为；举止",
-    "en": "the way a person behaves, especially towards others"
+    "en": "the way a person behaves, especially towards others",
+    "v": 1
    }
   ],
   "ex": [
@@ -159668,7 +160161,17 @@
  {
   "w": "convert",
   "uk": "/kənˈvɜːt/",
-  "us": "/kənˈvɝːt/",
+  "us": "/kənˈvɜːrt/",
+  "pron": [
+   {
+    "uk": "/kənˈvɜːt/",
+    "us": "/kənˈvɜːrt/"
+   },
+   {
+    "uk": "/ˈkɒnvɜːt/",
+    "us": "/ˈkɑːnvɜːrt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -159683,7 +160186,8 @@
    {
     "pos": "n.",
     "zh": "皈依者；新拥护者",
-    "en": "someone who has adopted a new religion, belief, or practice"
+    "en": "someone who has adopted a new religion, belief, or practice",
+    "v": 1
    }
   ],
   "ex": [
@@ -163185,6 +163689,16 @@
   "w": "digest",
   "uk": "/daɪˈdʒest/",
   "us": "/daɪˈdʒest/",
+  "pron": [
+   {
+    "uk": "/daɪˈdʒest/",
+    "us": "/daɪˈdʒest/"
+   },
+   {
+    "uk": "/ˈdaɪdʒest/",
+    "us": "/ˈdaɪdʒest/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -163199,7 +163713,8 @@
    {
     "pos": "n.",
     "zh": "摘要；文摘",
-    "en": "A short collection of the main points from longer material."
+    "en": "A short collection of the main points from longer material.",
+    "v": 1
    }
   ],
   "ex": [
@@ -163979,6 +164494,16 @@
   "w": "escort",
   "uk": "/ɪˈskɔːt/",
   "us": "/ɪˈskɔːrt/",
+  "pron": [
+   {
+    "uk": "/ɪˈskɔːt/",
+    "us": "/ɪˈskɔːrt/"
+   },
+   {
+    "uk": "/ˈeskɔːt/",
+    "us": "/ˈeskɔːrt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -163988,7 +164513,8 @@
    {
     "pos": "n.",
     "zh": "护送者；陪同人员",
-    "en": "A person or group accompanying someone for protection or guidance"
+    "en": "A person or group accompanying someone for protection or guidance",
+    "v": 1
    }
   ],
   "ex": [
@@ -164493,6 +165019,16 @@
   "w": "attribute",
   "uk": "/əˈtrɪbjuːt/",
   "us": "/əˈtrɪbjuːt/",
+  "pron": [
+   {
+    "uk": "/əˈtrɪbjuːt/",
+    "us": "/əˈtrɪbjuːt/"
+   },
+   {
+    "uk": "/ˈætrɪbjuːt/",
+    "us": "/ˈætrɪbjuːt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -164502,7 +165038,8 @@
    {
     "pos": "n.",
     "zh": "特征；属性",
-    "en": "A quality or feature of a person or thing."
+    "en": "A quality or feature of a person or thing.",
+    "v": 1
    }
   ],
   "ex": [
@@ -168269,6 +168806,16 @@
   "w": "suspect",
   "uk": "/səˈspekt/",
   "us": "/səˈspekt/",
+  "pron": [
+   {
+    "uk": "/səˈspekt/",
+    "us": "/səˈspekt/"
+   },
+   {
+    "uk": "/ˈsʌspekt/",
+    "us": "/ˈsʌspekt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -168278,12 +168825,14 @@
    {
     "pos": "n.",
     "zh": "嫌疑人",
-    "en": "A person believed to have possibly committed a crime."
+    "en": "A person believed to have possibly committed a crime.",
+    "v": 1
    },
    {
     "pos": "adj.",
     "zh": "可疑的；不可靠的",
-    "en": "Not trustworthy or possibly wrong, unsafe, or dishonest."
+    "en": "Not trustworthy or possibly wrong, unsafe, or dishonest.",
+    "v": 1
    }
   ],
   "ex": [
@@ -170094,6 +170643,16 @@
   "w": "deliberate",
   "uk": "/dɪˈlɪbərət/",
   "us": "/dɪˈlɪbərət/",
+  "pron": [
+   {
+    "uk": "/dɪˈlɪbərət/",
+    "us": "/dɪˈlɪbərət/"
+   },
+   {
+    "uk": "/dɪˈlɪbəreɪt/",
+    "us": "/dɪˈlɪbəreɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -170108,7 +170667,8 @@
    {
     "pos": "v.",
     "zh": "仔细考虑；商议",
-    "en": "To consider something carefully before making a decision."
+    "en": "To consider something carefully before making a decision.",
+    "v": 1
    }
   ],
   "ex": [
@@ -179255,6 +179815,16 @@
   "w": "fragment",
   "uk": "/ˈfræɡmənt/",
   "us": "/ˈfræɡmənt/",
+  "pron": [
+   {
+    "uk": "/ˈfræɡmənt/",
+    "us": "/ˈfræɡmənt/"
+   },
+   {
+    "uk": "/fræɡˈment/",
+    "us": "/ˈfræɡment/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -179264,7 +179834,8 @@
    {
     "pos": "v.",
     "zh": "破碎；使分裂",
-    "en": "To break something, or become broken, into smaller separate parts."
+    "en": "To break something, or become broken, into smaller separate parts.",
+    "v": 1
    }
   ],
   "ex": [
@@ -185754,6 +186325,18 @@
   "w": "excess",
   "uk": "/ɪkˈses/",
   "us": "/ɪkˈses/",
+  "pron": [
+   {
+    "uk": "/ɪkˈses/",
+    "us": "/ɪkˈses/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈekses/",
+    "us": "/ˈekses/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -185763,7 +186346,8 @@
    {
     "pos": "adj.",
     "zh": "过量的；多余的",
-    "en": "more than is needed, usual, or allowed"
+    "en": "more than is needed, usual, or allowed",
+    "v": 1
    }
   ],
   "ex": [
@@ -186601,6 +187185,16 @@
   "w": "prospect",
   "uk": "/ˈprɒspekt/",
   "us": "/ˈprɑːspekt/",
+  "pron": [
+   {
+    "uk": "/ˈprɒspekt/",
+    "us": "/ˈprɑːspekt/"
+   },
+   {
+    "uk": "/prəˈspekt/",
+    "us": "/ˈprɑːspekt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -186615,7 +187209,8 @@
    {
     "pos": "v.",
     "zh": "勘探矿藏",
-    "en": "To search an area for valuable minerals or fuels."
+    "en": "To search an area for valuable minerals or fuels.",
+    "v": 1
    }
   ],
   "ex": [
@@ -189663,6 +190258,16 @@
   "w": "segment",
   "uk": "/ˈseɡmənt/",
   "us": "/ˈseɡmənt/",
+  "pron": [
+   {
+    "uk": "/ˈseɡmənt/",
+    "us": "/ˈseɡmənt/"
+   },
+   {
+    "uk": "/seɡˈment/",
+    "us": "/seɡˈment/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -189672,7 +190277,8 @@
    {
     "pos": "v.",
     "zh": "分割；划分",
-    "en": "to divide something into separate parts or groups"
+    "en": "to divide something into separate parts or groups",
+    "v": 1
    }
   ],
   "ex": [
@@ -194838,6 +195444,16 @@
   "w": "moderate",
   "uk": "/ˈmɒdərət/",
   "us": "/ˈmɑːdərət/",
+  "pron": [
+   {
+    "uk": "/ˈmɒdərət/",
+    "us": "/ˈmɑːdərət/"
+   },
+   {
+    "uk": "/ˈmɒdəreɪt/",
+    "us": "/ˈmɑːdəreɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -194852,7 +195468,8 @@
    {
     "pos": "v.",
     "zh": "缓和；节制",
-    "en": "To become or make something less extreme or intense"
+    "en": "To become or make something less extreme or intense",
+    "v": 1
    }
   ],
   "ex": [
@@ -196388,8 +197005,18 @@
  },
  {
   "w": "upgrade",
-  "uk": "/ʌpˈɡreɪd/",
-  "us": "/ʌpˈɡreɪd/",
+  "uk": "/ˌʌpˈɡreɪd/",
+  "us": "/ˌʌpˈɡreɪd/",
+  "pron": [
+   {
+    "uk": "/ˌʌpˈɡreɪd/",
+    "us": "/ˌʌpˈɡreɪd/"
+   },
+   {
+    "uk": "/ˈʌpɡreɪd/",
+    "us": "/ˈʌpɡreɪd/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -196399,7 +197026,8 @@
    {
     "pos": "n.",
     "zh": "升级；改良版本",
-    "en": "An improvement or a newer, better version of something."
+    "en": "An improvement or a newer, better version of something.",
+    "v": 1
    }
   ],
   "ex": [
@@ -198110,8 +198738,20 @@
  },
  {
   "w": "inland",
-  "uk": "/ˈɪnlənd/",
-  "us": "/ˈɪnlənd/",
+  "uk": "/ˈɪnlænd/",
+  "us": "/ˈɪnlænd/",
+  "pron": [
+   {
+    "uk": "/ˈɪnlænd/",
+    "us": "/ˈɪnlænd/",
+    "tts": true
+   },
+   {
+    "uk": "/ˌɪnˈlænd/",
+    "us": "/ˌɪnˈlænd/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -198121,7 +198761,8 @@
    {
     "pos": "adv.",
     "zh": "向内陆；在内陆",
-    "en": "Away from the coast, towards or within the interior"
+    "en": "Away from the coast, towards or within the interior",
+    "v": 1
    }
   ],
   "ex": [
@@ -203170,6 +203811,16 @@
   "w": "approximate",
   "uk": "/əˈprɒksɪmət/",
   "us": "/əˈprɑːksɪmət/",
+  "pron": [
+   {
+    "uk": "/əˈprɒksɪmət/",
+    "us": "/əˈprɑːksɪmət/"
+   },
+   {
+    "uk": "/əˈprɒksɪmeɪt/",
+    "us": "/əˈprɑːksɪmeɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -203179,7 +203830,8 @@
    {
     "pos": "v.",
     "zh": "近似；接近",
-    "en": "To be close to something in amount, quality, or character"
+    "en": "To be close to something in amount, quality, or character",
+    "v": 1
    }
   ],
   "ex": [
@@ -203386,6 +204038,16 @@
   "w": "reject",
   "uk": "/rɪˈdʒekt/",
   "us": "/rɪˈdʒekt/",
+  "pron": [
+   {
+    "uk": "/rɪˈdʒekt/",
+    "us": "/rɪˈdʒekt/"
+   },
+   {
+    "uk": "/ˈriːdʒekt/",
+    "us": "/ˈriːdʒekt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -203400,7 +204062,8 @@
    {
     "pos": "n.",
     "zh": "次品；不合格品",
-    "en": "An item not accepted because it fails to meet standards."
+    "en": "An item not accepted because it fails to meet standards.",
+    "v": 1
    }
   ],
   "ex": [
@@ -208212,6 +208875,18 @@
   "w": "insult",
   "uk": "/ɪnˈsʌlt/",
   "us": "/ɪnˈsʌlt/",
+  "pron": [
+   {
+    "uk": "/ɪnˈsʌlt/",
+    "us": "/ɪnˈsʌlt/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈɪnsʌlt/",
+    "us": "/ˈɪnsʌlt/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -208221,7 +208896,8 @@
    {
     "pos": "n.",
     "zh": "侮辱；无礼的言行",
-    "en": "A remark or action that shows disrespect and causes offence."
+    "en": "A remark or action that shows disrespect and causes offence.",
+    "v": 1
    }
   ],
   "ex": [
@@ -209847,7 +210523,17 @@
  {
   "w": "insert",
   "uk": "/ɪnˈsɜːt/",
-  "us": "/ɪnˈsɝːt/",
+  "us": "/ɪnˈsɜːrt/",
+  "pron": [
+   {
+    "uk": "/ɪnˈsɜːt/",
+    "us": "/ɪnˈsɜːrt/"
+   },
+   {
+    "uk": "/ˈɪnsɜːt/",
+    "us": "/ˈɪnsɜːrt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -209862,7 +210548,8 @@
    {
     "pos": "n.",
     "zh": "插页；插入物",
-    "en": "something designed to be placed inside another thing"
+    "en": "something designed to be placed inside another thing",
+    "v": 1
    }
   ],
   "ex": [
@@ -212400,6 +213087,16 @@
   "w": "impact",
   "uk": "/ˈɪmpækt/",
   "us": "/ˈɪmpækt/",
+  "pron": [
+   {
+    "uk": "/ˈɪmpækt/",
+    "us": "/ˈɪmpækt/"
+   },
+   {
+    "uk": "/ɪmˈpækt/",
+    "us": "/ɪmˈpækt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -212414,7 +213111,8 @@
    {
     "pos": "v.",
     "zh": "影响",
-    "en": "to affect someone or something, often strongly"
+    "en": "to affect someone or something, often strongly",
+    "v": 1
    }
   ],
   "ex": [
@@ -213433,6 +214131,16 @@
   "w": "underestimate",
   "uk": "/ˌʌndərˈestɪmeɪt/",
   "us": "/ˌʌndərˈestɪmeɪt/",
+  "pron": [
+   {
+    "uk": "/ˌʌndərˈestɪmeɪt/",
+    "us": "/ˌʌndərˈestɪmeɪt/"
+   },
+   {
+    "uk": "/ˌʌndərˈestɪmət/",
+    "us": "/ˌʌndərˈestɪmət/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -213442,7 +214150,8 @@
    {
     "pos": "n.",
     "zh": "偏低的估计",
-    "en": "An estimate that is lower than the actual amount"
+    "en": "An estimate that is lower than the actual amount",
+    "v": 1
    }
   ],
   "ex": [
@@ -213891,7 +214600,17 @@
  {
   "w": "associate",
   "uk": "/əˈsəʊsieɪt/",
-  "us": "/əˈsoʊʃieɪt/",
+  "us": "/əˈsoʊsieɪt/",
+  "pron": [
+   {
+    "uk": "/əˈsəʊsieɪt/",
+    "us": "/əˈsoʊsieɪt/"
+   },
+   {
+    "uk": "/əˈsəʊsiət/",
+    "us": "/əˈsoʊsiət/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -213901,12 +214620,14 @@
    {
     "pos": "n.",
     "zh": "同事；业务伙伴",
-    "en": "someone connected with you through work or business"
+    "en": "someone connected with you through work or business",
+    "v": 1
    },
    {
     "pos": "adj.",
     "zh": "副的；准的",
-    "en": "having a related position, often below the main or full rank"
+    "en": "having a related position, often below the main or full rank",
+    "v": 1
    }
   ],
   "ex": [
@@ -214171,6 +214892,16 @@
   "w": "conflict",
   "uk": "/ˈkɒnflɪkt/",
   "us": "/ˈkɑːnflɪkt/",
+  "pron": [
+   {
+    "uk": "/ˈkɒnflɪkt/",
+    "us": "/ˈkɑːnflɪkt/"
+   },
+   {
+    "uk": "/kənˈflɪkt/",
+    "us": "/kənˈflɪkt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -214185,7 +214916,8 @@
    {
     "pos": "v.",
     "zh": "相冲突；相抵触",
-    "en": "To disagree with or be incompatible with something."
+    "en": "To disagree with or be incompatible with something.",
+    "v": 1
    }
   ],
   "ex": [
@@ -218555,6 +219287,16 @@
   "w": "relay",
   "uk": "/ˈriːleɪ/",
   "us": "/ˈriːleɪ/",
+  "pron": [
+   {
+    "uk": "/ˈriːleɪ/",
+    "us": "/ˈriːleɪ/"
+   },
+   {
+    "uk": "/rɪˈleɪ/",
+    "us": "/rɪˈleɪ/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -218564,7 +219306,8 @@
    {
     "pos": "v.",
     "zh": "转达；转播",
-    "en": "to pass information or broadcast signals to another person or place"
+    "en": "to pass information or broadcast signals to another person or place",
+    "v": 1
    },
    {
     "pos": "n.",
@@ -219996,6 +220739,16 @@
   "w": "compound",
   "uk": "/ˈkɒmpaʊnd/",
   "us": "/ˈkɑːmpaʊnd/",
+  "pron": [
+   {
+    "uk": "/ˈkɒmpaʊnd/",
+    "us": "/ˈkɑːmpaʊnd/"
+   },
+   {
+    "uk": "/kəmˈpaʊnd/",
+    "us": "/kəmˈpaʊnd/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -220010,7 +220763,8 @@
    {
     "pos": "v.",
     "zh": "加重；使恶化",
-    "en": "To make an existing problem or difficulty worse."
+    "en": "To make an existing problem or difficulty worse.",
+    "v": 1
    }
   ],
   "ex": [
@@ -220215,7 +220969,19 @@
  {
   "w": "merchandise",
   "uk": "/ˈmɜːtʃəndaɪs/",
-  "us": "/ˈmɝːtʃəndaɪs/",
+  "us": "/ˈmɜːrtʃəndaɪs/",
+  "pron": [
+   {
+    "uk": "/ˈmɜːtʃəndaɪs/",
+    "us": "/ˈmɜːrtʃəndaɪs/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈmɜːtʃəndaɪz/",
+    "us": "/ˈmɜːrtʃəndaɪz/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -220225,7 +220991,8 @@
    {
     "pos": "v.",
     "zh": "推销；促销",
-    "en": "to promote goods and encourage people to buy them"
+    "en": "to promote goods and encourage people to buy them",
+    "v": 1
    }
   ],
   "ex": [
@@ -222710,7 +223477,17 @@
  {
   "w": "estimate",
   "uk": "/ˈestɪmeɪt/",
-  "us": "/ˈestəmeɪt/",
+  "us": "/ˈestɪmeɪt/",
+  "pron": [
+   {
+    "uk": "/ˈestɪmeɪt/",
+    "us": "/ˈestɪmeɪt/"
+   },
+   {
+    "uk": "/ˈestɪmət/",
+    "us": "/ˈestɪmət/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -222720,7 +223497,8 @@
    {
     "pos": "n.",
     "zh": "估计；估价",
-    "en": "An approximate calculation of an amount, value, or cost."
+    "en": "An approximate calculation of an amount, value, or cost.",
+    "v": 1
    }
   ],
   "ex": [
@@ -223370,6 +224148,18 @@
   "w": "recall",
   "uk": "/rɪˈkɔːl/",
   "us": "/rɪˈkɔːl/",
+  "pron": [
+   {
+    "uk": "/rɪˈkɔːl/",
+    "us": "/rɪˈkɔːl/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈriːkɔːl/",
+    "us": "/ˈriːkɔːl/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -223384,7 +224174,8 @@
    {
     "pos": "n.",
     "zh": "记忆力；产品召回",
-    "en": "the ability to remember, or an official request for returns"
+    "en": "the ability to remember, or an official request for returns",
+    "v": 1
    }
   ],
   "ex": [
@@ -226486,6 +227277,16 @@
   "w": "contract",
   "uk": "/ˈkɒntrækt/",
   "us": "/ˈkɑːntrækt/",
+  "pron": [
+   {
+    "uk": "/ˈkɒntrækt/",
+    "us": "/ˈkɑːntrækt/"
+   },
+   {
+    "uk": "/kənˈtrækt/",
+    "us": "/kənˈtrækt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -226495,12 +227296,14 @@
    {
     "pos": "v.",
     "zh": "收缩；缩小",
-    "en": "To become smaller or make something smaller."
+    "en": "To become smaller or make something smaller.",
+    "v": 1
    },
    {
     "pos": "v.",
     "zh": "感染；患上",
-    "en": "To catch or develop a disease."
+    "en": "To catch or develop a disease.",
+    "v": 1
    }
   ],
   "ex": [
@@ -232097,6 +232900,16 @@
   "w": "extract",
   "uk": "/ɪkˈstrækt/",
   "us": "/ɪkˈstrækt/",
+  "pron": [
+   {
+    "uk": "/ɪkˈstrækt/",
+    "us": "/ɪkˈstrækt/"
+   },
+   {
+    "uk": "/ˈekstrækt/",
+    "us": "/ˈekstrækt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -232106,12 +232919,14 @@
    {
     "pos": "n.",
     "zh": "摘录；节选",
-    "en": "a short passage taken from a longer piece of writing"
+    "en": "a short passage taken from a longer piece of writing",
+    "v": 1
    },
    {
     "pos": "n.",
     "zh": "提取物；浓缩物",
-    "en": "a substance obtained by removing it from its original source"
+    "en": "a substance obtained by removing it from its original source",
+    "v": 1
    }
   ],
   "ex": [
@@ -237523,6 +238338,16 @@
   "w": "appropriate",
   "uk": "/əˈprəʊpriət/",
   "us": "/əˈproʊpriət/",
+  "pron": [
+   {
+    "uk": "/əˈprəʊpriət/",
+    "us": "/əˈproʊpriət/"
+   },
+   {
+    "uk": "/əˈprəʊprieɪt/",
+    "us": "/əˈproʊprieɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -237532,12 +238357,14 @@
    {
     "pos": "v.",
     "zh": "擅自占用；挪用",
-    "en": "to take something for your own use without permission"
+    "en": "to take something for your own use without permission",
+    "v": 1
    },
    {
     "pos": "v.",
     "zh": "拨款；拨出",
-    "en": "to officially set aside money for a particular purpose"
+    "en": "to officially set aside money for a particular purpose",
+    "v": 1
    }
   ],
   "ex": [
@@ -238236,6 +239063,18 @@
   "w": "ornament",
   "uk": "/ˈɔːnəmənt/",
   "us": "/ˈɔːrnəmənt/",
+  "pron": [
+   {
+    "uk": "/ˈɔːnəmənt/",
+    "us": "/ˈɔːrnəmənt/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈɔːnəment/",
+    "us": "/ˈɔːrnəment/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -238245,7 +239084,8 @@
    {
     "pos": "v.",
     "zh": "装饰；点缀",
-    "en": "To decorate something with attractive objects or details."
+    "en": "To decorate something with attractive objects or details.",
+    "v": 1
    }
   ],
   "ex": [
@@ -240512,11 +241352,13 @@
   "pron": [
    {
     "uk": "/bəʊ/",
-    "us": "/boʊ/"
+    "us": "/boʊ/",
+    "tts": true
    },
    {
     "uk": "/baʊ/",
-    "us": "/baʊ/"
+    "us": "/baʊ/",
+    "tts": true
    }
   ],
   "senses": [
@@ -256950,6 +257792,16 @@
   "w": "convict",
   "uk": "/ˈkɒnvɪkt/",
   "us": "/ˈkɑːnvɪkt/",
+  "pron": [
+   {
+    "uk": "/ˈkɒnvɪkt/",
+    "us": "/ˈkɑːnvɪkt/"
+   },
+   {
+    "uk": "/kənˈvɪkt/",
+    "us": "/kənˈvɪkt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -256959,7 +257811,8 @@
    {
     "pos": "v.",
     "zh": "判定…有罪",
-    "en": "To officially find someone guilty of a crime in court."
+    "en": "To officially find someone guilty of a crime in court.",
+    "v": 1
    }
   ],
   "ex": [
@@ -260315,6 +261168,16 @@
   "w": "advocate",
   "uk": "/ˈædvəkeɪt/",
   "us": "/ˈædvəkeɪt/",
+  "pron": [
+   {
+    "uk": "/ˈædvəkeɪt/",
+    "us": "/ˈædvəkeɪt/"
+   },
+   {
+    "uk": "/ˈædvəkət/",
+    "us": "/ˈædvəkət/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -260324,7 +261187,8 @@
    {
     "pos": "n.",
     "zh": "倡导者；支持者",
-    "en": "Someone who publicly supports a cause or policy."
+    "en": "Someone who publicly supports a cause or policy.",
+    "v": 1
    }
   ],
   "ex": [
@@ -266419,6 +267283,16 @@
   "w": "transplant",
   "uk": "/trænsˈplɑːnt/",
   "us": "/trænsˈplænt/",
+  "pron": [
+   {
+    "uk": "/trænsˈplɑːnt/",
+    "us": "/trænsˈplænt/"
+   },
+   {
+    "uk": "/ˈtrænsplɑːnt/",
+    "us": "/ˈtrænsplænt/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -266428,7 +267302,8 @@
    {
     "pos": "n.",
     "zh": "移植手术；移植器官",
-    "en": "An operation transferring an organ, or the organ transferred."
+    "en": "An operation transferring an organ, or the organ transferred.",
+    "v": 1
    }
   ],
   "ex": [
@@ -269696,6 +270571,16 @@
   "w": "duplicate",
   "uk": "/ˈdjuːplɪkət/",
   "us": "/ˈduːplɪkət/",
+  "pron": [
+   {
+    "uk": "/ˈdjuːplɪkət/",
+    "us": "/ˈduːplɪkət/"
+   },
+   {
+    "uk": "/ˈdjuːplɪkeɪt/",
+    "us": "/ˈduːplɪkeɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -269705,7 +270590,8 @@
    {
     "pos": "v.",
     "zh": "复制；重复",
-    "en": "To make an exact copy or repeat something unnecessarily"
+    "en": "To make an exact copy or repeat something unnecessarily",
+    "v": 1
    },
    {
     "pos": "adj.",
@@ -270214,6 +271100,18 @@
   "w": "incline",
   "uk": "/ɪnˈklaɪn/",
   "us": "/ɪnˈklaɪn/",
+  "pron": [
+   {
+    "uk": "/ɪnˈklaɪn/",
+    "us": "/ɪnˈklaɪn/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈɪnklaɪn/",
+    "us": "/ˈɪnklaɪn/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -270228,7 +271126,8 @@
    {
     "pos": "n.",
     "zh": "斜坡",
-    "en": "A surface that slopes upwards or downwards"
+    "en": "A surface that slopes upwards or downwards",
+    "v": 1
    }
   ],
   "ex": [
@@ -272325,8 +273224,18 @@
  },
  {
   "w": "patent",
-  "uk": "/ˈpeɪtənt/",
-  "us": "/ˈpætənt/",
+  "uk": "/ˈpætnt/",
+  "us": "/ˈpætnt/",
+  "pron": [
+   {
+    "uk": "/ˈpætnt/",
+    "us": "/ˈpætnt/"
+   },
+   {
+    "uk": "/ˈpeɪtnt/",
+    "us": "/ˈpeɪtnt/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -272341,7 +273250,8 @@
    {
     "pos": "adj.",
     "zh": "明显的；显而易见的",
-    "en": "very clear and easy to recognize"
+    "en": "very clear and easy to recognize",
+    "v": 1
    }
   ],
   "ex": [
@@ -273209,6 +274119,16 @@
   "w": "diffuse",
   "uk": "/dɪˈfjuːz/",
   "us": "/dɪˈfjuːz/",
+  "pron": [
+   {
+    "uk": "/dɪˈfjuːz/",
+    "us": "/dɪˈfjuːz/"
+   },
+   {
+    "uk": "/dɪˈfjuːs/",
+    "us": "/dɪˈfjuːs/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -273218,12 +274138,14 @@
    {
     "pos": "adj.",
     "zh": "分散的；弥漫的",
-    "en": "Spread over a wide area rather than concentrated."
+    "en": "Spread over a wide area rather than concentrated.",
+    "v": 1
    },
    {
     "pos": "adj.",
     "zh": "冗长散漫的",
-    "en": "Using too many words without a clear focus."
+    "en": "Using too many words without a clear focus.",
+    "v": 1
    }
   ],
   "ex": [
@@ -274856,6 +275778,16 @@
   "w": "degenerate",
   "uk": "/dɪˈdʒenəreɪt/",
   "us": "/dɪˈdʒenəreɪt/",
+  "pron": [
+   {
+    "uk": "/dɪˈdʒenəreɪt/",
+    "us": "/dɪˈdʒenəreɪt/"
+   },
+   {
+    "uk": "/dɪˈdʒenərət/",
+    "us": "/dɪˈdʒenərət/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -274865,7 +275797,8 @@
    {
     "pos": "adj.",
     "zh": "道德败坏的；退化的",
-    "en": "Having declined morally or lost normal structure or function."
+    "en": "Having declined morally or lost normal structure or function.",
+    "v": 1
    }
   ],
   "ex": [
@@ -277109,6 +278042,16 @@
   "w": "elaborate",
   "uk": "/ɪˈlæbərət/",
   "us": "/ɪˈlæbərət/",
+  "pron": [
+   {
+    "uk": "/ɪˈlæbərət/",
+    "us": "/ɪˈlæbərət/"
+   },
+   {
+    "uk": "/ɪˈlæbəreɪt/",
+    "us": "/ɪˈlæbəreɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -277118,7 +278061,8 @@
    {
     "pos": "v.",
     "zh": "详细说明；阐述",
-    "en": "To explain something further by adding more details."
+    "en": "To explain something further by adding more details.",
+    "v": 1
    }
   ],
   "ex": [
@@ -282972,6 +283916,18 @@
   "w": "alloy",
   "uk": "/ˈælɔɪ/",
   "us": "/ˈælɔɪ/",
+  "pron": [
+   {
+    "uk": "/ˈælɔɪ/",
+    "us": "/ˈælɔɪ/",
+    "tts": true
+   },
+   {
+    "uk": "/əˈlɔɪ/",
+    "us": "/əˈlɔɪ/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -282981,7 +283937,8 @@
    {
     "pos": "v.",
     "zh": "使成合金",
-    "en": "To combine a metal with another element."
+    "en": "To combine a metal with another element.",
+    "v": 1
    }
   ],
   "ex": [
@@ -288667,6 +289624,16 @@
   "w": "precipitate",
   "uk": "/prɪˈsɪpɪteɪt/",
   "us": "/prɪˈsɪpɪteɪt/",
+  "pron": [
+   {
+    "uk": "/prɪˈsɪpɪteɪt/",
+    "us": "/prɪˈsɪpɪteɪt/"
+   },
+   {
+    "uk": "/prɪˈsɪpɪtət/",
+    "us": "/prɪˈsɪpɪtət/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -288681,7 +289648,8 @@
    {
     "pos": "adj.",
     "zh": "仓促的；鲁莽的",
-    "en": "Done too quickly and without enough thought."
+    "en": "Done too quickly and without enough thought.",
+    "v": 1
    }
   ],
   "ex": [
@@ -289113,6 +290081,16 @@
   "w": "affiliate",
   "uk": "/əˈfɪlieɪt/",
   "us": "/əˈfɪlieɪt/",
+  "pron": [
+   {
+    "uk": "/əˈfɪlieɪt/",
+    "us": "/əˈfɪlieɪt/"
+   },
+   {
+    "uk": "/əˈfɪliət/",
+    "us": "/əˈfɪliət/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -289122,7 +290100,8 @@
    {
     "pos": "n.",
     "zh": "附属机构；关联公司",
-    "en": "An organisation officially connected with a larger organisation."
+    "en": "An organisation officially connected with a larger organisation.",
+    "v": 1
    }
   ],
   "ex": [
@@ -294253,6 +295232,16 @@
   "w": "articulate",
   "uk": "/ɑːˈtɪkjələt/",
   "us": "/ɑːrˈtɪkjələt/",
+  "pron": [
+   {
+    "uk": "/ɑːˈtɪkjələt/",
+    "us": "/ɑːrˈtɪkjələt/"
+   },
+   {
+    "uk": "/ɑːˈtɪkjuleɪt/",
+    "us": "/ɑːrˈtɪkjuleɪt/"
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -294262,7 +295251,8 @@
    {
     "pos": "v.",
     "zh": "清楚表达",
-    "en": "to express thoughts or feelings clearly in words"
+    "en": "to express thoughts or feelings clearly in words",
+    "v": 1
    }
   ],
   "ex": [
@@ -295693,6 +296683,18 @@
   "w": "adept",
   "uk": "/əˈdept/",
   "us": "/əˈdept/",
+  "pron": [
+   {
+    "uk": "/əˈdept/",
+    "us": "/əˈdept/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈædept/",
+    "us": "/ˈædept/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -295702,7 +296704,8 @@
    {
     "pos": "n.",
     "zh": "能手；行家",
-    "en": "Someone who is highly skilled in a particular activity."
+    "en": "Someone who is highly skilled in a particular activity.",
+    "v": 1
    }
   ],
   "ex": [
@@ -300692,6 +301695,16 @@
   "w": "misuse",
   "uk": "/ˌmɪsˈjuːz/",
   "us": "/ˌmɪsˈjuːz/",
+  "pron": [
+   {
+    "uk": "/ˌmɪsˈjuːz/",
+    "us": "/ˌmɪsˈjuːz/"
+   },
+   {
+    "uk": "/ˌmɪsˈjuːs/",
+    "us": "/ˌmɪsˈjuːs/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -300701,7 +301714,8 @@
    {
     "pos": "n.",
     "zh": "误用；滥用",
-    "en": "The incorrect or harmful use of something."
+    "en": "The incorrect or harmful use of something.",
+    "v": 1
    }
   ],
   "ex": [
@@ -300921,6 +301935,16 @@
   "w": "intrigue",
   "uk": "/ɪnˈtriːɡ/",
   "us": "/ɪnˈtriːɡ/",
+  "pron": [
+   {
+    "uk": "/ɪnˈtriːɡ/",
+    "us": "/ɪnˈtriːɡ/"
+   },
+   {
+    "uk": "/ˈɪntriːɡ/",
+    "us": "/ˈɪntriːɡ/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -300930,7 +301954,8 @@
    {
     "pos": "n.",
     "zh": "阴谋；密谋",
-    "en": "Secret planning intended to gain power or an advantage."
+    "en": "Secret planning intended to gain power or an advantage.",
+    "v": 1
    }
   ],
   "ex": [
@@ -304910,6 +305935,16 @@
   "w": "console",
   "uk": "/kənˈsəʊl/",
   "us": "/kənˈsoʊl/",
+  "pron": [
+   {
+    "uk": "/kənˈsəʊl/",
+    "us": "/kənˈsoʊl/"
+   },
+   {
+    "uk": "/ˈkɒnsəʊl/",
+    "us": "/ˈkɑːnsoʊl/"
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -304919,7 +305954,8 @@
    {
     "pos": "n.",
     "zh": "控制台；游戏机",
-    "en": "A control unit for equipment, or a machine for video games."
+    "en": "A control unit for equipment, or a machine for video games.",
+    "v": 1
    }
   ],
   "ex": [
@@ -310249,6 +311285,16 @@
   "w": "torment",
   "uk": "/ˈtɔːment/",
   "us": "/ˈtɔːrment/",
+  "pron": [
+   {
+    "uk": "/ˈtɔːment/",
+    "us": "/ˈtɔːrment/"
+   },
+   {
+    "uk": "/tɔːˈment/",
+    "us": "/tɔːrˈment/"
+   }
+  ],
   "senses": [
    {
     "pos": "n.",
@@ -310258,7 +311304,8 @@
    {
     "pos": "v.",
     "zh": "使痛苦；折磨；烦扰",
-    "en": "to cause someone severe suffering or repeated distress"
+    "en": "to cause someone severe suffering or repeated distress",
+    "v": 1
    }
   ],
   "ex": [
@@ -314061,6 +315108,18 @@
   "w": "surmise",
   "uk": "/səˈmaɪz/",
   "us": "/sərˈmaɪz/",
+  "pron": [
+   {
+    "uk": "/səˈmaɪz/",
+    "us": "/sərˈmaɪz/",
+    "tts": true
+   },
+   {
+    "uk": "/ˈsɜːmaɪz/",
+    "us": "/ˈsɜːrmaɪz/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "v.",
@@ -314070,7 +315129,8 @@
    {
     "pos": "n.",
     "zh": "推测；猜想",
-    "en": "An opinion formed without enough evidence to be certain"
+    "en": "An opinion formed without enough evidence to be certain",
+    "v": 1
    }
   ],
   "ex": [
@@ -314464,6 +315524,18 @@
   "w": "prostrate",
   "uk": "/ˈprɒstreɪt/",
   "us": "/ˈprɑːstreɪt/",
+  "pron": [
+   {
+    "uk": "/ˈprɒstreɪt/",
+    "us": "/ˈprɑːstreɪt/",
+    "tts": true
+   },
+   {
+    "uk": "/prɒˈstreɪt/",
+    "us": "/prɒˈstreɪt/",
+    "tts": true
+   }
+  ],
   "senses": [
    {
     "pos": "adj.",
@@ -314478,7 +315550,8 @@
    {
     "pos": "v.",
     "zh": "使俯伏；使衰弱",
-    "en": "to make someone lie face down or become extremely weak"
+    "en": "to make someone lie face down or become extremely weak",
+    "v": 1
    }
   ],
   "ex": [

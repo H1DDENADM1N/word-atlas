@@ -20,9 +20,13 @@ The material above is offered under CC BY 4.0, to the extent of the rights the m
 
 ### 单词发音 / Word pronunciations
 
-公开发布包使用上游 Word Atlas 的原版单词录音：`public/atlas/audio/uk/`、`public/atlas/audio/us/` 下的英音与美音，由 ElevenLabs 合成（Alice / Sarah），随上游 `public/atlas/audio/` 以 CC BY 4.0 提供。本 fork 的 `.gitignore` 默认不把这些 mp3 放进 Git；构建时从上游 `origin/main` 恢复，或由构建机提供。私用 OALDPEX 音源写入 `private/audio/oaldpex/{uk,us}`，不要覆盖公开音源；如果导入了，覆盖后的录音版权归牛津大学出版社，不属于 CC BY 4.0，只能自用，不得随 APK、镜像或任何形式的公开分发再传播。没有这些录音时，构建出的应用会改用内置的 Kokoro 语音朗读单词。
+公开发布包里的单词录音有两个来源。**76 个同形异音词**（`tear`、`record` 这类一个拼写两套读音的词）使用 Wikimedia Commons 上的真人录音，来自 Wiktionary 与 Lingua Libre，逐文件的作者与授权见 [docs/audio-credits.md](docs/audio-credits.md)；其中 CC BY-SA 3.0 / 4.0 的文件在再分发时需保留同样的授权与署名，另有 CC0 与公有领域的文件。其余单词使用上游 Word Atlas 的原版录音。
 
-The public build uses the original Word Atlas word recordings under `public/atlas/audio/uk/` and `public/atlas/audio/us/` (ElevenLabs, voices Alice and Sarah), offered under CC BY 4.0 with upstream's `public/atlas/audio/`. This fork's `.gitignore` keeps those mp3 files out of Git by default; the build restores them from upstream `origin/main` or from the build machine. Private OALDPEX audio goes to `private/audio/oaldpex/{uk,us}` and must not overwrite the public set; if imported, those files are Oxford University Press's, are **not** covered by CC BY 4.0, may be used for your own build only, and must not be redistributed in an APK, a mirror or any other public copy. Without those files the app reads words with the bundled Kokoro voice instead.
+这批原版录音位于 `public/atlas/audio/uk/`、`public/atlas/audio/us/`，由 ElevenLabs 合成（Alice / Sarah），随上游 `public/atlas/audio/` 以 CC BY 4.0 提供。本 fork 的 `.gitignore` 默认不把这些 mp3 放进 Git；构建时从上游 `origin/main` 恢复，或由构建机提供。私用 OALDPEX 音源写入 `private/audio/oaldpex/{uk,us}`，不要覆盖公开音源；如果导入了，覆盖后的录音版权归牛津大学出版社，不属于 CC BY 4.0，只能自用，不得随 APK、镜像或任何形式的公开分发再传播。没有这些录音时，构建出的应用会改用内置的 Kokoro 语音朗读单词。
+
+Word audio in the public build comes from two places. The **76 heteronyms** (one spelling, two readings, such as `tear` or `record`) use human recordings from Wikimedia Commons — Wiktionary and Lingua Libre — with per-file credit and licence in [docs/audio-credits.md](docs/audio-credits.md); the CC BY-SA 3.0 / 4.0 files must keep the same licence and credit when redistributed, and some are CC0 or public domain. The remaining words use upstream's original recordings.
+
+Those originals live under `public/atlas/audio/uk/` and `public/atlas/audio/us/` (ElevenLabs, voices Alice and Sarah), offered under CC BY 4.0 with upstream's `public/atlas/audio/`. This fork's `.gitignore` keeps those mp3 files out of Git by default; the build restores them from upstream `origin/main` or from the build machine. Private OALDPEX audio goes to `private/audio/oaldpex/{uk,us}` and must not overwrite the public set; if imported, those files are Oxford University Press's, are **not** covered by CC BY 4.0, may be used for your own build only, and must not be redistributed in an APK, a mirror or any other public copy. Without those files the app reads words with the bundled Kokoro voice instead.
 
 ### 说明 / Notes
 

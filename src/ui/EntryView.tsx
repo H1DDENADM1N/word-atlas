@@ -53,6 +53,11 @@ export function Pronounce({ entry, refw }: { entry: Entry; refw: WordRef | Entry
             <span className="pron-idx" title={`读音 ${i + 1}`} aria-label={`读音 ${i + 1}`}>
               {i + 1}
             </span>
+            {p.tts && (
+              <span className="pron-tts" title="合成语音，非真人录音">
+                合成
+              </span>
+            )}
             {order.map((acc) => (
               <Speak
                 key={acc}
