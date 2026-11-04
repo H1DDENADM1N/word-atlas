@@ -1,6 +1,13 @@
 <div align="center">
 
-<img src="docs/assets/android-atlas.jpg" alt="word-atlas-android：图鉴网格" width="32%">　<img src="docs/assets/android-word.jpg" alt="词卡" width="32%">　<img src="docs/assets/android-today.jpg" alt="今日" width="32%">　<img src="docs/assets/android-widgets.jpg" alt="桌面小部件" width="32%">
+<table align="center">
+  <tr>
+    <td><img src="docs/assets/android-atlas.jpg" alt="word-atlas-android：图鉴网格" width="100%"></td>
+    <td><img src="docs/assets/android-word.jpg" alt="词卡" width="100%"></td>
+    <td><img src="docs/assets/android-today.jpg" alt="今日" width="100%"></td>
+    <td><img src="docs/assets/android-widgets.jpg" alt="桌面小部件" width="100%"></td>
+  </tr>
+</table>
 
 # word-atlas-android
 
