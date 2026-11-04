@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/android-atlas.jpg" alt="word-atlas-android：图鉴网格" width="32%">　<img src="docs/assets/android-word.jpg" alt="词卡" width="32%">　<img src="docs/assets/android-today.jpg" alt="今日" width="32%">
+<img src="docs/assets/android-atlas.jpg" alt="word-atlas-android：图鉴网格" width="32%">　<img src="docs/assets/android-word.jpg" alt="词卡" width="32%">　<img src="docs/assets/android-today.jpg" alt="今日" width="32%">　<img src="docs/assets/android-widgets.jpg" alt="桌面小部件" width="32%">
 
 # word-atlas-android
 
@@ -96,6 +96,18 @@
 
 公开发布包不包含 OALDPEX 的真人录音。`scripts/atlas/import_audio.py` 仍可用于私用构建，把 `uk/`、`us/` 换成 OALDPEX 录音（含这 105 个词的 418 条第二读音），但那批录音版权归牛津大学出版社，仅限自建自用、不得公开分发（见 [CONTENT_LICENSE.md](CONTENT_LICENSE.md)）。
 
+## 桌面小部件
+
+1.0.10 新增三款**零权限、完全离线**的主屏小部件，用内容而不是焦虑把人拉回来：
+
+- **顽固词（2×2）** — 从错词本与重犯词里挑出难词，每两小时自动换一个，右上角可手动刷新；背景是该词的原创插画。
+- **今日一句（4×2 / 5×2）** — 每日一句雅思语境例句与中文译文，背景为词条插画，按本地日期换句。
+- **进度条（4×1）** — 还剩多少步、待复习、新词与预计时间，与首页同源；点按钮直接进入学习页。
+
+学习进度由网页层通过 `publishWidgetSnapshot` 单向交给原生层，小部件只读不写：不联网、不申请任何额外权限、不含账号或统计。三种卡面均跟随系统深浅色、可缩放，插画复用包内素材。设计与实现细节见 [docs/android-widgets.md](docs/android-widgets.md)。
+
+> 小部件已在构建链路逐项验证通过（资源编译、Java 编译、dex、签名、零权限、组件注册），桌面显示与交互（拖拽缩放、深浅色切换、刷新与跳转）也已通过真机实测。
+
 ## 安装
 
 APK 不进仓库（`.gitignore` 已排除）。两种方式：
@@ -105,11 +117,11 @@ APK 不进仓库（`.gitignore` 已排除）。两种方式：
 
 | 产物 | 单词发音 | 用途 |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.9.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
-| `word-atlas-android-v1.0.9_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
+| `word-atlas-android-v1.0.10.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
+| `word-atlas-android-v1.0.10_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
 
 ```bash
-adb install -r word-atlas-android-v1.0.9.apk
+adb install -r word-atlas-android-v1.0.10.apk
 ```
 
 两个包同一包名，不能同时安装；切换时覆盖安装即可，学习记录保留。
@@ -118,10 +130,11 @@ adb install -r word-atlas-android-v1.0.9.apk
 
 ## 版本
 
-当前 **v1.0.9**（versionCode 10）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
+当前 **v1.0.10**（versionCode 11）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
 
 | 版本 | 一句话 |
 | :--- | :--- |
+| **v1.0.10** | 新增三款桌面小部件：顽固词轮播、今日一句、进度条，零权限、完全离线 |
 | **v1.0.9** | 词卡多了**词源图景**与**同根词**：6,754 个词条在音标和释义之间多一句词源小结，近义也补上了辨析里的词 |
 | **v1.0.8** | 雅思语境例句的录音从 1,011 条补齐到 7,298 条：两句例句都能离线听真人朗读，只剩真题例句交给内置语音 |
 | **v1.0.7** | 中文搜索能查到单词的全部义项：搜「缠绕」「蜿蜒」也能找到 wind，结果里显示命中的那条释义 |
@@ -167,9 +180,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.9.apk      （分享版，原版发音）
-# → word-atlas-android-v1.0.9_O.apk    （私用版，OALDPEX 真人发音）
-adb install -r word-atlas-android-v1.0.9.apk
+# → word-atlas-android-v1.0.10.apk      （分享版，原版发音）
+# → word-atlas-android-v1.0.10_O.apk    （私用版，OALDPEX 真人发音）
+adb install -r word-atlas-android-v1.0.10.apk
 ```
 
 两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换单词音源；`--skip-web` 可以复用上一次的 `dist-android`。

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/widget_card" />
+    <corners android:radius="20dp" />
+    <!--
+      Deliberately no <stroke>: GradientDrawable reports the stroke width as
+      padding, and a background's padding insets the view's children — the
+      full-bleed illustration would be pushed ~1dp off the edge and the baked
+      bitmap corners would no longer line up with the card's.
+    -->
+</shape>

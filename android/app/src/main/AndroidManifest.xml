@@ -43,6 +43,62 @@
             android:authorities="tech.wordatlas.app.share"
             android:exported="false"
             android:grantUriPermissions="true" />
+
+        <!--
+          Home-screen widgets. Not exported: the system still delivers
+          APPWIDGET_UPDATE to a non-exported receiver, and the extra refresh
+          broadcast is package-scoped. No permission is added — in particular
+          RECEIVE_BOOT_COMPLETED is unnecessary because the launcher rebinds
+          widgets and sends APPWIDGET_UPDATE after a reboot.
+        -->
+        <receiver android:name=".WidgetTough" android:label="@string/widget_tough_label" android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="tech.wordatlas.app.WIDGET_REFRESH" />
+                <action android:name="tech.wordatlas.app.WIDGET_NEXT" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <!-- Re-render immediately on a day/night switch. -->
+                <action android:name="android.intent.action.CONFIGURATION_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_tough_info" />
+        </receiver>
+
+        <receiver android:name=".WidgetQuote" android:label="@string/widget_quote_label" android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="tech.wordatlas.app.WIDGET_REFRESH" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <!-- Re-render immediately on a day/night switch. -->
+                <action android:name="android.intent.action.CONFIGURATION_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quote_info" />
+        </receiver>
+
+        <receiver android:name=".WidgetPlan" android:label="@string/widget_plan_label" android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="tech.wordatlas.app.WIDGET_REFRESH" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <!-- Re-render immediately on a day/night switch. -->
+                <action android:name="android.intent.action.CONFIGURATION_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_plan_info" />
+        </receiver>
     </application>
 
 </manifest>

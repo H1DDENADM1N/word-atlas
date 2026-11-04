@@ -117,7 +117,31 @@ public class MainActivity extends Activity {
         setContentView(root);
         voice = new OfflineVoice(this);
         maybeExportSample();
-        web.loadUrl(START_URL);
+        web.loadUrl(launchUrl(getIntent()));
+    }
+
+    /**
+     * Widgets hand over an in-app hash route plus an optional one-shot action.
+     * Only a narrow, URL-safe set of characters is accepted: the value ends up
+     * in a file:// URL and is never evaluated as script.
+     */
+    private String launchUrl(Intent intent) {
+        String route = intent == null ? "" : intent.getStringExtra(WidgetBase.EXTRA_ROUTE);
+        if (route == null || !route.startsWith("#/") || !route.matches("^#/[A-Za-z0-9/?=&_%.-]*$")) route = "";
+        String action = intent == null ? null : intent.getStringExtra(WidgetBase.EXTRA_ACTION);
+        if ("start".equals(action)) {
+            if (route.isEmpty()) route = "#/learn";
+            route += (route.contains("?") ? "&" : "?") + "waStart=1";
+        }
+        return START_URL + route;
+    }
+
+    /** singleTask: a tap on a widget while the app is alive arrives here. */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (web != null) web.loadUrl(launchUrl(intent));
     }
 
     private void configure(WebSettings s) {
@@ -667,6 +691,16 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String version() {
             return versionName;
+        }
+
+        /**
+         * One-way hand-off of learning state to the home-screen widgets. The
+         * launcher process cannot read WebView storage, so the page publishes a
+         * compact JSON snapshot; widgets only ever read it.
+         */
+        @JavascriptInterface
+        public void publishWidgetSnapshot(String json) {
+            WidgetBase.publish(MainActivity.this, json);
         }
     }
 

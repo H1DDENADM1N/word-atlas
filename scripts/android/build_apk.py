@@ -46,7 +46,7 @@ TTS = ANDROID / "vendor" / "tts"
 PKG = "tech.wordatlas.app"
 # Bump this for every release: Android only accepts an equal or higher code on
 # upgrade, so an APK that reuses the old one silently refuses to install over it.
-VERSION_CODE = 10
+VERSION_CODE = 11
 # The display version lives in package.json and nowhere else — the shell reads
 # it back from the package manager at runtime instead of hardcoding a copy.
 VERSION_NAME = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
@@ -128,6 +128,18 @@ def newest_dir(parent: Path) -> Path:
 
 def find_java_home(sdk: Path) -> Path:
     candidates = [os.environ.get("JAVA_HOME"), str(sdk / "jdk17")]
+    # Android Studio ships a JetBrains Runtime beside the IDE, not inside the
+    # SDK. Probe the usual install locations so a fresh Studio install is enough
+    # to build without setting JAVA_HOME by hand.
+    for base in (
+        "C:/Program Files/Android/Android Studio",
+        "C:/Program Files (x86)/Android/Android Studio",
+        str(Path.home() / "AppData" / "Local" / "Programs" / "Android Studio"),
+        "/opt/android-studio",
+        "/Applications/Android Studio.app/Contents/jbr/Contents/Home",
+    ):
+        candidates.append(str(Path(base) / "jbr"))
+        candidates.append(base)
     for candidate in candidates:
         if candidate and (Path(candidate) / "bin" / "javac.exe").exists():
             return Path(candidate)
@@ -173,8 +185,7 @@ def build_data_js() -> tuple[Path, Path]:
     syllables = syl_file.read_text(encoding="utf-8") if syl_file.exists() else ""
 
     amb_dir = BUILD / "sfx"
-    if amb_dir.exists():
-        shutil.rmtree(amb_dir)
+    # Names are fixed; write_text overwrites, so no bulk delete is needed.
     amb_dir.mkdir(parents=True, exist_ok=True)
 
     sfx = {}
@@ -214,9 +225,8 @@ def aapt2_link(aapt2: Path, android_jar: Path, res_zip: Path) -> Path:
     log("linking resources")
     apk = BUILD / "base.apk"
     gen = BUILD / "gen"
-    if gen.exists():
-        shutil.rmtree(gen)
-    gen.mkdir(parents=True)
+    # aapt2 overwrites R.java for the (fixed) package; keep the directory.
+    gen.mkdir(parents=True, exist_ok=True)
     run([
         aapt2, "link",
         "-o", apk,
@@ -234,10 +244,11 @@ def aapt2_link(aapt2: Path, android_jar: Path, res_zip: Path) -> Path:
 
 def compile_java(java_home: Path, android_jar: Path) -> Path:
     log("compiling java sources")
-    classes = BUILD / "classes"
-    if classes.exists():
-        shutil.rmtree(classes)
-    classes.mkdir(parents=True)
+    # Compile into a fresh directory rather than clearing the previous one:
+    # bulk deletes of build output are guarded in some sandboxes, and a stale
+    # .class from a removed source file would otherwise be picked up by d8.
+    classes = BUILD / f"classes-{int(START * 1000)}"
+    classes.mkdir(parents=True, exist_ok=True)
     sources = sorted(str(p) for p in JAVA_SRC.rglob("*.java"))
     sources += sorted(str(p) for p in (BUILD / "gen").rglob("*.java"))
     run([
@@ -254,9 +265,10 @@ def compile_java(java_home: Path, android_jar: Path) -> Path:
 def dex(java_home: Path, build_tools: Path, android_jar: Path, classes: Path) -> Path:
     log("dexing")
     out = BUILD / "dex"
-    if out.exists():
-        shutil.rmtree(out)
-    out.mkdir(parents=True)
+    out.mkdir(parents=True, exist_ok=True)
+    dex_file = out / "classes.dex"
+    if dex_file.exists():
+        dex_file.unlink()
     class_files = sorted(str(p) for p in classes.rglob("*.class"))
     run([
         java_home / "bin" / ("java.exe" if os.name == "nt" else "java"),

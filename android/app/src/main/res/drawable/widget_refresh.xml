@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  lucide refresh-cw as a framework vector.
+
+  The icon sits directly on the illustration with no plate or border, so the
+  first pass is the same path stroked wider in translucent ink: it reads as a
+  soft halo (keeps the glyph legible over pale skies) without drawing a visible
+  circle behind it.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:pathData="M21,2 L21,8 L15,8 M3,12 a9,9 0 0,1 15,-6.7 L21,8 M3,22 L3,16 L9,16 M21,12 a9,9 0 0,1 -15,6.7 L3,16"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/widget_refresh_halo"
+        android:strokeWidth="4.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <path
+        android:pathData="M21,2 L21,8 L15,8 M3,12 a9,9 0 0,1 15,-6.7 L21,8 M3,22 L3,16 L9,16 M21,12 a9,9 0 0,1 -15,6.7 L3,16"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/widget_refresh_ink"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

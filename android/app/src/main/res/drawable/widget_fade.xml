@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Feathering between the open picture and the translucent plate. Runs from the
+  plate colour (bottom) to the same colour at zero alpha (top), so the wash has
+  no hard edge and never passes through grey.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="90"
+        android:startColor="@color/widget_fade_solid"
+        android:endColor="@color/widget_fade_clear"
+        android:type="linear" />
+</shape>

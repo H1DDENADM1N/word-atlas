@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_card_bg"
+    android:forceDarkAllowed="false">
+
+    <ImageView
+        android:id="@+id/widget_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <!-- FrameLayout, not View: RemoteViews only inflates whitelisted
+             classes and android.view.View is not one of them. -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:background="@drawable/widget_fade" />
+
+        <LinearLayout
+            android:id="@+id/widget_body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/widget_body_bg"
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="14dp">
+
+            <TextView
+                android:id="@+id/widget_en"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:includeFontPadding="false"
+                android:textColor="@color/widget_ink"
+                android:textSize="18sp"
+                android:lineSpacingExtra="0dp"
+                android:breakStrategy="balanced"
+                android:maxLines="5"
+                android:ellipsize="end"
+                android:text="" />
+
+            <TextView
+                android:id="@+id/widget_zh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="sans-serif"
+                android:includeFontPadding="false"
+                android:textColor="@color/widget_ink_2"
+                android:textSize="13sp"
+                android:lineSpacingExtra="1dp"
+                android:maxLines="3"
+                android:ellipsize="end"
+                android:text="" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

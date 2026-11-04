@@ -173,6 +173,9 @@ export function About() {
             环境声又是另一类：大部分是 Pixabay 上的录音，按 Pixabay Content License
             使用（无需署名）；「静水深流」「八音旧梦」「弦上清音」三条由参考站自己用代码合成。来源与哈希都记在仓库里，可以逐条复核。
           </p>
+          <p className="muted">
+            桌面小部件复用同一批插画与原创例句，按 CC BY 4.0 使用，署名 <b>Word Atlas contributors — CC BY 4.0</b>；它们只在本地读取学习进度的快照，不联网、不申请任何额外权限，也不含账号或统计。
+          </p>
           <p className="muted">不是官方雅思词表，也不承诺提分。</p>
         </section>
 

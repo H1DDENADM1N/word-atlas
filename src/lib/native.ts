@@ -24,6 +24,8 @@ interface Shell {
   openExternal(url: string): void;
   toast(message: string): void;
   version(): string;
+  /** One-way hand-off of learning state to the home-screen widgets. */
+  publishWidgetSnapshot?(json: string): void;
 }
 
 declare global {

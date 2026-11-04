@@ -24,6 +24,7 @@ import { Sheet } from "./ui/Sheet";
 import { shouldShowSplash, Splash } from "./ui/Splash";
 import { Starfield } from "./ui/Starfield";
 import { Toasts } from "./ui/Toast";
+import { installWidgetLaunch, installWidgetPublisher } from "./lib/widget";
 
 const NAV: { page: Route["page"]; label: string; icon: typeof Compass }[] = [
   { page: "today", label: "今日", icon: Compass },
@@ -76,6 +77,14 @@ export default function App() {
       setAtlas(next);
     }
   }, [dataset, open, priv, atlas]);
+
+  // Android widgets: honour a one-shot launch flag, then keep the launcher fed
+  // with a compact snapshot. No-op in the browser (the shell method is absent).
+  useEffect(() => {
+    if (!atlas) return;
+    installWidgetLaunch(atlas);
+    return installWidgetPublisher(atlas);
+  }, [atlas]);
 
   if (error)
     return (

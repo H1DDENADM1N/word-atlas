@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/android-atlas.jpg" alt="word-atlas-android: the atlas grid" width="32%">　<img src="docs/assets/android-word.jpg" alt="Word card" width="32%">　<img src="docs/assets/android-today.jpg" alt="Today" width="32%">
+<img src="docs/assets/android-atlas.jpg" alt="word-atlas-android: the atlas grid" width="32%">　<img src="docs/assets/android-word.jpg" alt="Word card" width="32%">　<img src="docs/assets/android-today.jpg" alt="Today" width="32%">　<img src="docs/assets/android-widgets.jpg" alt="桌面小部件" width="32%">
 
 # word-atlas-android
 
@@ -96,6 +96,18 @@ Word pronunciations come from two sources. For the **76 heteronyms** both readin
 
 The public release contains no OALDPEX recordings. `scripts/atlas/import_audio.py` still works for a private build, swapping `uk/` and `us/` for OALDPEX audio (including 418 second readings across those 105 words), but those recordings are copyright Oxford University Press and are for self-built personal use only, never for redistribution (see [CONTENT_LICENSE.md](CONTENT_LICENSE.md)).
 
+## Home-screen widgets
+
+1.0.10 adds three **zero-permission, fully offline** home-screen widgets that pull content to the front instead of manufacturing anxiety:
+
+- **Stubborn words (2×2)** — picks hard words from your mistake book and relapsed words, swaps one every two hours, with a manual refresh in the top-right; the card's own illustration is the backdrop.
+- **Sentence of the day (4×2 / 5×2)** — one IELTS-context sentence with its Chinese translation each day, on the entry's own illustration, changing by local date.
+- **Progress bar (4×1)** — steps remaining, due, new words and estimated time, sourced from the same place as the home page; the button drops you straight into a study session.
+
+Learning state is handed from the web layer to the native layer through `publishWidgetSnapshot` as a one-way snapshot; widgets only ever read it. No network, no extra permissions, no account or analytics. All three follow the system light/dark theme, resize, and reuse the bundled art. Design and implementation notes: [docs/android-widgets.md](docs/android-widgets.md).
+
+> The widgets pass every build-stage check (resource compile, Java compile, dex, signing, zero permissions, component registration), and the on-device display and interaction (resize, theme switch, refresh, taps) have now passed real-device testing.
+
 ## Install
 
 The APKs are not in the repository (`.gitignore` excludes them). Two ways in:
@@ -105,11 +117,11 @@ The APKs are not in the repository (`.gitignore` excludes them). Two ways in:
 
 | Artifact | Word audio | Use |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.9.apk` | Original ElevenLabs + Commons human takes for 76 words | Share / public distribution |
-| `word-atlas-android-v1.0.9_O.apk` | OALDPEX human (Oxford University Press) | Personal use only, never redistribute |
+| `word-atlas-android-v1.0.10.apk` | Original ElevenLabs + Commons human takes for 76 words | Share / public distribution |
+| `word-atlas-android-v1.0.10_O.apk` | OALDPEX human (Oxford University Press) | Personal use only, never redistribute |
 
 ```bash
-adb install -r word-atlas-android-v1.0.9.apk
+adb install -r word-atlas-android-v1.0.10.apk
 ```
 
 Both packages share one package name and cannot be installed side by side; installing over keeps your study records.
@@ -118,10 +130,11 @@ Requires **Android 7.0 (API 24)** or newer; arm64 devices are the best experienc
 
 ## Versions
 
-Current **v1.0.9** (versionCode 10). Per-release changes and checksums are in [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current **v1.0.10** (versionCode 11). Per-release changes and checksums are in [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
+| **v1.0.10** | Three home-screen widgets land: stubborn-words carousel, sentence of the day, and a progress bar — zero permission, fully offline |
 | **v1.0.9** | The word card gains an **etymology note** and a **same-root words** row: 6,754 entries get one line of etymology between the transcription and the meaning, and synonyms are filled in from the dictionary's notes |
 | **v1.0.8** | IELTS-context example recordings go from 1,011 to all 7,298: both examples are now human narration offline, and only exam sentences go through the bundled voice |
 | **v1.0.7** | Chinese search reaches every sense of a word: searching 「缠绕」 or 「蜿蜒」 finds *wind*, and the result shows the matching gloss |
@@ -167,9 +180,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.9.apk      (share build, original audio)
-# → word-atlas-android-v1.0.9_O.apk    (private build, OALDPEX human audio)
-adb install -r word-atlas-android-v1.0.9.apk
+# → word-atlas-android-v1.0.10.apk      (share build, original audio)
+# → word-atlas-android-v1.0.10_O.apk    (private build, OALDPEX human audio)
+adb install -r word-atlas-android-v1.0.10.apk
 ```
 
 Both packages share one Web bundle, one set of inlined data, one `base.apk` and one `classes.dex`; only the word audio is swapped at packaging time. `--skip-web` reuses the previous `dist-android`.

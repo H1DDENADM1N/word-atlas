@@ -2,4 +2,33 @@
 <resources>
     <color name="boot_bg">#0D1120</color>
     <color name="ic_launcher_background">#0D1120</color>
+
+    <!--
+      Widget palette · light (the system's default). The dark counterparts live
+      in values-night and are picked automatically when the system is in night
+      mode.
+
+      Everything a widget draws is resolved from these names at inflation time,
+      so the launcher rebuilds the card in the other mode by itself; no Java-side
+      theme switch is needed (and none would survive a RemoteViews replay).
+    -->
+    <color name="widget_card">#FFFDF8</color>
+    <color name="widget_ink">#1A2035</color>
+    <!-- Darker than the old #434B65: the wash lets the art through, so the
+         secondary line needs more weight to stay above 4.5:1 on dark art. -->
+    <color name="widget_ink_2">#2B3149</color>
+    <color name="widget_ink_3">#7A7D8A</color>
+    <color name="widget_cta_fill">#1A2035</color>
+    <color name="widget_cta_ink">#FFFDF8</color>
+    <color name="widget_refresh_ink">#1A2035</color>
+    <color name="widget_refresh_halo">#C4FFFDF8</color>
+
+    <!--
+      The plate under the copy is a wash, not a lid: 58% paper over the artwork.
+      The picture keeps showing through it like a frosted pane, while #1A2035 ink
+      still clears 5.4:1 even over the darkest possible art.
+    -->
+    <color name="widget_plate">#94FFFDF8</color>
+    <color name="widget_fade_solid">#94FFFDF8</color>
+    <color name="widget_fade_clear">#00FFFDF8</color>
 </resources>

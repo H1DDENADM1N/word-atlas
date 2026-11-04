@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">词光</string>
+    <string name="widget_cta">继续旅程</string>
+    <string name="widget_tough_label">顽固词</string>
+    <string name="widget_quote_label">今日一句</string>
+    <string name="widget_plan_label">进度条</string>
+    <string name="widget_tough_desc">顽固词 · 每两小时换一个难词，右上角可手动刷新 · 插画 © Word Atlas contributors, CC BY 4.0</string>
+    <string name="widget_quote_desc">今日一句 · 雅思语境例句与中文译文，背景为该词插画 · © Word Atlas contributors, CC BY 4.0</string>
+    <string name="widget_plan_desc">进度条 · 还剩多少步、待复习、新词与预计时间，与首页同源</string>
 </resources>

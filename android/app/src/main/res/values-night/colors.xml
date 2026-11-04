@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Widget palette · dark. Same paper/ink scale as src/styles/app.css, so a
+      widget at night sits on the same #131A2B the page uses.
+    -->
+    <color name="widget_card">#131A2B</color>
+    <color name="widget_ink">#F6F1E7</color>
+    <color name="widget_ink_2">#F0EADA</color>
+    <color name="widget_ink_3">#A7B0C4</color>
+    <color name="widget_cta_fill">#FBF8F2</color>
+    <color name="widget_cta_ink">#1E2640</color>
+    <color name="widget_refresh_ink">#F6F1E7</color>
+    <color name="widget_refresh_halo">#8C0D1120</color>
+
+    <!-- 66% of the card colour: the art reads through as a dimmed panel. -->
+    <color name="widget_plate">#A9131A2B</color>
+    <color name="widget_fade_solid">#A9131A2B</color>
+    <color name="widget_fade_clear">#00131A2B</color>
+</resources>
