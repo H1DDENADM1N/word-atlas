@@ -250,6 +250,15 @@ export function EntryView({ entry, mode = "detail", eager = true }: { entry: Ent
         </h2>
         <Pronounce entry={entry} refw={ref ?? entry} />
 
+        {/* 词源图景 sits between the sound and the meaning: the root formula
+            the dictionary reads the word's literal sense out of. */}
+        {entry.ety && (
+          <aside className="etym">
+            <h3 className="eyebrow">词源图景</h3>
+            <p className="etym-sum">{entry.ety}</p>
+          </aside>
+        )}
+
         <ol className={`senses${entry.pron?.length ? " has-pron" : ""}`}>
           {entry.senses.map((s, i) => (
             <li key={i}>
@@ -314,7 +323,7 @@ export function EntryView({ entry, mode = "detail", eager = true }: { entry: Ent
           </section>
         )}
 
-        {(famLinks.length > 0 || entry.syn.length > 0 || entry.ant.length > 0) && (
+        {(famLinks.length > 0 || entry.root?.length || entry.syn.length > 0 || entry.ant.length > 0) && (
           <section className="block relations">
             {famLinks.length > 0 && (
               <div>
@@ -322,6 +331,16 @@ export function EntryView({ entry, mode = "detail", eager = true }: { entry: Ent
                 <p>
                   {famLinks.map((f) => (
                     <LookupWord key={f.label} label={f.label} token={f.word} />
+                  ))}
+                </p>
+              </div>
+            )}
+            {entry.root && entry.root.length > 0 && (
+              <div>
+                <h3 className="eyebrow">同根词</h3>
+                <p>
+                  {entry.root.map((w) => (
+                    <LookupWord key={w} label={w} />
                   ))}
                 </p>
               </div>

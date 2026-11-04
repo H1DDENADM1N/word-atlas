@@ -36,8 +36,11 @@ android/vendor/
 
 # Third-party dictionaries, not part of the app:
 # 雅思真题例句词典 -> scripts/atlas/import_ielts.py, OALDPEX -> import_syllables.py
+# 词源词典 -> scripts/etymology/import_etymology.py; only the parse
+# (scripts/etymology/etymology.json) ships, the 51 MB MDX itself does not
 /雅思真题例句词典
 /OALDPEX
+/etymology/
 
 # Word pronunciations: the ElevenLabs takes ship with the repo, the OALDPEX
 # replacements do not.

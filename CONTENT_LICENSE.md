@@ -10,7 +10,7 @@ Source code and UI design are under the [MIT License](LICENSE). Dependencies kee
 
 以下内容以 **[Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)** 提供，在项目维护者能够授予的权利范围内：
 
-- `data/` 下的词库文件，以及 `public/atlas/index.json`、`public/atlas/entries/` 中的释义、英文释义、例句、译文、搭配、词族、近反义词、提示、分级与分类；
+- `data/` 下的词库文件，以及 `public/atlas/index.json`、`public/atlas/entries/` 中的释义、英文释义、例句、译文、搭配、词族、同根词、词源图景小结、近反义词、提示、分级与分类；
 - `public/atlas/img/`、`public/atlas/thumb/`、`public/brand/` 中的插画；
 - `public/atlas/audio/` 中来自上游的原版单词发音与例句朗读录音（英音 / 美音为 ElevenLabs 的 Alice / Sarah）；若本地用 OALDPEX 覆盖了 `uk/`、`us/`，覆盖后的文件不在本授权内，见下节。
 
@@ -31,6 +31,7 @@ Those originals live under `public/atlas/audio/uk/` and `public/atlas/audio/us/`
 ### 说明 / Notes
 
 - 单个英文单词与通用词表本身不主张专有权。This project claims no exclusive rights over English words or the bare headword list.
+- 词源图景、同根词与补充的近义词解析自项目自带的《词源词典》（19,996 条），与释义、例句同属上面 CC BY 4.0 的词库内容。The etymology notes, same-root words and extra synonyms are parsed from the project's own etymology dictionary (19,996 headwords) and are part of the CC BY 4.0 dataset above.
 - 内容由 AI 模型按项目规范生成（文本：大语言模型；插画：图像模型；例句录音：ElevenLabs 合成语音），经过自动校验，未逐条人工审校，按现状提供，不作准确性担保。公开发布包的单词发音为 ElevenLabs 合成，按现状提供；如导入 OALDPEX，则来自该第三方词典，同样按现状提供。Content was generated with AI models under the project's specifications (text: LLMs; illustrations: image models; example recordings: ElevenLabs), checked automatically, not proofread entry by entry, and is provided as-is without warranty. Word pronunciations in the public build are ElevenLabs recordings, also as-is; if OALDPEX recordings are imported, they come from the third-party dictionary described above, also as-is.
 - 例句录音的授权只涉及这些完成的音频文件，不包含底层声音模型、声音身份或任何人的肖像、人格权，也不表示声音提供方为本项目背书。英音声音为 ElevenLabs “Alice”，美音为 “Sarah”。The licence for the example recordings covers the finished audio files only, not the underlying voice models or voice identities, and implies no endorsement. Voices: ElevenLabs "Alice" (UK) and "Sarah" (US).
 - 不是官方雅思（IELTS）词表，与雅思考试主办方无关。Not an official IELTS list and not affiliated with the IELTS partners.

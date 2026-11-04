@@ -7,9 +7,10 @@
 3. **插画** `gen_images.py`：每个词条自带一个场景描述 `scene`，与统一画风提示词组合后生成 1024px 图片，压缩为 768px WebP 母版。按学习路线顺序生成。
 4. **发音** `gen_word_audio.py`：ElevenLabs，英音 Alice、美音 Sarah。
 5. **例句朗读** `gen_sentence_audio.py`：为 `ex[0]` 合成朗读，按学习路线顺序。
-6. **编译** `build_atlas.py`：清洗字段、排序、切块，生成 `public/atlas/` 与 `data/`。
-7. **同形异音** `apply_pron.py`：把 [`pron.json`](../scripts/atlas/pron.json) 里的 14 个双读音词写进词条（`pron` + `senses[].v`），并把 `uk`/`us` 收敛成第一读音。`build_atlas.py` 不认识 `pron`，重建后必须再跑一次；`npm run check:pron` 可以查有没有漏。
-8. **校验** `npm run check:atlas`：结构、顺序、引用与媒体文件存在性。
+6. **词源** `scripts/etymology/import_etymology.py`：解析 `etymology/etymology.mdx`（`Encrypted="2"` 的 MDict，键表加密、记录块是普通 zlib，所以只读记录块，词头取自每条开头的 `<font size=3>`），抽出【词源图景】小结、【近义词辨析】与【同根词】，写入 `scripts/etymology/etymology.json`。`build_atlas.py` 编译时按词头并入 `ety` / `syn` / `root`；不带参数直接跑，则把这三项补进已有的 `public/atlas/entries/`。
+7. **编译** `build_atlas.py`：清洗字段、排序、切块，生成 `public/atlas/` 与 `data/`。
+8. **同形异音** `apply_pron.py`：把 [`pron.json`](../scripts/atlas/pron.json) 里的 14 个双读音词写进词条（`pron` + `senses[].v`），并把 `uk`/`us` 收敛成第一读音。`build_atlas.py` 不认识 `pron`，重建后必须再跑一次；`npm run check:pron` 可以查有没有漏。
+9. **校验** `npm run check:atlas`：结构、顺序、引用与媒体文件存在性。
 
 ```bash
 export SUB2_BASE_URL=... SUB2_API_KEY=... ELEVENLABS_API_KEY=...
@@ -17,6 +18,7 @@ python3 scripts/atlas/gen_text.py --workers 8
 python3 scripts/atlas/gen_images.py --workers 8 --follow
 python3 scripts/atlas/gen_word_audio.py
 python3 scripts/atlas/gen_sentence_audio.py --follow
+python3 scripts/etymology/import_etymology.py --dump
 python3 scripts/atlas/build_atlas.py
 python3 scripts/atlas/apply_pron.py
 npm run check:atlas

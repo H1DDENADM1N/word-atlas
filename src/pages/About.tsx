@@ -30,6 +30,12 @@ const EXAM_SENTENCES = "1,211";
  */
 const SYLLABLE_WORDS = "4,672";
 
+/**
+ * How many entries got a 词源图景 note from the etymology dictionary. Printed by
+ * `scripts/etymology/import_etymology.py`; bump it when that is re-run.
+ */
+const ETYM_WORDS = "6,754";
+
 /** Size of the share build; printed at the end of `scripts/android/build_apk.py`. */
 const APK_SIZE = "1.4 GB";
 
@@ -96,13 +102,19 @@ export function About() {
               就是剑 4、Test 2、听力 Part 3），带中文翻译；一个词有多条时点「换一句」往后翻。这些句子没有录音，朗读交给 APK 内置的 Kokoro。
             </li>
             <li>
+              <b>词卡上多了词源图景。</b>音标下面、释义上面多一条「词源图景」：一句话把词根的字面义讲清楚——<i>concur</i>{" "}
+              是 <i>com-</i>（共同）加 <i>currere</i>（跑），「一起跑向同一个终点」，<i>library</i> 的{" "}
+              <i>libr-</i> 原本是「树皮」，那是书的前身。{ETYM_WORDS}{" "}
+              个词条有这一节；同一份词典还补上了「同根词」一栏与近义辨析里的词，词卡底部因此多出一组同源词，点开就能查。
+            </li>
+            <li>
               <b>词头能看音节了。</b>点一下词卡上那个大单词，字母之间会浮出「·」——
               <i>ex·hib·ition</i>，再点一下复原。分隔点不是猜的，取自《牛津高阶》词条自己的音节标注（{SYLLABLE_WORDS}{" "}
               个词条带这项标注），所以和纸质词典的断法一致；词典本身没标的词（<i>study</i>、<i>hotel</i>{" "}
               这类），点下去没有变化。
             </li>
             <li>
-              <b>词卡上能点的地方变多了。</b>例句、译文、常用搭配、词族、近义反义，连释义里那半句英文——<i>the natural object that moves around Earth</i>{" "}
+              <b>词卡上能点的地方变多了。</b>例句、译文、常用搭配、词族、同根词、近义反义，连释义里那半句英文——<i>the natural object that moves around Earth</i>{" "}
               里的 <i>natural</i>——都能点：点一下弹一张小卡，给出音标、中文和发音，想深究再进完整词条。任何时候只开一张，返回键先关它。
             </li>
             <li>
@@ -130,7 +142,7 @@ export function About() {
         <section className="panel">
           <h3 className="eyebrow">和原版一样的地方</h3>
           <p className="muted">
-            词条数量、释义、两句原创例句、搭配、词族、易混提示、插画、复习算法，全部来自上游，没有重写也没有删减。单词发音只多了一样：105 个同形异音词的第二读音，其中 76 个词的两个读音来自 Commons。今日、图鉴、词卡、星图、四类练习、打字练习、导出与恢复备份，都在。
+            词条数量、释义、两句原创例句、搭配、词族、易混提示、插画、复习算法，全部来自上游，没有重写也没有删减；唯一的加法是项目自带的词源词典补进来的词源图景、同根词与近义词。单词发音只多了一样：105 个同形异音词的第二读音，其中 76 个词的两个读音来自 Commons。今日、图鉴、词卡、星图、四类练习、打字练习、导出与恢复备份，都在。
           </p>
           <p className="muted">
             仍然本地优先：没有账号，没有服务器，学习记录存在这台设备上。换机或清除数据前，记得先到「我的」导出备份。
@@ -143,10 +155,14 @@ export function About() {
         <section className="panel">
           <h3 className="eyebrow">内容从哪里来</h3>
           <p className="muted">
-            释义、例句、搭配和提示由大语言模型按统一词典规范撰写；插画由图像模型按统一画风逐词绘制；例句朗读与大部分单词发音由 ElevenLabs 合成（英音 Alice / 美音 Sarah），76 个同形异音词的两个读音则是 Commons 上的真人录音。内容经过结构与一致性自动校验，但没有逐条人工审校，可能有错。这一版没有改动任何一条释义或例句（新增的真题例句单独标注来源）——看到问题请提到本仓库，能一并回馈上游。
+            释义、例句、搭配和提示由大语言模型按统一词典规范撰写；插画由图像模型按统一画风逐词绘制；例句朗读与大部分单词发音由 ElevenLabs 合成（英音 Alice / 美音 Sarah），76 个同形异音词的两个读音则是 Commons 上的真人录音。内容经过结构与一致性自动校验，但没有逐条人工审校，可能有错。这一版没有改动任何一条释义或例句：新增的真题例句、词源图景、同根词与补充的近义词都在下面单独说明来源——看到问题请提到本仓库，能一并回馈上游。
           </p>
           <p className="muted">
             公开发布的构建里，单词发音有两种来源。<b>7,222 个词</b>的读音来自上游 Word Atlas 的原版 ElevenLabs 录音（英音 Alice / 美音 Sarah），随上游以 CC BY 4.0 提供；<b>76 个同形异音词的两个读音</b>（152 个文件）取自 Wikimedia Commons 的 Wiktionary 与 Lingua Libre，授权分别是 CC BY-SA 3.0（70）、CC BY-SA 4.0（59）、公有领域（16）、CC0（6）、CC BY 4.0（1），逐条作者与授权见仓库 <code>docs/audio-credits.md</code>——这部分<b>不在 CC BY 4.0 之内</b>，其中 CC BY-SA 的文件再分发时须保留同样的授权。另有 29 个同形异音词在 Commons 上找不到第二个读音，第二读音由本仓库用 ElevenLabs 合成，卡片上标「合成」。公开发布包不包含《牛津高阶》数据包（OALDPEX）的真人录音。如果你自己构建私用版，可以运行 <code>scripts/atlas/import_audio.py</code> 把 OALDPEX 导入 <code>private/audio/oaldpex</code>；那批录音版权归牛津大学出版社，只能自用，不得公开分发。
+          </p>
+          <p className="muted">
+            词卡里的「词源图景」「同根词」与补充的近义词来自项目自带的词源词典（19,996 条），覆盖 {ETYM_WORDS}{" "}
+            个词条，同样随词库以 CC BY 4.0 提供。和释义、例句一样，这些内容由模型按同一套规范撰写、经自动校验，但没有逐条人工审校；同根词按词根归纳，个别条目会给出同时代同族的远亲（<i>dais</i> 下可能列着 <i>desk</i>），当线索看比当词源学结论更合适。
           </p>
           <p className="muted">
             词卡里的「真题例句」是例外：它们来自第三方的《雅思真题例句词典》（剑桥雅思 4
@@ -165,7 +181,9 @@ export function About() {
           <p className="muted">
             <code>data/word-atlas.json</code> 与 <code>.csv</code> 是完整词库。安卓侧的构建方式、体积构成、离线语音选型和踩过的坑都在{" "}
             <code>docs/android.md</code>；不需要 Gradle，<code>python3 scripts/android/build_apk.py</code>{" "}
-            一条命令出包，JDK 17 与 Android SDK 就够。
+            一条命令出包，JDK 17 与 Android SDK 就够。词源图景、同根词与近义词由{" "}
+            <code>scripts/etymology/import_etymology.py</code> 从词源词典解析后并入词条，字段说明见{" "}
+            <code>docs/dataset.md</code>。
           </p>
           <p className="muted">
             应用代码 <b>MIT</b>；词库文本、插画与例句录音 <b>CC BY 4.0</b>，署名 Word Atlas contributors（词光）。单词发音分两类：7,222 个词的读音是上游的 ElevenLabs 录音（Alice / Sarah，CC BY 4.0），29 个同形异音词的合成第二读音同样由 ElevenLabs 合成；76 个同形异音词的两个读音来自 Wikimedia Commons，按 CC BY-SA 3.0 / 4.0、CC0 或公有领域分发，署名见 <code>docs/audio-credits.md</code>。OALDPEX 真人录音是可选的私用构建，版权归牛津大学出版社，不得再分发。内置语音为

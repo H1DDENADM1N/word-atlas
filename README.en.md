@@ -35,7 +35,7 @@ In one line: **same content, different runtime.** Upstream is about getting the 
 | Fallback speech | Browser `speechSynthesis` / system TTS | Bundled Kokoro-82M (sherpa-onnx), no system TTS needed |
 | Save & share | Browser download link | Saved to "Download / Word Atlas", then the system share sheet |
 | Themes | Light / dark / follow system | Adds the aurora and starlight night skies and three English faces |
-| Word card | One transcription line | Both readings of a heteronym, UK and US side by side; tap the headword for syllables; words in examples, translations, collocations, families, synonyms and the gloss all open a lookup popover |
+| Word card | One transcription line | Both readings of a heteronym, UK and US side by side; an **etymology note** beneath the transcription and a **same-root words** row at the bottom; tap the headword for syllables; words in examples, translations, collocations, families, same-root words, synonyms and the gloss all open a lookup popover |
 | Exam sentences | None | A **real exam sentences** section under "IELTS context": 1,211 Cambridge IELTS 4 sentences with translations and a source chip |
 | Topic constellations | None (the vocabulary star map only) | The atlas gains a **topic constellation** panel: nineteen topics, one constellation each |
 | Ambience | None | **30** looping recordings, loudness-matched, ducked while a word is read |
@@ -61,6 +61,7 @@ These are not by-products of "porting to Android" — they are what this build g
 - **Answers and word cards are laid out for the thumb.** The four options grew from 54 px to 68 px, moved from 8 px to 26 px off the bottom edge, and lost their 1–4 badges (the number keys still pick an answer, they are just no longer drawn on the buttons). The card shown after answering is no longer something to merely glance at: it plays the word and its example, the headword opens the full entry, an example translation can start blurred until tapped, and examples, translations, collocations, word families, synonyms — even the half-sentence of English inside a gloss — all open a lookup popover. Settings can also read the daily and IELTS-context examples aloud after the word, one after another, stopping the moment you navigate away.
 - **Real exam sentences under the card.** 1,211 sentences from Cambridge IELTS 4, English and Chinese, were imported from the third-party *IELTS Exam Sentence Dictionary* and matched to 2,216 entries: below "IELTS context" the card gains a **real exam sentences** section tagged with its source (`C04T2L3` is book 4, Test 2, Listening Part 3), with a Chinese translation and a "next sentence" button when a word has several. These have no recording, so the bundled Kokoro voice reads them. The importer is `scripts/atlas/import_ielts.py`, and it keeps only sentences that actually contain the word — the dictionary itself links `visitor` to a sentence about "a variety of shopping", which under a headword only confuses.
 - **Tap the headword to see its syllables.** Tapping the big word on a card puts a `·` between syllables — `ex·hib·ition` — and tapping again puts it back. The breaks are not guessed: they come from the `syllable` attribute on OALDPEX headwords (`scripts/atlas/import_syllables.py` extracts 4,672 of them), so they match the printed dictionary. A splitter trained on the same data only reproduced 82% of even the two-syllable breaks, so nothing is invented for the entries the dictionary leaves unmarked: `study` and `hotel` simply do not change when tapped.
+- **The card gains an etymology note.** Between the transcription and the meaning there is now a 词源图景 line that reads the word's literal sense out of its root: `concur` is `com-` (together) + `currere` (to run), "to run together to one point"; the `libr-` of `library` was "tree bark", which is what a book was made of. 6,754 entries carry it (92.6%); what is missing are proper nouns, British spellings and irregular plurals (`Thursday`, `colour`, `children`). The same dictionary adds a **same-root words** row and the words from its synonym notes: under `rebellion` you get `belligerent`, `bellicose`, `antebellum`, all from Latin `bellum` (war), each one tap away from a lookup. The importer is `scripts/etymology/import_etymology.py` — the source MDX is `Encrypted="2"`, so its key table is locked, but its record blocks are plain zlib; the script reads those and never touches the key table.
 - **The atlas gains topic constellations.** Each of the nineteen IELTS topics gets a constellation drawn on its own stars: a seeded Poisson sampling picks a handful of neighbouring words inside that topic's nebula, then a **non-crossing** spanning tree links them, so the figure never tangles; 55% of the time one long chord is added, but only if both ends have degree below 3, the chord is at most 1.5× the median edge and the two ends are at least three hops apart on the tree — so a triangle can never appear. Once 80% of a topic's words are learned the constellation lights up, and both the card and the star map share one pair of states: fully dashed when unlit, gold and glowing when lit. Tapping a card flies the star map to it.
 
   The figure reads as two-dimensional without thickening the galactic disc: every topic also has its own 2D "nebula" in the plane (long axis tangential, short axis radial, cos² falloff, zero beyond 0.15), and only the words on that stretch of arm near the nebula centre are pushed apart. Widening the angular spread of the spiral arms instead was tried once and smeared the whole sky's colour zoning into grey-purple — the nebula is the only way to get topic separation without sacrificing the palette. Links only ever join words of the same topic.
@@ -104,11 +105,11 @@ The APKs are not in the repository (`.gitignore` excludes them). Two ways in:
 
 | Artifact | Word audio | Use |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.8.apk` | Original ElevenLabs + Commons human takes for 76 words | Share / public distribution |
-| `word-atlas-android-v1.0.8_O.apk` | OALDPEX human (Oxford University Press) | Personal use only, never redistribute |
+| `word-atlas-android-v1.0.9.apk` | Original ElevenLabs + Commons human takes for 76 words | Share / public distribution |
+| `word-atlas-android-v1.0.9_O.apk` | OALDPEX human (Oxford University Press) | Personal use only, never redistribute |
 
 ```bash
-adb install -r word-atlas-android-v1.0.8.apk
+adb install -r word-atlas-android-v1.0.9.apk
 ```
 
 Both packages share one package name and cannot be installed side by side; installing over keeps your study records.
@@ -117,10 +118,11 @@ Requires **Android 7.0 (API 24)** or newer; arm64 devices are the best experienc
 
 ## Versions
 
-Current **v1.0.8** (versionCode 9). Per-release changes and checksums are in [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current **v1.0.9** (versionCode 10). Per-release changes and checksums are in [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
+| **v1.0.9** | The word card gains an **etymology note** and a **same-root words** row: 6,754 entries get one line of etymology between the transcription and the meaning, and synonyms are filled in from the dictionary's notes |
 | **v1.0.8** | IELTS-context example recordings go from 1,011 to all 7,298: both examples are now human narration offline, and only exam sentences go through the bundled voice |
 | **v1.0.7** | Chinese search reaches every sense of a word: searching 「缠绕」 or 「蜿蜒」 finds *wind*, and the result shows the matching gloss |
 | **v1.0.6** | Second readings for all 105 heteronyms, 76 of them replaced with human Commons recordings (CC BY-SA); synthesised ones are marked on the card |
@@ -165,9 +167,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.8.apk      (share build, original audio)
-# → word-atlas-android-v1.0.8_O.apk    (private build, OALDPEX human audio)
-adb install -r word-atlas-android-v1.0.8.apk
+# → word-atlas-android-v1.0.9.apk      (share build, original audio)
+# → word-atlas-android-v1.0.9_O.apk    (private build, OALDPEX human audio)
+adb install -r word-atlas-android-v1.0.9.apk
 ```
 
 Both packages share one Web bundle, one set of inlined data, one `base.apk` and one `classes.dex`; only the word audio is swapped at packaging time. `--skip-web` reuses the previous `dist-android`.
@@ -190,7 +192,7 @@ npm run build        # build into dist/
 | Illustrations `atlas/img` (512 px WebP) | 203 MB |
 | Thumbnails `atlas/thumb` | 88 MB |
 | Recordings (UK 79 / US 82 / examples 633) | 796 MB |
-| Word data `atlas/entries` + `index.json` | 7.1 MB |
+| Word data `atlas/entries` + `index.json` | 8.3 MB |
 | Exam sentences `atlas/ielts.json` + syllables `atlas/syllables.json` | 0.6 MB |
 | UI cues (17) | 0.3 MB |
 | Ambience (30 loops) | 56 MB |
@@ -211,6 +213,7 @@ To slim it down: keep only `thumb/` (saves 203 MB), re-encode the audio at a low
 - **Recordings first**: the 29,402 recordings take priority; TTS only fills exam sentences that have none.
 - **Exam sentences cover 30%**: the source dictionary only holds four Cambridge IELTS 4 papers, so 2,216 of 7,298 entries have one; A1 everyday words never appear in academic texts anyway.
 - **Syllables cover 64%**: 4,672 entries are marked, and the ones the dictionary leaves unmarked (`study`, `hotel`, `river`, `city`) do not change when tapped — a wrong break is worse than none, so nothing is filled in.
+- **Etymology covers 93%**: 6,754 of 7,298 entries have one. The missing ones are proper nouns, British spellings and irregular plurals (`Thursday`, `colour`, `children`), which the etymology dictionary files under another headword. Its same-root rows also list the occasional distant cousin (`dais` under `desk`) rather than a strict cognate — treat them as clues, not as philology.
 - **Chinese inside a gloss is not clickable**: both tokenising and the lookup index are English-only; the Chinese gloss is plain text.
 - **Signing**: `android/keystore/` holds a self-signed development key (password `wordatlas`). For long-term releases, use your own key and keep it safe — changing it makes installed builds impossible to upgrade in place.
 - Content is synced with upstream, so upstream's mistakes are here too.
