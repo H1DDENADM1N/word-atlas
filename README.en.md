@@ -83,6 +83,8 @@ These are not by-products of "porting to Android" — they are what this build g
 - **"Import backup / clear records" are clickable.** With no `WebChromeClient` configured, `confirm()` silently returned `false` and the file picker never opened. Adding `onJsConfirm` / `onShowFileChooser` fixed both.
 - **Progress travels to the web edition, and back.** Upstream's importer is far stricter than this app's: it re-validates the whole file and rejects it outright if `progress.drills` is missing or one of the 22 settings it knows is absent (`examDate`, `illus`, `recall`…), which is why every export from this app ended in 「备份内容不完整或格式有误」. "Me → Data" therefore gains two buttons: **export a web-compatible backup** (adds `drills: {}` and every setting the site expects; of this app's 30 ambience tracks only the 8 it knows are sent, the rest become `stars`; a `days` entry with `c > r` is clamped to `r`) and **import a web backup** (drops `drills`, `books` and the exam plan, keeping cards, daily stats and the settings both sides can express). The rules are restated in `src/store/web-backup.ts` and pinned by eight tests that replay upstream's validation; a 895-word backup exported from a real device imported on [0xlei.tech/words](https://0xlei.tech/words/) as 「已恢复 895 个词的学习记录」.
 
+- **Looked-up words can be found again.** The upstream search palette has a "recently looked up" row; this build only ever showed a static hint. The panel now previews the **six most recent lookups** on an empty query, with **Clear** and **View all N →** on the right of the section title, and offers six day-rotated "try these words" chips when there is no history yet. Picking a search result, a suggested chip, a recent row — or opening a word from the atlas after typing into its search field — records a lookup. "Recently studied" on the practice page is FSRS progress and stays completely separate. A standalone `#/history` page lists all of them (cap **20**), most-recent first, numbered but **without timestamps**, reachable from "Me → Lookup history"; its empty state opens the search palette directly. The data lives under its own `word-atlas:recent-search` key as a bare `string[]` (`[id, ...old.filter(x => x !== id)].slice(0, 20)`), **outside `Progress`, outside every backup, and untouched by "clear records"**. Malformed JSON, failed writes and IDs from another dataset degrade silently. The palette also regains the upstream mobile affordances: a **Cancel** button, `enterKeyHint="search"`, and overlay registration so the hardware back key closes the panel before it navigates away. See `src/lib/recent.ts` and `src/lib/recent.test.ts` (ten tests).
+
 Full implementation notes, size breakdown and per-issue write-ups: **[docs/android.md](docs/android.md)** (Chinese).
 
 ## What stays the same
@@ -94,7 +96,7 @@ Full implementation notes, size breakdown and per-issue write-ups: **[docs/andro
 | Illustrations | **7,298**, 512 px WebP, with thumbnails |
 | Recordings | **29,402**: UK, US, and both example sentences read aloud (7,298 daily + 7,298 IELTS context), plus a second reading for 105 heteronyms (in the share build, 76 words use human Commons recordings for both readings; the OALDPEX human takes are private-build only) |
 | Review | TS-FSRS spaced repetition with a configurable target retention |
-| Features | Today, atlas, word card, vocabulary star map (WebGL2), four drill types, typing practice, backup export / restore (including exchange with the web edition) |
+| Features | Today, atlas, word card, vocabulary star map (WebGL2), four drill types, typing practice, lookup history, backup export / restore (including exchange with the web edition) |
 | Data | Local-first: no account, no server, records stay on this device |
 
 Content provenance is the same too: glosses, examples and collocations were written by a large language model against one shared dictionary spec, illustrations were drawn per word by an image model, and example narration was synthesised with ElevenLabs. Everything passed automated structural and consistency checks but has **not been reviewed word by word by a human**, so mistakes are possible. This is not an official IELTS word list and promises no score.
@@ -141,7 +143,7 @@ Current **v1.0.10** (versionCode 11). Per-release changes and checksums are in [
 
 | Version | In one line |
 | :--- | :--- |
-| **v1.0.10** | Three home-screen widgets land: stubborn-words carousel, sentence of the day, and a progress bar — zero permission, fully offline |
+| **v1.0.10** | Three home-screen widgets land (stubborn-words carousel, sentence of the day, progress bar — zero permission, fully offline), and **lookup history** is back: a "recently looked up" palette plus a standalone page, capped at 20, undated, never backed up |
 | **v1.0.9** | The word card gains an **etymology note** and a **same-root words** row: 6,754 entries get one line of etymology between the transcription and the meaning, and synonyms are filled in from the dictionary's notes |
 | **v1.0.8** | IELTS-context example recordings go from 1,011 to all 7,298: both examples are now human narration offline, and only exam sentences go through the bundled voice |
 | **v1.0.7** | Chinese search reaches every sense of a word: searching 「缠绕」 or 「蜿蜒」 finds *wind*, and the result shows the matching gloss |

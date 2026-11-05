@@ -1706,6 +1706,55 @@ code {
 .palette-input input::placeholder {
   color: var(--ink-4);
 }
+.palette-input > kbd {
+  flex: none;
+}
+/* A thumb-sized way out on phones, where there is no Esc key. */
+.palette-cancel {
+  display: none;
+  flex: none;
+  border: 0;
+  background: none;
+  padding: 0 4px;
+  color: var(--ink-2);
+  font-size: 15px;
+  white-space: nowrap;
+}
+/* Empty-query heading: "最近查过" (or "试试这些词"), with the actions on the right. */
+.palette-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 20px 2px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+.palette-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.palette-clear,
+.palette-more {
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  color: var(--ink-3);
+  font-size: 13px;
+  white-space: nowrap;
+  transition: color 0.18s;
+}
+.palette-clear:hover {
+  color: var(--terra);
+}
+.palette-more {
+  color: var(--ochre);
+}
+.palette-more:hover {
+  color: var(--terra);
+}
 .palette-list {
   list-style: none;
   margin: 0;
@@ -1753,6 +1802,66 @@ code {
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+}
+.palette-try {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px 18px;
+}
+.palette-keys {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 20px;
+  box-shadow: inset 0 1px 0 var(--line);
+  color: var(--ink-3);
+  font-size: 12px;
+}
+.palette-keys-kbd {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.palette-keys kbd {
+  min-width: 20px;
+  height: 20px;
+  font-size: 10px;
+}
+@media (max-width: 640px) {
+  .palette-root {
+    padding: max(8px, 4vh) 8px 8px;
+  }
+  .palette-input {
+    height: 58px;
+    padding: 0 14px;
+    gap: 10px;
+  }
+  .palette-input > kbd {
+    display: none;
+  }
+  .palette-cancel {
+    display: block;
+  }
+  .palette-section {
+    padding: 12px 16px 2px;
+  }
+  .palette-keys {
+    padding: 10px 16px;
+  }
+  .palette-keys-kbd {
+    display: none;
+  }
+  .palette-list li[role="option"] {
+    grid-template-columns: 40px auto 1fr auto;
+    gap: 10px;
+  }
+  .palette-thumb {
+    width: 40px;
+  }
 }
 
 /* ---------- toasts ---------- */
@@ -5412,24 +5521,48 @@ a:hover .mark-needle,
     radial-gradient(60vmax 26vmax at 50% 100%, rgba(40, 80, 180, 0.26), transparent 70%);
   filter: blur(24px) saturate(1.2);
   animation: aurora-drift 38s ease-in-out infinite alternate;
+  /* Promote the ribbon to its own compositor layer so the slow drift is done
+     on the GPU; without this the filter re-rasters on every resize (e.g. the
+     soft-keyboard resize when the search panel opens). */
+  will-change: transform;
 }
 @keyframes aurora-drift {
+  /* Only `transform` is animated. Animating `filter` (hue-rotate/saturate)
+     forces a full re-raster of this ~2.4×-viewport blurred surface every
+     frame; a `backdrop-filter` that samples it then glitches for one frame on
+     an Android WebView when the overlay mounts — the panel blanks once, then
+     reappears. The static `filter` above keeps the look identical. */
   0% {
     transform: translate3d(-4%, 0, 0) rotate(-2deg) scaleY(1);
-    filter: blur(24px) saturate(1.2) hue-rotate(0deg);
   }
   50% {
     transform: translate3d(3%, 2%, 0) rotate(1deg) scaleY(1.12);
   }
   100% {
     transform: translate3d(5%, -1%, 0) rotate(3deg) scaleY(0.95);
-    filter: blur(24px) saturate(1.3) hue-rotate(-25deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {
   :root[data-skin="aurora"] body::after {
     animation: none;
   }
+}
+/* The search/word panels open over the animated aurora ribbon. Their
+   `backdrop-filter` samples that moving filtered layer, and on an Android
+   WebView the overlay blanks for one frame when it mounts (and again when the
+   soft-keyboard resize fires) — the panel pops up, vanishes, then reappears.
+   Give the skins a solid scrim instead so the panel never depends on backdrop
+   sampling; the ribbon still glows faintly through. */
+:root[data-skin="aurora"] .palette-root,
+:root[data-skin="aurora"] .sheet-root {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root[data-skin="aurora"] .palette-root {
+  background: rgba(5, 6, 15, 0.72);
+}
+:root[data-skin="aurora"] .sheet-root {
+  background: rgba(5, 6, 15, 0.62);
 }
 :root[data-skin="aurora"] .topbar {
   background: color-mix(in oklab, var(--paper) 68%, transparent);
@@ -5523,4 +5656,163 @@ a:hover .mark-needle,
 }
 :root[data-skin="starlight"] .topbar {
   background: color-mix(in oklab, var(--paper) 55%, transparent);
+}
+
+/* ---------- lookup history ----------
+   A separate, undated MRU list. The "我的" entry points at the standalone
+   page; the panel itself only previews the first six rows. */
+
+.me-history-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.25s var(--ease);
+}
+.me-history-link:hover {
+  border-color: var(--ink-4);
+  transform: translateY(-1px);
+}
+.me-history-link > svg:first-child {
+  flex: none;
+  color: var(--ochre);
+}
+.me-history-text {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.me-history-text b {
+  font-size: 15px;
+}
+.me-history-text small {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+.me-history-link em {
+  flex: none;
+  color: var(--ink-3);
+  font-style: normal;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.me-history-link > svg:last-child {
+  flex: none;
+  color: var(--ink-4);
+}
+
+.history-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.history-back {
+  flex: none;
+}
+.history-title {
+  flex: 1;
+  min-width: 0;
+}
+.history-title .eyebrow {
+  margin-bottom: 6px;
+}
+.history-title .display {
+  font-size: clamp(26px, 3.6vw, 40px);
+}
+.history-clear {
+  flex: none;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+.history-note {
+  margin-bottom: 22px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  max-width: 760px;
+}
+.history-row {
+  display: grid;
+  grid-template-columns: 28px 52px 1fr auto 18px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 16px 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  color: var(--ink);
+  transition: border-color 0.2s, transform 0.25s var(--ease);
+}
+.history-row:hover {
+  border-color: var(--ink-4);
+  transform: translateY(-1px);
+}
+.history-no {
+  color: var(--ink-4);
+  font: 600 12px var(--mono);
+}
+.history-thumb {
+  width: 52px;
+  border-radius: 10px;
+}
+.history-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.history-text b {
+  font: 600 18px var(--word-face);
+  font-variation-settings: "opsz" 20;
+}
+.history-text small {
+  color: var(--ink-3);
+  font-size: 13px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.history-lv {
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: var(--lv);
+  background: var(--lv-soft);
+  font: 600 11px var(--mono);
+}
+.history-arrow {
+  color: var(--ink-4);
+}
+@media (max-width: 479px) {
+  .history-row {
+    grid-template-columns: 22px 44px 1fr 16px;
+    gap: 10px;
+    padding: 9px 12px;
+  }
+  .history-thumb {
+    width: 44px;
+  }
+  .history-lv {
+    display: none;
+  }
+  .history-clear {
+    padding: 0 12px;
+  }
 }

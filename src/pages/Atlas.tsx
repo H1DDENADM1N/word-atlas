@@ -6,6 +6,7 @@ import { useAtlas } from "../atlas/context";
 import type { WordRef } from "../atlas/types";
 import { morphFrom } from "../lib/motion";
 import { go, openWord, type Route } from "../lib/router";
+import { pushRecent } from "../lib/recent";
 import { isMastered } from "../store/srs";
 import { useStore } from "../store/store";
 import { Illustration } from "../ui/Illustration";
@@ -363,7 +364,14 @@ function VirtualGrid({
               width: cell,
               height: rowH - gap,
             }}
-            onClick={(e) => morphFrom(e.currentTarget.querySelector<HTMLElement>(".illo"), () => openWord(w.id))}
+            onClick={(e) =>
+              morphFrom(e.currentTarget.querySelector<HTMLElement>(".illo"), () => {
+                // Only a word found through the atlas search field is a "lookup";
+                // browsing the unfiltered grid does not fill the history.
+                if (query.trim()) pushRecent(w.id);
+                openWord(w.id);
+              })
+            }
           >
             <Illustration
               src={atlas.img(w, "thumb")}
@@ -410,15 +418,19 @@ function VirtualList({
     <div ref={box} className="vlist" style={{ height: items.length * rowH }}>
       {items.slice(a, b).map((w, i) => {
         const card = cards[w.id];
+        const pick = () => {
+          if (query.trim()) pushRecent(w.id);
+          openWord(w.id);
+        };
         return (
           <div
             key={w.id}
             className="row"
             style={{ transform: `translateY(${(a + i) * rowH}px)` }}
-            onClick={() => openWord(w.id)}
+            onClick={pick}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && openWord(w.id)}
+            onKeyDown={(e) => e.key === "Enter" && pick()}
           >
             <Illustration
               src={atlas.img(w, "thumb")}

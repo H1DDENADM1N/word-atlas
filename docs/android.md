@@ -106,7 +106,7 @@ adb install -r word-atlas-android-v1.0.5_O.apk
 
 `versionCode` 忘了加：`adb install -r` 会失败（`INSTALL_FAILED_VERSION_DOWNGRADE`），或者装上去仍是旧版本——手机上看起来像"更新没生效"，实际是系统拒绝了同码或降码覆盖。版本名可以随意，code 必须单调递增。
 
-当前对应关系：`1.0.5` → `VERSION_CODE = 6`。
+当前对应关系：`1.0.10` → `VERSION_CODE = 11`（`package.json` 的 `version` 是版本名唯一来源，改版本名不必动 code，但每次发版 code 必须 +1）。
 
 ## 与网页版的差异
 
@@ -125,6 +125,26 @@ adb install -r word-atlas-android-v1.0.5_O.apk
 | `<input type="file">` 点不开 | 同一个 `WebChromeClient` 实现 `onShowFileChooser`，拉起系统文件选择器，`onActivityResult` 回传 `Uri[]` |
 
 WebView 侧还关闭了 `file` 域的脚本访问（`setAllowFileAccessFromFileURLs(false)`）与混合内容，并启用 `setBlockNetworkLoads(true)`。**内容访问必须保持开启**（`setAllowContentAccess(true)`）：系统选择器返回的是 `content://` URI，关掉之后页面就读不回用户选中的备份文件。
+
+## 查词历史（最近查过）
+
+上游网页版的全局搜索面板在空查询时会列「最近查过」，安卓版原先只有一行静态提示。1.0.10 把这条链路补齐，并按本机需要放大：
+
+| 决定 | 做法 |
+| :--- | :--- |
+| 存什么 | 独立的 `word-atlas:recent-search` 键，值是一条 `string[]`，只有词条 ID：**没有时间戳、没有次数、没有元数据**，顺序本身就是新旧 |
+| 上限 | **20** 条；`[id, ...旧.filter(x => x !== id)].slice(0, 20)`，重复查同一个词移到最前，第 21 条挤掉最旧的一条 |
+| 面板 | 空查询时预览前 **6** 条；标题右侧是「清空」与「查看全部 N 条 →」；无历史时改显示 6 个按本地日期轮换的推荐词（种子只用于挑词，不落盘） |
+| 独立页 | 新增 `{ page: "history" }` 路由与 `src/pages/History.tsx`，`#/history` 列出全部 20 条，`01…20` 编号、缩略图、中文释义与 CEFR 标签，无日期分组；「我的 → 查词历史」是入口，空状态用 `wa:palette` 事件唤起全局面板 |
+| 什么时候记 | 从搜索面板（结果、推荐词、历史词）打开词条，或在图鉴的搜索框里**输过关键词**后点开网格 / 列表里的词。浏览未筛选的图鉴不记；练习页的「最近学过」是 FSRS 卡片，完全不相干 |
+| 清空 | 面板标题右侧与历史页右上各一个，统一走 `confirm()`（壳层的 `WebChromeClient` 已实现 `onJsConfirm`），清空后 `toast` 反馈 |
+| 备份 | **完全不进备份**：`exportBackup` / `exportWebBackup` / `importAnyBackup` / `resetProgress` / `webBackupProblems` 一行未改，历史也不随「我的 → 清空记录」删除。上游导入器会逐字段校验整份文件，多一个字段就可能被拒收 |
+
+`src/lib/recent.ts` 是唯一的数据入口：`readRecent` / `pushRecent` / `clearRecent` / `resolveRecent` / `subscribeRecent` / `dailyPicks`。`StorageLike` 可注入，单测无需 DOM；`file://` 下 `localStorage` 已被实测确认在强制停止后仍在（见「已验证」）。读写都包了 `try/catch`——隐私模式、配额满、坏 JSON 一律静默降级，绝不让一次查词因为历史写不进去而失败。`resolveRecent()` 用 `atlas.byId` 过滤掉别的词库或旧版本留下的 ID，但**不回写存储**，切回原词库时它们还在。
+
+写入后派发 `wa:recent`，面板、历史页、「我的」的条数各自订阅刷新；同时监听 `storage` 事件，网页版多标签页也能同步。面板还注册进 `registerOverlay()`，系统返回键先关面板而不是直接退页；输入框用 `focusField()` 唤起输入法（直接 `focus()` 在 WebView 里可能是空操作），移动端补了「取消」按钮和 `enterKeyHint="search"`。
+
+`src/lib/recent.test.ts` 的十条测试覆盖：坏数据、非字符串项、21 条淘汰、重复前置、序列化无时间字段、清空（含没有 `removeItem` 的存储）、写失败不崩、陈旧 ID 不回写、每日推荐稳定且不重复。
 
 ## 离线语音（内置 TTS）
 
@@ -419,6 +439,8 @@ async function illustration(src: string | null) {
 不需要真机也能先验证网页层：把 `dist-android/`、`android/build/data.js`、`public/atlas`、`public/sfx`、`public/brand` 放进同一个目录，用浏览器打开 `index.html`（`file://`）。页面能正常显示图鉴、词卡、发音，就说明数据内联与相对路径都对了。
 
 真机上建议确认：首屏、图鉴网格、词卡翻页、英美发音、星图（WebGL2）、返回键、分享卡片保存位置、深浅色切换、导出 / 导入备份、清空记录，以及**没有录音的那条例句的朗读**。
+
+查词历史建议按这条顺序走一遍（1.0.10 新增，实机验证由使用者完成）：搜一个词 → 关面板 → 再开面板应出现「最近查过」；连查 21 个词后最早那条被挤出、面板仍只显示 6 条；「查看全部 N 条 →」进入独立页，条数一致；点历史里靠后的一条，它应回到最前；面板「清空」与历史页「清空」都弹出系统确认框，清完两处同时变空；「我的 → 查词历史」的条数同步；导出备份再导入，历史**不应该**跟着迁移；系统返回键在面板打开时只关面板；最后强制停止再打开，历史仍在。
 
 学习页的「一屏」可以先在桌面上量，不必每次都装包：用 Playwright 按设备视口（363×640、360×600、363×800）跑完一整轮，比较 `document.documentElement.scrollHeight` 与 `innerHeight`，再判断反馈卡与选项区的矩形是否相交。键盘态直接把视口高度改成 55%（相当于 `adjustResize` 之后的高度）重量一次，就能看出输入区会不会被顶出去。
 

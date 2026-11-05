@@ -6,9 +6,11 @@ import type { Atlas } from "./atlas/types";
 import { REPO_URL } from "./config";
 import { closeWord, currentLocation, go, openWord, useLocation, type Route } from "./lib/router";
 import { setChrome } from "./lib/native";
+import { PALETTE_EVENT } from "./lib/palette";
 import { chromeColor, useThemeSettings } from "./lib/theme";
 import { AtlasPage } from "./pages/Atlas";
 import { About } from "./pages/About";
+import { HistoryPage } from "./pages/History";
 import { Learn } from "./pages/Learn";
 import { Me } from "./pages/Me";
 import { Onboarding } from "./pages/Onboarding";
@@ -117,6 +119,17 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   const [palette, setPalette] = useState(false);
   const [splash, setSplash] = useState(shouldShowSplash);
   const focus = route.page === "learn";
+  // The history page is reached from "我的", so keep that tab looking current.
+  const activePage = route.page === "history" ? "me" : route.page;
+  const closePalette = useCallback(() => setPalette(false), []);
+
+  // Any page (the empty history state, in particular) can raise the palette
+  // without threading an open callback through the router.
+  useEffect(() => {
+    const on = () => setPalette(true);
+    window.addEventListener(PALETTE_EVENT, on);
+    return () => window.removeEventListener(PALETTE_EVENT, on);
+  }, []);
 
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
@@ -150,7 +163,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
           </a>
           <nav className="topnav" aria-label="主导航">
             {NAV.map(({ page, label }) => (
-              <a key={page} href={page === "today" ? "#/" : `#/${page}`} className={route.page === page ? "is-on" : ""} aria-current={route.page === page ? "page" : undefined}>
+              <a key={page} href={page === "today" ? "#/" : `#/${page}`} className={activePage === page ? "is-on" : ""} aria-current={activePage === page ? "page" : undefined}>
                 {label}
               </a>
             ))}
@@ -178,6 +191,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
         {route.page === "learn" && <Learn />}
         {route.page === "practice" && <Practice />}
         {route.page === "me" && <Me privateAvailable={privateAvailable} />}
+        {route.page === "history" && <HistoryPage />}
         {route.page === "about" && <About />}
       </main>
 
@@ -197,7 +211,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
       {!focus && (
         <nav className="tabbar" aria-label="主导航">
           {NAV.map(({ page, label, icon: Icon }) => (
-            <a key={page} href={page === "today" ? "#/" : `#/${page}`} className={route.page === page ? "is-on" : ""} aria-current={route.page === page ? "page" : undefined}>
+            <a key={page} href={page === "today" ? "#/" : `#/${page}`} className={activePage === page ? "is-on" : ""} aria-current={activePage === page ? "page" : undefined}>
               <Icon size={22} strokeWidth={route.page === page ? 2.1 : 1.7} />
               <span>{label}</span>
             </a>
@@ -206,7 +220,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
       )}
 
       <WordSheet id={word} />
-      <Palette open={palette} onClose={() => setPalette(false)} />
+      <Palette open={palette} onClose={closePalette} />
       {!onboarded && route.page !== "about" && !splash && <Onboarding />}
       {splash && <Splash onDone={() => setSplash(false)} />}
       <Toasts />

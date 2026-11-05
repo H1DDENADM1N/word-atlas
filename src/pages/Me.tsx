@@ -1,8 +1,10 @@
-import { Download, Globe, RotateCcw, Upload } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { ChevronRight, Clock3, Download, Globe, RotateCcw, Upload } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtlas } from "../atlas/context";
 import { isMastered } from "../store/srs";
 import { saveBlob } from "../lib/native";
+import { go } from "../lib/router";
+import { RECENT_CAP, resolveRecent, subscribeRecent } from "../lib/recent";
 import { dayKey, exportBackup, exportWebBackup, importAnyBackup, resetProgress, store, useStore, type Settings, type Theme } from "../store/store";
 import { toast } from "../ui/Toast";
 import { streakOf } from "./Today";
@@ -32,6 +34,13 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   const saveError = useStore((s) => s.saveError);
   const file = useRef<HTMLInputElement>(null);
   const webFile = useRef<HTMLInputElement>(null);
+  const [recentN, setRecentN] = useState(() => resolveRecent(atlas).length);
+
+  useEffect(() => {
+    const refresh = () => setRecentN(resolveRecent(atlas).length);
+    refresh();
+    return subscribeRecent(refresh);
+  }, [atlas]);
 
   const stats = useMemo(() => {
     const cards = Object.values(progress.cards);
@@ -79,6 +88,23 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
         <p className="eyebrow">我的</p>
         <h1 className="display">你的星空</h1>
       </header>
+
+      <a
+        className="me-history-link"
+        href="#/history"
+        onClick={(e) => {
+          e.preventDefault();
+          go({ page: "history" });
+        }}
+      >
+        <Clock3 size={19} />
+        <span className="me-history-text">
+          <b>查词历史</b>
+          <small>最近查过的词，最多保留 {RECENT_CAP} 条</small>
+        </span>
+        <em>{recentN ? `${recentN} 条` : "暂无"}</em>
+        <ChevronRight size={17} />
+      </a>
 
       <section className="stat-strip" aria-label="学习统计">
         <div className="stat-lead">
