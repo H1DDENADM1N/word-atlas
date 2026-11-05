@@ -52,12 +52,14 @@ export function Sheet({
   if (!open) return null;
   return (
     <div className="sheet-root" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={panel} className={`sheet ${wide ? "sheet-wide" : ""} ${className}`} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1}>
-        <span className="sheet-grip" aria-hidden="true" />
-        <button className="icon-btn sheet-close" onClick={onClose} aria-label="关闭">
-          <X size={20} />
-        </button>
-        {children}
+      <div className={`sheet-frame ${wide ? "sheet-wide" : ""}`}>
+        <div ref={panel} className={`sheet ${className}`} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1}>
+          <span className="sheet-grip" aria-hidden="true" />
+          <button className="icon-btn sheet-close" onClick={onClose} aria-label="关闭">
+            <X size={20} />
+          </button>
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -133,6 +133,12 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-padding-top: calc(var(--top) + 12px);
+  /* Blink flashes its own tap highlight on every element that can be clicked,
+     and it paints that flash as a square around the border box — so a tap on a
+     24px-radius card showed a blue rectangle sticking out at all four corners.
+     The property inherits, so one declaration here covers the whole app; the
+     press feedback below is what answers the finger instead. */
+  -webkit-tap-highlight-color: transparent;
 }
 html.is-locked {
   overflow: hidden;
@@ -190,7 +196,8 @@ button {
   background: none;
   border: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent;
+  /* No 300 ms wait for a double-tap that a control never wants. */
+  touch-action: manipulation;
 }
 button:disabled {
   cursor: default;
@@ -198,7 +205,7 @@ button:disabled {
 a {
   color: inherit;
   text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 /* A ring is for keyboard users, and only Tab counts as keyboard navigation
    here: `:focus-visible` also matches a programmatic focus() whenever the last
@@ -211,10 +218,65 @@ a {
 html[data-focus-ring="key"] :focus-visible {
   outline: 2px solid var(--terra);
   outline-offset: 3px;
-  border-radius: 8px;
+  /* No border-radius here on purpose: the ring follows each surface's own
+     corners. Forcing 8px re-shaped a 24px card into a near-square while it was
+     focused — the same squared-off box the tap highlight used to draw. */
+}
+html[data-focus-ring="key"] .wotd:focus-visible,
+html[data-focus-ring="key"] .galaxy-panel:focus-visible {
+  /* One more pixel of air so the ring clears the card's soft shadow. */
+  outline-offset: 4px;
 }
 ::selection {
   background: var(--mark);
+}
+
+/* ---------- press ---------- */
+/* One press language for the whole app. Controls already answered with .btn's
+   scale(0.97); the surfaces below are sections, rows and pictures rather than
+   buttons, so they were the ones still flashing Blink's blue rectangle. They
+   answer with the same 120 ms settle and a shallower scale — 1.5%, not 3%,
+   because 3% of a 340px card is a lurch rather than a press. Components whose
+   box is positioned by an inline transform (tiles, list rows) press their
+   picture or their fill instead, since a transform of their own would lose to
+   the inline one. */
+.wotd,
+.galaxy-panel,
+.tile,
+.row,
+.topic-tiles button,
+.mode-card,
+.history-row,
+.ccard-main,
+.route button {
+  touch-action: manipulation;
+}
+
+/* A finger never un-hovers. On a touch screen the last thing tapped keeps its
+   hover styling, so a card stayed lifted with a swollen shadow long after the
+   sheet it opened had closed — the press looked stuck. Pointer-only lift and
+   zoom stand down here; the press state is the whole answer to a finger. */
+@media (hover: none) {
+  .wotd:hover:not(:active),
+  .tile:hover:not(:active),
+  .topic-tiles button:hover:not(:active),
+  .history-row:hover:not(:active) {
+    transform: none;
+  }
+  .wotd:hover:not(:active) {
+    box-shadow: var(--shadow);
+  }
+  .tile:hover:not(:active) {
+    border-color: var(--line);
+    box-shadow: var(--shadow-sm);
+  }
+  .topic-tiles button:hover:not(:active) {
+    box-shadow: var(--shadow);
+  }
+  .tile:hover:not(:active) .illo img,
+  .topic-tiles button:hover:not(:active) img {
+    transform: none;
+  }
 }
 h1,
 h2,
@@ -915,6 +977,11 @@ code {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Rounded on the image as well as clipped by the plate: a picture is a
+     replaced box, and if the plate's rounded mask is still being built when it
+     first paints, an unrounded photo would cover the plate's corners for a
+     frame. With the radius on both, there is nothing to see either way. */
+  border-radius: inherit;
   opacity: 0;
   transform: scale(1.02);
   transition: opacity 0.5s var(--ease), transform 0.8s var(--ease);
@@ -1093,7 +1160,6 @@ code {
   border: 0;
   background: none;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
   transition: none;
 }
 .speak {
@@ -1261,7 +1327,6 @@ code {
 .ex-zh.is-veiled {
   cursor: pointer;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
 }
 .ex-zh-text {
   transition: filter 0.2s var(--ease);
@@ -1341,7 +1406,6 @@ code {
   line-height: inherit;
   cursor: pointer;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
 }
 .lookup-token:hover,
 .lookup-token:focus-visible {
@@ -1558,16 +1622,30 @@ code {
 
 /* ---------- sheet ---------- */
 
+/* Three layers on purpose: scrim, frame, scroller.
+   A `backdrop-filter` on the flex parent made the sheet a child of a backdrop
+   root, and there the composited card lost its rounded clip for the first
+   frames of the entrance — it opened round, flashed square, then snapped back.
+   Keep the blur on its own pseudo-element and the sheet is an ordinary child
+   again. Corners, shadow and motion live on the frame, never on the scroller:
+   a rounded scroll box that is also being transformed is the other half of
+   that bug, and an outline or radius on a scrolling layer is the first thing a
+   compositor drops. */
 .sheet-root {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(14, 18, 30, 0.42);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
+}
+.sheet-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 18, 30, 0.42);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   animation: fade 0.25s var(--ease);
 }
 @keyframes fade {
@@ -1575,17 +1653,33 @@ code {
     opacity: 0;
   }
 }
+.sheet-frame {
+  position: relative;
+  width: 100%;
+  max-height: 94dvh;
+  border-radius: 28px 28px 0 0;
+  overflow: hidden;
+  /* The paper lives here, on the box that carries the corners. `border-radius`
+     clips an element's own background with no work from the compositor, so the
+     silhouette is rounded in the very first frame — even the frame before the
+     entrance animation has warmed up its layer clip. Painting it on the
+     scroller instead is what flashed square: a scroll container paints its
+     background into the scrolling layer, and that layer's rounded mask is
+     built a frame or two after the animation starts (invisible at 6s, obvious
+     at 0.42s, where the ease curve is already at half opacity by 60ms). */
+  background: var(--paper);
+  box-shadow: var(--shadow-lg);
+  animation: sheet-up 0.42s var(--ease);
+  will-change: transform;
+}
 .sheet {
   position: relative;
   width: 100%;
   max-height: 94dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: var(--paper);
-  border-radius: 28px 28px 0 0;
+  border-radius: inherit;
   padding: 26px var(--gutter) calc(28px + env(safe-area-inset-bottom));
-  box-shadow: var(--shadow-lg);
-  animation: sheet-up 0.42s var(--ease);
   outline: none;
 }
 @keyframes sheet-up {
@@ -1636,12 +1730,15 @@ code {
     align-items: center;
     padding: 32px;
   }
-  .sheet {
+  .sheet-frame {
     border-radius: var(--r-xl);
     max-width: 640px;
     max-height: calc(100dvh - 64px);
-    padding: 36px;
     animation: sheet-pop 0.38s var(--ease);
+  }
+  .sheet {
+    max-height: calc(100dvh - 64px);
+    padding: 36px;
   }
   .sheet-wide {
     max-width: 1040px;
@@ -2093,6 +2190,12 @@ code {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
+.wotd:active {
+  /* The hover lift folds away under the finger instead of stacking with it. */
+  transform: translateY(0) scale(0.985);
+  box-shadow: var(--shadow-sm);
+  transition: transform 120ms var(--ease), box-shadow 120ms var(--ease);
+}
 .wotd-art {
   border-radius: 18px;
 }
@@ -2329,6 +2432,11 @@ code {
 .route button:hover .station {
   transform: translateY(-3px) scale(1.04);
 }
+.route button:active .station {
+  /* The station is the thing you are aiming at, so it is the thing that gives. */
+  transform: translateY(0) scale(0.955);
+  transition: transform 120ms var(--ease);
+}
 .station b {
   font: 700 17px/1 var(--mono);
   color: var(--ink-2);
@@ -2420,6 +2528,12 @@ code {
 .topic-tiles button:hover {
   transform: translateY(-4px) rotate(-0.6deg);
   box-shadow: var(--shadow-lg);
+}
+.topic-tiles button:active {
+  /* The loose photo settles flat and comes towards the finger. */
+  transform: translateY(-1px) rotate(0deg) scale(0.985);
+  box-shadow: var(--shadow);
+  transition: transform 120ms var(--ease), box-shadow 120ms var(--ease);
 }
 .topic-tiles img {
   position: absolute;
@@ -2549,6 +2663,16 @@ code {
   border-color: var(--line-strong);
   box-shadow: 0 22px 40px -24px rgba(30, 38, 64, 0.45);
 }
+/* The tile's own box carries the virtual grid's inline translate(), and an
+   inline transform outranks any stylesheet one — so the press happens on the
+   plate inside: the picture dimples and the tile gives up its hover shadow. */
+.tile:active {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-sm);
+}
+.tile:active .illo {
+  transform: scale(0.968);
+}
 .tile .illo {
   border-radius: 16px;
   flex: none;
@@ -2556,6 +2680,7 @@ code {
      113), which left the illustration with no width — and no height. */
   width: 100%;
   align-self: stretch;
+  transition: transform 140ms var(--ease);
 }
 .tile .illo img {
   transition: opacity 0.5s var(--ease), transform 0.9s var(--ease);
@@ -2667,6 +2792,12 @@ code {
 }
 .row:hover {
   background: var(--card);
+}
+.row:active {
+  /* Rows are placed by an inline translate(), so they tint instead of scaling —
+     the same "pressed in" idea as the cards, in the one channel they own. */
+  background: var(--card-2);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 .row-art {
   width: 48px;
@@ -3228,7 +3359,6 @@ code {
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
 }
 .feedback-word b {
   font: 600 22px var(--serif);
@@ -3606,6 +3736,10 @@ code {
   line-height: 1.45;
 }
 .mode-card:hover {
+  border-color: var(--ink-4);
+}
+.mode-card:active {
+  transform: scale(0.985);
   border-color: var(--ink-4);
 }
 .mode-card.is-on {
@@ -4589,7 +4723,6 @@ a:hover .mark-needle,
   perspective: 1400px;
   overflow: hidden;
   color: #f3ecdf;
-  -webkit-tap-highlight-color: transparent;
 }
 .door {
   position: absolute;
@@ -5296,6 +5429,15 @@ a:hover .mark-needle,
   cursor: pointer;
   color: #f3ecdf;
   isolation: isolate;
+  transition: transform 220ms var(--ease), box-shadow 220ms var(--ease), filter 220ms var(--ease);
+}
+.galaxy-panel:active {
+  /* Barely two pixels of give, and a touch more starlight: pressing the sky
+     should not open a pale seam around its own silhouette the way a full
+     card-scale would on paper. */
+  transform: scale(0.994);
+  filter: brightness(1.07);
+  box-shadow: var(--shadow);
 }
 .galaxy-panel::after {
   content: "";
@@ -5554,14 +5696,14 @@ a:hover .mark-needle,
    Give the skins a solid scrim instead so the panel never depends on backdrop
    sampling; the ribbon still glows faintly through. */
 :root[data-skin="aurora"] .palette-root,
-:root[data-skin="aurora"] .sheet-root {
+:root[data-skin="aurora"] .sheet-root::before {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
 :root[data-skin="aurora"] .palette-root {
   background: rgba(5, 6, 15, 0.72);
 }
-:root[data-skin="aurora"] .sheet-root {
+:root[data-skin="aurora"] .sheet-root::before {
   background: rgba(5, 6, 15, 0.62);
 }
 :root[data-skin="aurora"] .topbar {
@@ -5765,6 +5907,11 @@ a:hover .mark-needle,
 .history-row:hover {
   border-color: var(--ink-4);
   transform: translateY(-1px);
+}
+.history-row:active {
+  transform: translateY(0) scale(0.99);
+  border-color: var(--ink-4);
+  transition: transform 120ms var(--ease), border-color 0.2s;
 }
 .history-no {
   color: var(--ink-4);
