@@ -52,6 +52,29 @@ export function AtlasPage({
   useEffect(() => {
     if (route.view === "grid" || route.view === "list" || route.view === "galaxy") setViewState(route.view);
   }, [route.view]);
+
+  /**
+   * A word handed over from another app (PROCESS_TEXT / SEND) arrives as a raw
+   * query in the URL. Record the best match in "最近查过" so the user can
+   * reopen it later, exactly like any other lookup — and when the query is an
+   * exact English spelling, open the card straight away so choosing 词光 in a
+   * translate menu behaves like a dictionary, not just a search box.
+   *
+   * Keyed on `route.q`, not the input state: typing in the search box must not
+   * keep moving fresh words to the top of the history, and the ref makes sure
+   * one hand-off is recorded once even if the effect re-runs.
+   */
+  const externalHandled = useRef<string | null>(null);
+  useEffect(() => {
+    const query = route.q?.trim();
+    if (!query || route.waSource !== "external") return;
+    if (externalHandled.current === query) return;
+    externalHandled.current = query;
+    const match = searchAtlas(atlas, query, 1)[0];
+    if (!match) return;
+    pushRecent(match.id);
+    if (match.word.toLowerCase() === query.toLowerCase()) openWord(match.id);
+  }, [atlas, route.q, route.waSource]);
   const setView = (v: View) => {
     setViewState(v);
     go(

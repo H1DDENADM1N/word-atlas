@@ -146,7 +146,32 @@ WebView 侧还关闭了 `file` 域的脚本访问（`setAllowFileAccessFromFileU
 
 `src/lib/recent.test.ts` 的十条测试覆盖：坏数据、非字符串项、21 条淘汰、重复前置、序列化无时间字段、清空（含没有 `removeItem` 的存储）、写失败不崩、陈旧 ID 不回写、每日推荐稳定且不重复。
 
+## 外部查词（选词翻译 / 分享）
+
+1.0.10 之前，词光只能在自己的搜索框里查词。系统里长按一个词，翻译菜单和分享面板都不会出现词光。这一版把两个系统入口接上，且**没有新增任何权限**：
+
+| 入口 | 触发方式 | 系统 action |
+| :--- | :--- | :--- |
+| 选词翻译 | 在别的 app 长按一个词 →「翻译」→ 选择器里出现词光 | `android.intent.action.PROCESS_TEXT`（`text/plain`） |
+| 分享搜索 | 在别的 app 长按一个词 →「分享」→ 分享面板里出现词光 | `android.intent.action.SEND`（`text/plain`） |
+
+两者都只是 `MainActivity` 上多两个 `<intent-filter>`：`exported="true"` 与 `launchMode="singleTask"` 原本就满足要求，`configChanges` 也不用动。分享面板里的条目名就是 `app_name`（词光）。
+
+**取值**：`PROCESS_TEXT` 传的是 `CharSequence` 而不是 `String`，所以必须用 `getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)`，用 `getStringExtra` 会拿到 `null`；`SEND` 的正文在 `EXTRA_TEXT`，作为兜底。分享面板可能送来一整段文字，因此先把 `\s+` 压成单个空格、`trim()`，再截断到 **120** 字符——图鉴是词表，不是全文检索。
+
+**编码**：`URLEncoder.encode(word, StandardCharsets.UTF_8)` 之后拼进 `file:///android_asset/www/index.html#/atlas?q=<编码后>&waSource=external`。`URLEncoder` 把空格编成 `+`，页面的 `URLSearchParams` 解回来仍是空格。这一层编码同时替代了手写校验：输出字符集只有 `[A-Za-z0-9.*_+%-]`，引号、尖括号都进不了 `file://` URL。
+
+**入口复用**：外部文本走的是既有的 `launchUrl(Intent)`——桌面小部件也是从这里进站。只有在小部件 route 为空时才读外部文本；冷启动 `onCreate` 与热启动 `onNewIntent` 调的是同一个方法，`singleTask` 下再长按一次只会换 URL，不会开出第二个 Activity。`onNewIntent` 里的 `setIntent()` 也已经在，返回栈不会被外部 intent 污染。
+
+**前端标记**：`Route` 的 atlas 分支多了可选 `waSource`，`parse()` 从查询串读出、`href()` 写回，站内跳转（换视图、点词条）不会把它丢掉。
+
+**记入「最近查过」**：`src/pages/Atlas.tsx` 里加了一个 `useEffect`，依赖是 `[atlas, route.q, route.waSource]`——**键在 URL 上的 `route.q`，不是输入框状态**，否则用户在结果页里继续打字会把一串无关的词塞进历史；另一个 ref 保证同一次移交只记一次。逻辑是取 `searchAtlas(atlas, query, 1)[0]`：有命中就 `pushRecent(match.id)`；若查询与词条拼写完全相同（忽略大小写）再 `openWord(match.id)`，于是「选词 → 翻译 → 词光」会直接弹出词卡，像词典而不是搜索框；大小写不同或中文查询则停在结果列表，由用户挑。**没有命中的词不写历史**——不把猜出来的词当成用户查过的词。
+
+写入的是与自检查词同一个 `word-atlas:recent-search`，`wa:recent` 一派发，搜索面板、历史页、「我的」的条数立刻同步；仍然**不进备份**、不随「清空记录」删除。
+
 ## 离线语音（内置 TTS）
+
+
 
 7,298 个词的英音、美音、两句例句都有录音（29,402 段）。**第二条例句（雅思语境）原先只有 1,011 个词有录音**，其余 6,287 个词词卡上第二个喇叭走的是系统 `TextToSpeech`——在没装英文语音包的机器上就是「点了没声音」，于是改为 APK 内自带的引擎；1.0.8 又从上游公开站点按词条把那 6,287 条镜像补齐，现在只剩真题例句需要合成。
 
@@ -441,6 +466,8 @@ async function illustration(src: string | null) {
 真机上建议确认：首屏、图鉴网格、词卡翻页、英美发音、星图（WebGL2）、返回键、分享卡片保存位置、深浅色切换、导出 / 导入备份、清空记录，以及**没有录音的那条例句的朗读**。
 
 查词历史建议按这条顺序走一遍（1.0.10 新增，实机验证由使用者完成）：搜一个词 → 关面板 → 再开面板应出现「最近查过」；连查 21 个词后最早那条被挤出、面板仍只显示 6 条；「查看全部 N 条 →」进入独立页，条数一致；点历史里靠后的一条，它应回到最前；面板「清空」与历史页「清空」都弹出系统确认框，清完两处同时变空；「我的 → 查词历史」的条数同步；导出备份再导入，历史**不应该**跟着迁移；系统返回键在面板打开时只关面板；最后强制停止再打开，历史仍在。
+
+外部查词按这条顺序走（1.0.10 新增，实机验证由使用者完成）：在浏览器或任意支持选词的 app 里长按一个**词光里有的词**（例如 `serendipity`）→ 选「翻译」→ 选择器里应出现「词光」→ 选中后应直接弹出这个词的词卡；返回一次回到图鉴结果页，搜索框里是这个词；打开搜索面板，这个词应在「最近查过」最前。再用同样的词走「分享」→ 分享面板里选「词光」→ 同样进图鉴并记入历史。然后长按一个**词光里没有的词**（或一段话）→ 选词光 → 应停在结果页、显示「没有找到」，且**不应**新增历史条目。最后确认两件不变量：词光已在后台时再长按一次，只换页面、不会开出第二个进程 / 任务（`singleTask`）；清空历史后再长按，`waSource=external` 那条不会被重新写回。
 
 学习页的「一屏」可以先在桌面上量，不必每次都装包：用 Playwright 按设备视口（363×640、360×600、363×800）跑完一整轮，比较 `document.documentElement.scrollHeight` 与 `innerHeight`，再判断反馈卡与选项区的矩形是否相交。键盘态直接把视口高度改成 55%（相当于 `adjustResize` 之后的高度）重量一次，就能看出输入区会不会被顶出去。
 

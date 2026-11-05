@@ -42,6 +42,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -60,6 +62,11 @@ public class MainActivity extends Activity {
     private static final String TAG = "WordAtlas";
     private static final String START_URL = "file:///android_asset/www/index.html";
     private static final String ASSET_PREFIX = "file:///android_asset/";
+    /** Route opened when another app hands a word over (PROCESS_TEXT / SEND). */
+    private static final String SEARCH_ROUTE = "#/atlas?q=";
+    private static final String EXTERNAL_SOURCE = "&waSource=external";
+    /** Share sheets can send a whole paragraph; the atlas is a word list. */
+    private static final int EXTERNAL_WORD_MAX = 120;
     /** How long a staged share file is kept before the next share sweeps it. */
     private static final long SHARE_TTL_MS = 24L * 60 * 60 * 1000;
     private static final int BOOT_BG = 0xFF0D1120;
@@ -128,6 +135,33 @@ public class MainActivity extends Activity {
     private String launchUrl(Intent intent) {
         String route = intent == null ? "" : intent.getStringExtra(WidgetBase.EXTRA_ROUTE);
         if (route == null || !route.startsWith("#/") || !route.matches("^#/[A-Za-z0-9/?=&_%.-]*$")) route = "";
+
+        // External hand-off: another app passed a word (PROCESS_TEXT / SEND).
+        // Decode the raw text once here, then URL-encode it into the route so
+        // the page reads a clean word from the query string.
+        String word = null;
+        if (route.isEmpty()) {
+            String action = intent == null ? null : intent.getAction();
+            if ("android.intent.action.PROCESS_TEXT".equals(action)
+                    || "android.intent.action.SEND".equals(action)) {
+                CharSequence text = intent == null ? null : intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
+                if (text == null || text.length() == 0)
+                    text = intent == null ? null : intent.getCharSequenceExtra(Intent.EXTRA_TEXT);
+                if (text != null && text.length() > 0) {
+                    // A shared paragraph arrives with newlines and runs of
+                    // spaces; searching wants one clean line.
+                    word = text.toString().replaceAll("\\s+", " ").trim();
+                    if (word.length() > EXTERNAL_WORD_MAX)
+                        word = word.substring(0, EXTERNAL_WORD_MAX).trim();
+                    if (word.isEmpty()) word = null;
+                }
+            }
+        }
+
+        if (word != null) {
+            return START_URL + SEARCH_ROUTE + URLEncoder.encode(word, StandardCharsets.UTF_8) + EXTERNAL_SOURCE;
+        }
+
         String action = intent == null ? null : intent.getStringExtra(WidgetBase.EXTRA_ACTION);
         if ("start".equals(action)) {
             if (route.isEmpty()) route = "#/learn";
