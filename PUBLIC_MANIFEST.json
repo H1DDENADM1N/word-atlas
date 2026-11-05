@@ -1,6 +1,6 @@
 {
 "files": 37725,
-"bytes": 712181554,
+"bytes": 712113870,
 "items": [
 {
 "path": ".github/workflows/check.yml",
@@ -188229,18 +188229,18 @@
 },
 {
 "path": "public/sfx/complete.mp3",
-"bytes": 27315,
-"sha256": "60d06bedd61794e7842ba460e02b89affc92b921143f7a31b192d36491580614"
+"bytes": 9134,
+"sha256": "42f8dceccb3c3bad5b77f900d09cc0c72353ff2343191d001bc5f547f4b3098c"
 },
 {
 "path": "public/sfx/correct.mp3",
-"bytes": 10388,
-"sha256": "37a3e1093b2472577ed6754f018f7deaf79c22eb27f5ae531ff3ba27e31a51ed"
+"bytes": 9134,
+"sha256": "418d7b3b4c6c40ff18cdf81d8cf4a5ac79d981cb9be2736923ca441698499dc7"
 },
 {
 "path": "public/sfx/flip.mp3",
-"bytes": 6313,
-"sha256": "553d0c287d326d7fa3ed97b3d0d03af135cb1a50476c23ebc9af94344bcd36dd"
+"bytes": 5059,
+"sha256": "787bac16e1d34240b96e56bc54f961e7408aec416a2f13ba3d316c864590a384"
 },
 {
 "path": "public/sfx/fly.mp3",
@@ -188254,18 +188254,18 @@
 },
 {
 "path": "public/sfx/key.mp3",
-"bytes": 4746,
-"sha256": "5e10b379cc4747b29f159a20302baeb26ed6ba68c3126e187e9e38b18059da67"
+"bytes": 2238,
+"sha256": "bc7b03ace5a8ecf094ba7cd5b793ef508f12596826d18c97031db48ea67d0c8d"
 },
 {
 "path": "public/sfx/page.mp3",
-"bytes": 9134,
-"sha256": "68670957ce88d26dd220ba8cbedfb331ea02f8caba5c3ba0acedf03574f645d5"
+"bytes": 4746,
+"sha256": "61e29bd195587db7b7dd8d7e5eaeda6727c157a3f77f3bd59fc1a6b50676130c"
 },
 {
 "path": "public/sfx/splash-burst.mp3",
-"bytes": 25580,
-"sha256": "ede22024c21f6da8f7774f6558b2846cd4907ca4ef5fc6b94a86f2b36adebdd6"
+"bytes": 11328,
+"sha256": "76df1be2f51d24cf4f90bdc7ad9f169fbbd33a24094451e5a5d82ed3d1bb1ba8"
 },
 {
 "path": "public/sfx/splash-door.mp3",
@@ -188279,23 +188279,23 @@
 },
 {
 "path": "public/sfx/start.mp3",
-"bytes": 15090,
-"sha256": "5a8d29d97a08c0aac7e2590b5f38e20c303834613642696789b6d51f9b578441"
+"bytes": 6313,
+"sha256": "a9f860a2d4433324f299f93aeaaae0900ce3395bc91f4a9066827a08703d4c4e"
 },
 {
 "path": "public/sfx/streak.mp3",
-"bytes": 17284,
-"sha256": "067b999e1b3a47cb6532f0962c04c54085b71fdfd778a45d285fe32c5357d334"
+"bytes": 3178,
+"sha256": "f689fc4f4d3c083c4c3eea4ffd58bb781eef62dce4ee80a98f96eb0f1fa44a88"
 },
 {
 "path": "public/sfx/tap.mp3",
-"bytes": 2238,
-"sha256": "c7037a85d7b33c405a01d981caae874b64e4a5b4f47d59b51913f58be2e3c921"
+"bytes": 2865,
+"sha256": "c2286f3006eb6f6d2add4330f3dea12fa86eb922d4727ec26d0ea8c2b5abd748"
 },
 {
 "path": "public/sfx/twinkle.mp3",
-"bytes": 5516,
-"sha256": "2ca3a6c5c99f9ef50c742d0c179cda07770c8b15d6de8fe8adcf159f7bb1ed9b"
+"bytes": 5373,
+"sha256": "9ccc04d8b83163e870ea2ffbc814957e7beb841ef6afe7bc213909110fd0eb72"
 },
 {
 "path": "public/sfx/voice-galaxy-hello.mp3",
@@ -188309,8 +188309,8 @@
 },
 {
 "path": "public/sfx/wrong.mp3",
-"bytes": 11328,
-"sha256": "4b662fa70cf811dae9fc5532d644735882a218577e14a86dbe41aff839ea3d76"
+"bytes": 7880,
+"sha256": "11c5289349917439b2f2dd1183f80050f6126a3443dc0df4de3f6e3fbfae80be"
 },
 {
 "path": "public/sw.js",

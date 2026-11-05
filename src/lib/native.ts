@@ -18,6 +18,8 @@ interface Shell {
   setBackEnabled(enabled: boolean): void;
   /** "light" | "dark" — the phone's own setting, not the app theme. */
   systemTheme?(): string;
+  /** Short "tick" | "click" | "success" | "error" haptic, via the View channel. */
+  vibrate?(kind: string): void;
   /** Raise / lower the soft keyboard (the typing stages use an invisible field). */
   showKeyboard?(): void;
   hideKeyboard?(): void;
@@ -142,6 +144,41 @@ export function shellStopSpeak() {
  */
 export function shellPrepare(text: string, accent: "uk" | "us", rate: number) {
   shell?.prepare(text, accent === "uk" ? "en-GB" : "en-US", rate);
+}
+
+/* ---------- haptics ---------- */
+
+/** Patterns for the browser fallback; the APK uses the shell's own channel. */
+const WEB_VIBRATION: Record<string, number | number[]> = {
+  tick: 10,
+  click: 18,
+  success: [14, 45, 20],
+  error: 45,
+};
+
+/**
+ * A short haptic for a press.
+ *
+ * Inside the APK this goes to `MainActivity.Bridge.vibrate`, which uses
+ * `View.performHapticFeedback` — a window-manager call that needs no VIBRATE
+ * permission, so the manifest stays empty. The web build falls back to the
+ * Vibration API where the browser offers one (mostly Android Chrome).
+ */
+export function vibrate(kind: string) {
+  if (shell?.vibrate) {
+    try {
+      shell.vibrate(kind);
+      return;
+    } catch {
+      /* an older shell without the method: fall through to the browser */
+    }
+  }
+  try {
+    const nav = navigator as Navigator & { vibrate?: (pattern: number | number[]) => boolean };
+    nav.vibrate?.(WEB_VIBRATION[kind] ?? WEB_VIBRATION.tick);
+  } catch {
+    /* not a browser that vibrates */
+  }
 }
 
 /* ---------- system appearance ---------- */

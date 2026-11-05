@@ -74,6 +74,8 @@ export interface Settings {
   theme: Theme;
   wordFont: WordFont;
   sfx: boolean;
+  /** Short vibration on presses, flips and verdicts (Android: no permission needed). */
+  haptic: boolean;
   spell: boolean;
   startLevel: number;
   onboarded: boolean;
@@ -94,6 +96,7 @@ export const defaultSettings: Settings = {
   theme: "dark",
   wordFont: "serif",
   sfx: true,
+  haptic: true,
   spell: true,
   startLevel: 0,
   onboarded: false,
@@ -225,6 +228,7 @@ export function sanitizeSettings(v: unknown): Settings {
   if (THEMES.includes(v.theme as Theme)) s.theme = v.theme as Theme;
   if (WORD_FONTS.includes(v.wordFont as WordFont)) s.wordFont = v.wordFont as WordFont;
   if (typeof v.sfx === "boolean") s.sfx = v.sfx;
+  if (typeof v.haptic === "boolean") s.haptic = v.haptic;
   if (typeof v.spell === "boolean") s.spell = v.spell;
   if (num(v.startLevel, 0, 5)) s.startLevel = Math.round(v.startLevel as number);
   if (typeof v.onboarded === "boolean") s.onboarded = v.onboarded;
@@ -404,7 +408,7 @@ export function importAnyBackup(text: string): ImportReport {
     progress,
     settings: {
       ...settings,
-      ...(web ? { autoplayEx: state.settings.autoplayEx, autoplayEx2: state.settings.autoplayEx2, blurZh: state.settings.blurZh } : {}),
+      ...(web ? { autoplayEx: state.settings.autoplayEx, autoplayEx2: state.settings.autoplayEx2, blurZh: state.settings.blurZh, haptic: state.settings.haptic } : {}),
       onboarded: true,
     },
   };

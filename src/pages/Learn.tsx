@@ -5,10 +5,12 @@ import type { Entry, WordRef } from "../atlas/types";
 import { play, stopAudio } from "../lib/audio";
 import { readEntry } from "../lib/read";
 import { burst } from "../lib/burst";
+import { haptic, typingFeedback } from "../lib/feedback";
 import { cue } from "../lib/sound";
 import { currentLocation, go, openWord } from "../lib/router";
 import { focusField, revealField } from "../lib/keyboard";
 import { gap, normalize } from "../lib/text";
+import { typingDelta } from "../lib/typing";
 import { answer, advance, buildSession, gradeFor, quizOptions, sessionStats } from "../store/session";
 import { Rating } from "../store/srs";
 import { store, useStore, type ActiveSession, type QuizKind, type Step } from "../store/store";
@@ -108,6 +110,7 @@ function Intro({ step }: { step: Step }) {
   const next = useCallback(() => {
     stopAudio();
     if (store.get().settings.sfx) void cue("flip");
+    haptic("click");
     advance(elapsed());
   }, [elapsed]);
   useKeys({ Enter: next, " ": next });
@@ -173,6 +176,7 @@ function Quiz({ step, session }: { step: Step & { kind: QuizKind }; session: Act
         if (r) burst(r.left + r.width / 2, r.top + r.height / 2);
       }
       if (settings.sfx) void cue(correct ? "correct" : "wrong");
+      haptic(correct ? "success" : "error");
       answer(atlas, step, correct, gradeFor(step.kind, correct, ms, hints > 0), value);
       // Answering always says the word; the examples follow if they are on.
       if (entry)
@@ -372,7 +376,15 @@ function SpellInput({ entry, pending, hints, onHint, onSubmit }: { entry: Entry;
         ref={input}
         className="spell-input"
         value={shown}
-        onChange={(e) => !pending && setValue(e.target.value.slice(0, target.length + 6))}
+        onChange={(e) => {
+          if (pending) return;
+          const next = e.target.value.slice(0, target.length + 6);
+          // Same cadence as the Practice typing page: one key cue per newly
+          // typed character, plus a throttled haptic. IME input generates no
+          // pointer events, so the global tap listener cannot cover this.
+          if (typingDelta(value, next, target).total > 0) typingFeedback();
+          setValue(next);
+        }}
         autoFocus
         autoCapitalize="off"
         autoCorrect="off"

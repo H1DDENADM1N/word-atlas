@@ -16,6 +16,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -107,6 +108,10 @@ public class MainActivity extends Activity {
         web = new WebView(this);
         web.setBackgroundColor(BOOT_BG);
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        // The page asks this view to perform haptic feedback on every press.
+        // WebView disables it for long-press by default on some builds; the
+        // bridge also passes FLAG_IGNORE_VIEW_SETTING, but set it explicitly.
+        web.setHapticFeedbackEnabled(true);
         configure(web.getSettings());
         web.setWebViewClient(new ShellClient());
         // Without a WebChromeClient the page gets no dialogs (confirm() silently
@@ -725,6 +730,38 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String version() {
             return versionName;
+        }
+
+        /**
+         * Short haptic for a press.
+         *
+         * <p>Deliberately uses View.performHapticFeedback rather than the
+         * Vibrator service: the View channel is executed by the window manager,
+         * so it needs no `android.permission.VIBRATE` and the manifest can stay
+         * empty. The flags bypass the device-wide "vibrate on tap" switch
+         * because the app has its own 界面震动 toggle in "Me".
+         *
+         * <p>Called on WebView's JavaBridge thread, so hop to the UI thread —
+         * performHapticFeedback needs an attached view.
+         */
+        @JavascriptInterface
+        public void vibrate(final String kind) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (web == null) return;
+                    int effect;
+                    if ("tick".equals(kind)) effect = HapticFeedbackConstants.CLOCK_TICK;
+                    else if ("success".equals(kind)) effect = HapticFeedbackConstants.CONTEXT_CLICK;
+                    else if ("error".equals(kind)) effect = HapticFeedbackConstants.LONG_PRESS;
+                    else effect = HapticFeedbackConstants.VIRTUAL_KEY;
+                    int flags = HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+                              | HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING;
+                    if (!web.performHapticFeedback(effect, flags)) {
+                        getWindow().getDecorView().performHapticFeedback(effect, flags);
+                    }
+                }
+            });
         }
 
         /**

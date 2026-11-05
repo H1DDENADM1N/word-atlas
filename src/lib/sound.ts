@@ -10,25 +10,45 @@ const BASE = `${import.meta.env.BASE_URL}sfx/`;
 export type Cue = "correct" | "wrong" | "flip" | "page" | "complete" | "streak" | "start" | "tap" | "key" | "twinkle" | "fly" | "ignite";
 export { AMBIENCE, type AmbienceId };
 
+/**
+ * Playback gains.
+ *
+ * The starlight kit (scripts/atlas/gen_cosmic_sfx.py, ElevenLabs takes) is
+ * level-matched: every file is normalised to -20 dBFS on its loudest 100 ms
+ * with a -3 dBFS peak ceiling, so one uniform 0.60 puts all of them about
+ * 5-6 dB above the ambience bed. `tap` is deliberately quieter — it fires on
+ * every confirmed press. `fly` / `ignite` are the older, already-audible takes
+ * and keep their original gains.
+ */
 const CUE_GAIN: Record<Cue, number> = {
-  correct: 0.55,
-  wrong: 0.5,
-  flip: 0.45,
-  page: 0.4,
+  correct: 0.6,
+  wrong: 0.6,
+  flip: 0.6,
+  page: 0.6,
   complete: 0.6,
-  streak: 0.5,
-  start: 0.5,
-  tap: 0.3,
-  key: 0.18,
-  twinkle: 0.22,
+  streak: 0.6,
+  start: 0.6,
+  tap: 0.45,
+  key: 0.6,
+  twinkle: 0.6,
   fly: 0.4,
   ignite: 0.45,
 };
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
+/**
+ * Cues run through their own bus with a soft limiter. A tap, a verdict cue and
+ * a dozen star ignitions can overlap; without this they simply add up past 1.0
+ * and clip. The ambience bed stays on `master`, untouched by the limiter.
+ */
+let cueBus: GainNode | null = null;
 /** Decoded cues are tiny and there are a dozen of them, so they stay. */
 const buffers = new Map<string, Promise<AudioBuffer | null>>();
+/** Resolved buffers let a tap start synchronously, with no promise round-trip. */
+const ready = new Map<string, AudioBuffer>();
+const MAX_VOICES = 8;
+let voices = 0;
 
 /**
  * Decoded ambience is *not* tiny: a three-minute stereo loop is roughly 60 MB
@@ -46,8 +66,18 @@ function audio() {
     ctx = new C();
     master = ctx.createGain();
     master.connect(ctx.destination);
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -2;
+    limiter.knee.value = 0;
+    limiter.ratio.value = 20;
+    limiter.attack.value = 0.001;
+    limiter.release.value = 0.08;
+    cueBus = ctx.createGain();
+    cueBus.connect(limiter).connect(master);
   }
-  if (ctx.state === "suspended") void ctx.resume();
+  // A context created before the first gesture starts suspended; calling
+  // resume() from inside the gesture is what unlocks it.
+  if (ctx.state === "suspended") void ctx.resume().catch(() => null);
   return ctx;
 }
 
@@ -109,10 +139,42 @@ function payload(file: string): Promise<string | null> {
 function load(file: string) {
   let p = buffers.get(file);
   if (!p) {
-    p = decode(file);
+    p = decode(file).then((b) => {
+      if (b) ready.set(file, b);
+      return b;
+    });
     buffers.set(file, p);
   }
   return p;
+}
+
+/**
+ * One cue voice, shaped at both ends.
+ *
+ * A 1.5 ms attack removes the decoder's DC pop without dulling the transient;
+ * the short release stops a stack of taps from ending in a click. Voices are
+ * capped so a burst of presses degrades to silence instead of a distorted buzz.
+ */
+function voice(buf: AudioBuffer, gain: number, at = 0) {
+  const c = audio();
+  if (!c || !cueBus || voices >= MAX_VOICES) return;
+  const src = c.createBufferSource();
+  const g = c.createGain();
+  const t = Math.max(c.currentTime, at);
+  const dur = buf.duration;
+  const attack = Math.min(0.0015, dur / 8);
+  const release = Math.min(0.012, dur / 4);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(gain, t + attack);
+  g.gain.setValueAtTime(gain, t + Math.max(attack, dur - release));
+  g.gain.linearRampToValueAtTime(0, t + dur);
+  src.buffer = buf;
+  src.connect(g).connect(cueBus);
+  voices++;
+  src.onended = () => {
+    voices = Math.max(0, voices - 1);
+  };
+  src.start(t);
 }
 
 function loadAmb(file: string) {
@@ -144,28 +206,47 @@ export function preloadFiles(files: string[]) {
 /** Play any file from the sound folder; call from a user gesture so audio is allowed. */
 export async function playFile(file: string, gain = 0.6, delay = 0) {
   const c = audio();
-  if (!c || !master) return;
+  if (!c || !cueBus) return;
   const buf = await load(file);
   if (!buf) return;
-  const src = c.createBufferSource();
-  const g = c.createGain();
-  g.gain.value = gain;
-  src.buffer = buf;
-  src.connect(g).connect(master);
-  src.start(c.currentTime + delay);
+  voice(buf, gain, c.currentTime + delay);
 }
 
 export async function cue(name: Cue) {
   const c = audio();
-  if (!c || !master) return;
+  if (!c || !cueBus) return;
   const buf = await load(`${name}.mp3`);
   if (!buf) return;
-  const src = c.createBufferSource();
-  const g = c.createGain();
-  g.gain.value = CUE_GAIN[name];
-  src.buffer = buf;
-  src.connect(g).connect(master);
-  src.start();
+  voice(buf, CUE_GAIN[name]);
+}
+
+/* ---------- clicks ---------- */
+
+/**
+ * `tap.mp3` is now a 100 ms glass ping from the same starlight kit, not a
+ * wooden "tock". It is quieter than the verdict cues (a tap happens on every
+ * confirmed press), throttled so a double-tap cannot machine-gun, and decoded
+ * at boot so the very first press is not late. The limiter above handles the
+ * tap + verdict overlap.
+ */
+const TAP_GAIN = 0.45;
+const TAP_GAP_MS = 45;
+let lastTapAt = 0;
+
+export function playTap() {
+  const now = performance.now();
+  if (now - lastTapAt < TAP_GAP_MS) return;
+  lastTapAt = now;
+  const buf = ready.get("tap.mp3");
+  if (buf) {
+    voice(buf, TAP_GAIN);
+    return;
+  }
+  // Decode is normally already in flight (preloaded at boot). If the press
+  // beat it, play as soon as it lands — but never a click 300 ms late.
+  void load("tap.mp3").then((b) => {
+    if (b && performance.now() - now < 300) voice(b, TAP_GAIN);
+  });
 }
 
 /* ---------- ambience ---------- */

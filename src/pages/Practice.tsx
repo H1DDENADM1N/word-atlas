@@ -4,6 +4,7 @@ import { prefetch, useAtlas } from "../atlas/context";
 import type { Entry } from "../atlas/types";
 import { play, stopAudio } from "../lib/audio";
 import { focusField, revealField } from "../lib/keyboard";
+import { typingFeedback } from "../lib/feedback";
 import { cue } from "../lib/sound";
 import { hashSeed, shuffle } from "../lib/text";
 import { clean, correctCharacterCount, same, typingDelta, typingMetrics } from "../lib/typing";
@@ -139,7 +140,7 @@ function TypingRound({ mode, entries, onExit, onAgain }: { mode: Mode; entries: 
     if (done) return;
     if (started.current === null && next) started.current = performance.now();
     const d = typingDelta(value, next, target);
-    if (settings.sfx && d.total > 0) void cue("key");
+    if (d.total > 0) typingFeedback();
     const t = totalsRef.current;
     totalsRef.current = { ...t, typed: t.typed + d.total, correct: t.correct + d.correct };
     setTotals(totalsRef.current);

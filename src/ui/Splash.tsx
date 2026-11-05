@@ -214,7 +214,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
       /* optional */
     }
     if (sound && store.get().settings.sfx) {
-      void playFile("splash-burst.mp3", 0.55);
+      void playFile("splash-burst.mp3", 0.6);
       void playFile("splash-door.mp3", 0.6, 0.12);
       void playFile("splash-voice.mp3", 0.95, 0.35);
       // Let the welcome line sit above the music that fades in with the doors.

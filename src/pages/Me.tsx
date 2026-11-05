@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtlas } from "../atlas/context";
 import { isMastered } from "../store/srs";
 import { saveBlob } from "../lib/native";
+import { previewHaptic } from "../lib/feedback";
 import { go } from "../lib/router";
 import { RECENT_CAP, resolveRecent, subscribeRecent } from "../lib/recent";
 import { dayKey, exportBackup, exportWebBackup, importAnyBackup, resetProgress, store, useStore, type Settings, type Theme } from "../store/store";
@@ -253,6 +254,17 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           <Toggle sub label="自动朗读日常例句" on={settings.autoplayEx} set={(v) => set({ autoplayEx: v })} />
           <Toggle sub label="自动朗读雅思语境例句" on={settings.autoplayEx2} set={(v) => set({ autoplayEx2: v })} />
           <Toggle label="界面音效" on={settings.sfx} set={(v) => set({ sfx: v })} />
+          <Toggle
+            label="界面震动"
+            hint="点按钮、改配置、翻卡与判题时各给一下短震动；点空白处不震。走系统触感反馈通道，不申请任何权限。"
+            on={settings.haptic}
+            set={(v) => {
+              set({ haptic: v });
+              // Feel it immediately when switching on, without waiting for the
+              // next press (the press itself happened while it was still off).
+              if (v) previewHaptic();
+            }}
+          />
 
           <Group label="习惯" />
           <Toggle label="例句中文先模糊" hint="点一下模糊的中文就显示，离开词卡后恢复模糊。" on={settings.blurZh} set={(v) => set({ blurZh: v })} />

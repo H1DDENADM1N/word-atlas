@@ -85,6 +85,8 @@
 - **进度能搬到网页版，也能搬回来。** 上游网站的导入比本机严得多：它会把整份文件重新过一遍自己的校验器，`progress.drills` 缺失、或它认识的 22 个设置项里少一个（`examDate`、`illus`、`recall`……），就整份拒收——本机原来的导出因此总是得到「备份内容不完整或格式有误」。「我的 → 数据」里因此多了两个按钮：**导出网页版兼容备份**补上 `drills: {}` 与它要的全部设置项（本机独有的 30 条环境声只送它认得的 8 条，其余按 `stars`；`days` 里 `c > r` 会夹到 `r`），**从网页版备份导入**把 `drills`、`books`、考试计划这些本机没有的字段丢掉，保留卡片、每日统计和它能表达的设置。规则抄在 `src/store/web-backup.ts`，八条测试逐项复刻上游的校验；实机导出的 895 词备份在 [0xlei.tech/words](https://0xlei.tech/words/) 上直接提示「已恢复 895 个词的学习记录」。
 - **查过的词能找回来了。** 上游网页版的搜索面板有「最近查过」，安卓版之前只有一个静态提示行。现在对齐上游并放大：搜索面板空查询时先列**最近查过的 6 条**，标题右侧是「清空」和「查看全部 N 条 →」；一条都没有时改推 6 个按本地日期轮换的「试试这些词」。点搜索结果、推荐词、历史词，或在图鉴里输过关键词后点开某个词，都会记一次；练习页的「最近学过」是 FSRS 学习进度，与它互不相干。独立的 `#/history` 页列出全部记录（最多 **20** 条），按最近优先、只编序号**不记时间戳**，从「我的 → 查词历史」进入，空状态可以直接唤起搜索面板。数据放在独立的 `word-atlas:recent-search` 键里，是一条纯 `string[]`（`[id, ...旧.filter(x => x !== id)].slice(0, 20)`），**不进 `Progress`、不进任何备份、不随「清空记录」一起删除**；坏 JSON、写入失败、换词库后的陈旧 ID 都只是静默降级。面板还补回了上游的移动端点按：右上「取消」、键盘 `enterKeyHint="search"`，并注册成 overlay，让系统返回键先关面板而不是直接退页。实现与十条单测见 `src/lib/recent.ts`、`src/lib/recent.test.ts`。
 - **别的 app 里也能查词了。** 1.0.10 起词光注册了 `ACTION_PROCESS_TEXT` 与 `ACTION_SEND`（`text/plain`）两个意图过滤器，因此长按任意应用里的一个词即可在「翻译」选择器里选中词光，或在分享面板里把一段文本分享给词光。原生层从 `EXTRA_PROCESS_TEXT` / `EXTRA_TEXT` 取出文本，构造 `#/atlas?q=<词>&waSource=external` 加载页面；图鉴页看到 `waSource=external` 就把匹配到的词写进「最近查过」，与在应用内搜索完全同一条路径。两个过滤器都不新增任何权限，仍然零权限、完全离线。实现见 `android/app/src/main/AndroidManifest.xml` 的 `MainActivity` 意图过滤器、`MainActivity.java` 的 `launchUrl`，以及 `src/pages/Atlas.tsx` 的外部来源处理。
+- **整套界面音效换成星空音色，点按判定改到抬手时。** 1.0.11 之前只有翻卡、判题、打开词条这几个动作有音效——`tap.mp3` 备了料却一直没接线。接上之后逐段量过全部 47 个音频才发现真正的问题：上游 `scripts/atlas/build_sfx.py` 的 UI 母带链里有一句 `afade=t=out:st=0:d=0.001`，从 **0 秒**开始 1 ms 淡到 0，把 9 个 cue 全截成「开头约 10 ms 一点波形 + 后面整段数字静音」（源文件峰值 −21 ~ −32 dBFS），再乘偏低增益和默认环境声，手机上基本听不见；`twinkle` 波形完整但按 `I=-24 LUFS` 母带、增益 0.22 也偏轻。现在由 `scripts/atlas/gen_cosmic_sfx.py` 调 **ElevenLabs 音效生成 API** 重做 11 段（tap / key / flip / page / correct / wrong / start / complete / streak / twinkle / splash-burst）：提示词明确要求 0.8–2.5 kHz 的**有音高玻璃钟琴单音**，并禁止低频轰鸣与气声嘶声——第一版提示词太「氛围」，`start` 的能量几乎全在 500 Hz 以下（手机上几乎无声），另几段全是 4 kHz 以上的沙沙声，已全部推翻重生成；手工正弦合成的版本也因音色发闷、千篇一律而弃用。母带在 Python 里裁掉前后静音、600 Hz 高通、把最响 100 ms RMS 统一到 −20 dBFS 并保留 −3 dBFS 峰值上限，原始 take 缓存在 `.local/forge/sfx/`（不重复扣费），每段还校验 500 Hz–4 kHz 能量确实占主导。播放增益按环境声底噪（约 −31 dBFS）统一标定为 0.60（tap 0.45），11 段有效响度落在底噪之上 3.6–6.1 dB，与原本就清晰的 `fly`（6.0 dB）/ `ignite`（9.0 dB）同一档，**17 段全部可闻**；`build_sfx.py` 已跳过这 11 个名字并修掉那句 afade，免得重跑母带把静音版本写回去。上游同源问题已提交 [designfuchen/word-atlas#48](https://github.com/designfuchen/word-atlas/issues/48)。
+- **滑动不再被当成点击。** 反馈原先在 `pointerdown` 就触发，手指从按钮上开始滑动/滚动也会响一声、震一下。现在改成 `pointerup` 判定真正的轻触：位移超过 10 px、长按超过 600 ms、`pointercancel`、第二根手指落下都会作废；再加 130 ms 冷却，连点和双击不会连成一串。只认**真实控件**（按钮、链接、开关、分段选择、滑块、下拉框），点空白处、拖星图、点非按钮卡片一律不反馈；键盘 Enter / 空格激活仍会补一次。每次操作**只震一下**，翻卡 / 判题由键盘触发时补一下（触摸时已震过就自动让开），页面切换、打字完成、打开词条不震。音效引擎：带软限幅的独立总线、最多八条并发、首尾 1.5 ms / 12 ms 包络、启动预解码、环境声不经过限幅器。「我的 → 界面音效」正下方新增**界面震动**开关，两者互不影响：关掉音效仍可震动，关掉震动仍有声音；打开时立刻给一段示例震动。震动由原生 `WordAtlasAndroid.vibrate()` 走 `View.performHapticFeedback`（轻点 / 点击 / 成功 / 判错各一档），由窗口管理器代发，**不需要 `VIBRATE` 权限，manifest 仍然一个 `<uses-permission>` 都没有**；网页版退回 `navigator.vibrate`。另外补齐了**拼写题（「继续旅程」里的打字）**的音效与震动：IME 输入不产生 pointer 事件，全局轻触监听根本看不到它，所以 `SpellInput` 之前既没有 `cue("key")` 也没有震动，只有练习页的打字有声音；现在两处共用 `typingFeedback()`，逐字符播放打字机音、震动按 110 ms 节流避免连打变成持续嗡嗡，`key.mp3` 也换成 ElevenLabs 生成的**单次按键**老式打字机 clack（生成多个候选用起音点分析挑出只有一下的，母带裁到 0.12 s，即使模型返回连打也只保留第一下；中频主导、无嘶声），启动时预解码保证第一个字符就出声。实现见 `src/lib/feedback.ts`、`src/lib/sound.ts`、`src/lib/native.ts`、`scripts/atlas/gen_cosmic_sfx.py` 与 `MainActivity.Bridge.vibrate`。
 
 完整实现、体积构成与逐条排查记录见 **[docs/android.md](docs/android.md)**。
 
@@ -127,11 +129,11 @@ APK 不进仓库（`.gitignore` 已排除）。两种方式：
 
 | 产物 | 单词发音 | 用途 |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.10.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
-| `word-atlas-android-v1.0.10_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
+| `word-atlas-android-v1.0.11.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
+| `word-atlas-android-v1.0.11_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
 
 ```bash
-adb install -r word-atlas-android-v1.0.10.apk
+adb install -r word-atlas-android-v1.0.11.apk
 ```
 
 两个包同一包名，不能同时安装；切换时覆盖安装即可，学习记录保留。
@@ -140,10 +142,11 @@ adb install -r word-atlas-android-v1.0.10.apk
 
 ## 版本
 
-当前 **v1.0.10**（versionCode 11）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
+当前 **v1.0.11**（versionCode 12）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
 
 | 版本 | 一句话 |
 | :--- | :--- |
+| **v1.0.11** | **整套界面音效换成 ElevenLabs 生成的星空玻璃钟琴音色**：查明上游母带链的 `afade` 把 9 个 cue 截成 10 ms 静音，重生成 11 段（提示词限定中频有音高单音，修掉 `start.mp3` 几乎无声与高频沙沙声）并按环境声底噪统一标定增益，17 段全部清晰可闻；**轻触判定移到抬手时**（10 px 位移 / 600 ms 长按 / 130 ms 冷却），滑动不再误算点击、反馈不再过密；新增**界面震动**（在「界面音效」下面），只认按钮 / 改配置 / 翻卡 / 判题；补齐拼写题逐字打字反馈、`key.mp3` 换成老式打字机 clack，零权限 |
 | **v1.0.10** | 三款桌面小部件（顽固词轮播、今日一句、进度条，零权限完全离线）；补回**查词历史**：搜索面板「最近查过」＋独立历史页，最多 20 条、无时间戳、不进备份；**外部查词**：长按别处的词可选词光作翻译器，或在分享面板把文本发给词光直接搜，结果同样进「最近查过」 |
 | **v1.0.9** | 词卡多了**词源图景**与**同根词**：6,754 个词条在音标和释义之间多一句词源小结，近义也补上了辨析里的词 |
 | **v1.0.8** | 雅思语境例句的录音从 1,011 条补齐到 7,298 条：两句例句都能离线听真人朗读，只剩真题例句交给内置语音 |
@@ -190,9 +193,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.10.apk      （分享版，原版发音）
-# → word-atlas-android-v1.0.10_O.apk    （私用版，OALDPEX 真人发音）
-adb install -r word-atlas-android-v1.0.10.apk
+# → word-atlas-android-v1.0.11.apk      （分享版，原版发音）
+# → word-atlas-android-v1.0.11_O.apk    （私用版，OALDPEX 真人发音）
+adb install -r word-atlas-android-v1.0.11.apk
 ```
 
 两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换单词音源；`--skip-web` 可以复用上一次的 `dist-android`。

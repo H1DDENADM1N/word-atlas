@@ -31,6 +31,12 @@ test("rejects other versions and unknown settings", () => {
   assert.equal(s.retention, 0.9);
 });
 
+test("界面震动 survives a backup and defaults to on", () => {
+  assert.equal(sanitizeSettings({}).haptic, true);
+  assert.equal(sanitizeSettings({ haptic: false }).haptic, false);
+  assert.equal(sanitizeSettings({ haptic: "yes" }).haptic, true);
+});
+
 test("drops malformed quiz steps and clamps the index instead of crashing", () => {
   const p = sanitizeProgress(
     {

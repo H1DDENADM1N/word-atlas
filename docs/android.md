@@ -106,7 +106,7 @@ adb install -r word-atlas-android-v1.0.5_O.apk
 
 `versionCode` 忘了加：`adb install -r` 会失败（`INSTALL_FAILED_VERSION_DOWNGRADE`），或者装上去仍是旧版本——手机上看起来像"更新没生效"，实际是系统拒绝了同码或降码覆盖。版本名可以随意，code 必须单调递增。
 
-当前对应关系：`1.0.10` → `VERSION_CODE = 11`（`package.json` 的 `version` 是版本名唯一来源，改版本名不必动 code，但每次发版 code 必须 +1）。
+当前对应关系：`1.0.11` → `VERSION_CODE = 12`（`package.json` 的 `version` 是版本名唯一来源，改版本名不必动 code，但每次发版 code 必须 +1）。
 
 ## 与网页版的差异
 
