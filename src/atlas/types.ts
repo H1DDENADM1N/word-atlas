@@ -47,6 +47,13 @@ export interface Entry {
   /** 同根词 — cognates that share the headword's root, from the etymology dictionary. */
   root?: string[];
   syn: string[];
+  /**
+   * Parallel to `syn`: the sense index each synonym belongs to, or -1 when the
+   * card has no matching sense and the word belongs under "其他义项". Only
+   * written for entries with more than one sense; single-sense cards keep the
+   * flat list.
+   */
+  syn_sense?: number[];
   ant: string[];
   tip: string;
   /**

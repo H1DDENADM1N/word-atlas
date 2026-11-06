@@ -5,6 +5,7 @@ import { useAtlas } from "../atlas/context";
 import { useIelts } from "../atlas/ielts";
 import { useSyllables } from "../atlas/syllables";
 import { splitHighlight, splitPair } from "../lib/text";
+import { groupRelations } from "../lib/relations";
 import { formatInterval, isMastered } from "../store/srs";
 import { toggleBookmark, useStore } from "../store/store";
 import { Illustration } from "./Illustration";
@@ -202,6 +203,12 @@ export function EntryView({ entry, mode = "detail", eager = true }: { entry: Ent
     return { label: f, word };
   });
   const status = card ? (isMastered(card) ? "已掌握" : "学习中") : null;
+  // A flat list can only be split when the card has more than one sense to
+  // split it across; single-sense cards keep the old one-line treatment.
+  const grouped =
+    entry.senses.length > 1 && entry.syn_sense
+      ? groupRelations(entry.syn, entry.syn_sense, entry.senses.length)
+      : null;
 
   return (
     <article className={`entry entry-${mode}`}>
@@ -348,11 +355,30 @@ export function EntryView({ entry, mode = "detail", eager = true }: { entry: Ent
             {entry.syn.length > 0 && (
               <div>
                 <h3 className="eyebrow">近义</h3>
-                <p>
-                  {entry.syn.map((s) => (
-                    <LookupWord key={s} label={s} />
-                  ))}
-                </p>
+                {grouped ? (
+                  <div className="relation-groups">
+                    {grouped.groups.map((group) => (
+                      <p className="relations" key={group.sense}>
+                        {group.words.map((word) => (
+                          <LookupWord key={word} label={word} />
+                        ))}
+                      </p>
+                    ))}
+                    {grouped.other.length > 0 && (
+                      <p className="relations">
+                        {grouped.other.map((word) => (
+                          <LookupWord key={word} label={word} />
+                        ))}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="relations">
+                    {entry.syn.map((s) => (
+                      <LookupWord key={s} label={s} />
+                    ))}
+                  </p>
+                )}
               </div>
             )}
             {entry.ant.length > 0 && (

@@ -35,6 +35,8 @@ DATA = ROOT / "data"
 ETY = ROOT / "scripts" / "etymology" / "etymology.json"
 # Parsed 同义词学习词典: synonym groups by part of speech, see scripts/atlas/thesaurus.py
 THESAURUS = ROOT / "scripts" / "atlas" / "thesaurus.json"
+# Synonym→sense indexes and the audited relation rows, see scripts/atlas/build_relations.py
+RELATIONS = ROOT / "scripts" / "atlas" / "relations.json"
 
 
 def slugify(word):
@@ -127,6 +129,28 @@ def apply_thesaurus(entries):
     return added
 
 
+def apply_relations(entries):
+    """Copy the audited synonym→sense indexes onto the cards.
+
+    ``build_relations.py`` runs after the synonym list is final, because the
+    indexes must stay parallel to ``syn``. If a rebuild changes that list, the
+    old index is skipped rather than silently pointing at the wrong word.
+    """
+    if not RELATIONS.exists():
+        return 0
+    words = json.loads(RELATIONS.read_text(encoding="utf-8"))["words"]
+    hit = 0
+    for c in entries:
+        item = words.get(c["id"])
+        idx = item.get("idx") if item else None
+        if idx is not None and len(idx) == len(c["syn"]) and len(c["senses"]) > 1:
+            c["syn_sense"] = idx
+            hit += 1
+        else:
+            c.pop("syn_sense", None)
+    return hit
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-media", action="store_true")
@@ -156,6 +180,7 @@ def main():
     entries.sort(key=lambda c: (CEFR.index(c["cefr"]), hashlib.sha1(c["id"].encode()).hexdigest()))
     ety = apply_etymology(entries)
     thes = apply_thesaurus(entries)
+    rel = apply_relations(entries)
 
     for d in ("img", "thumb", "audio/uk", "audio/us", "audio/ex", "audio/ex2", "entries"):
         (PUB / d).mkdir(parents=True, exist_ok=True)
@@ -230,7 +255,7 @@ def main():
                         ex[0]["en"], ex[0]["zh"], ex[1]["en"], ex[1]["zh"],
                         " ; ".join(c["col"]), " ; ".join(c["fam"]), ", ".join(c["syn"]), ", ".join(c["ant"]), c["tip"]])
     (FORGE / "build-warnings.json").write_text(json.dumps(warnings, ensure_ascii=False, indent=1))
-    print(json.dumps({k: meta[k] for k in ("count", "examples", "illustrated", "voiced")}), "warnings", len(warnings), "etymology", ety, "thesaurus", thes)
+    print(json.dumps({k: meta[k] for k in ("count", "examples", "illustrated", "voiced")}), "warnings", len(warnings), "etymology", ety, "thesaurus", thes, "relations", rel)
 
 
 if __name__ == "__main__":

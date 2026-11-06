@@ -1585,6 +1585,12 @@ code {
   gap: 6px 14px;
   font: 400 16px/1.45 var(--serif);
 }
+/* 近义按义项分行：只把词分开，不标义项名。词卡义项不全，落不进去的词
+   统一放到最后一行，不丢，也不假装属于某个义项。 */
+.relation-groups {
+  display: grid;
+  gap: 14px;
+}
 /* 词族、近义、反义里的词都能点开小卡；给一条虚线，免得看起来和普通文字一样。 */
 .relations .lookup-token {
   font: inherit;

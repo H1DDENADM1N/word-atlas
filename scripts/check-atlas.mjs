@@ -48,6 +48,14 @@ for (let n = 0; n * index.chunk < index.count; n++) {
     const stem = e.w.toLowerCase().split(" ")[0].replace(/(e|y)$/, "").slice(0, 5);
     if (e.ex[0] && !e.ex[0].en.toLowerCase().includes(stem)) warn.headwordNotInExample++;
     for (const k of ["col", "fam", "syn", "ant"]) if (!Array.isArray(e[k])) fail(`${k} not array: ${e.id}`);
+    // 近义按义项分组：syn_sense 与 syn 等长，-1 表示卡片没有对应义项。
+    if (e.syn_sense !== undefined) {
+      if (!Array.isArray(e.syn_sense) || e.syn_sense.length !== e.syn.length) {
+        fail(`syn_sense not parallel to syn: ${e.id}`);
+      } else if (e.syn_sense.some((i) => !Number.isInteger(i) || i < -1 || i >= e.senses.length)) {
+        fail(`syn_sense out of range: ${e.id}`);
+      }
+    }
 
     // 同形异音：一个词条里两组读音，义项用 v 指回其中一组。`uk`/`us` 必须
     // 就是第一组，否则列表、分享卡和学习卡会各自念一个音。

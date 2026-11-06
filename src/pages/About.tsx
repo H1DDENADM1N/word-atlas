@@ -119,7 +119,7 @@ export function About() {
             <li>
               <b>近义里多了同义词学习词典的词。</b>按卡片义项的中文释义匹配分 ≥0.3，从《牛津英语同义词学习词典》的 2,370
               个同义词组里取同词性词：2,175 张卡新增 7,774 个，近义总数到 28,518；大小写不敏感去重后不再卡 6 个上限，<i>strong</i>{" "}
-              多出 <i>muscular</i>，<i>body</i> 多出 <i>skeleton</i>、<i>physique</i>，而「味道浓烈」「光线强」那几组不会混进来。
+              多出 <i>muscular</i>，<i>body</i> 多出 <i>skeleton</i>、<i>physique</i>，而「味道浓烈」「光线强」那几组不会混进来。多义项词卡再把近义按义项分行，只显示英文词、不标义项名；词卡没列出的义项不硬塞，统一放到最后一行，每义项最多展示 8 个。
             </li>
             <li>
               <b>词头能看音节了。</b>点一下词卡上那个大单词，字母之间会浮出「·」，
@@ -224,7 +224,8 @@ export function About() {
             <code>docs/android-widgets.md</code>；不需要 Gradle，<code>python3 scripts/android/build_apk.py</code>{" "}
             一条命令出包，JDK 17 以上与 Android SDK 就够。词源图景、同根词与近义辨析由{" "}
             <code>scripts/etymology/import_etymology.py</code> 从词源词典解析后并入词条；同义词学习词典的解析与合并见{" "}
-            <code>scripts/atlas/thesaurus.py</code> 和 <code>scripts/atlas/import_thesaurus.py</code>，查词兜底分片由{" "}
+            <code>scripts/atlas/thesaurus.py</code> 和 <code>scripts/atlas/import_thesaurus.py</code>，义项归组由{" "}
+            <code>scripts/atlas/build_relations.py</code> 生成，查词兜底分片由{" "}
             <code>scripts/atlas/import_ecdict.py</code> 生成，步骤记在 <code>docs/pipeline.md</code>。字段说明见{" "}
             <code>docs/dataset.md</code>；查词历史的存储与降级规则在 <code>src/lib/recent.ts</code>，网页版备份的校验规则逐条抄在 <code>src/store/web-backup.ts</code>。
           </p>

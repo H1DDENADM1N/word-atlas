@@ -17,6 +17,7 @@
 | `root` | string[] | 可选：同根词——与词头共享词根的同源词，来自词源词典 |
 | `ety` | string | 可选：词源图景小结，一句话读出词根的字面义（覆盖 6,754 条） |
 | `syn` / `ant` | string[] | 近义 / 反义。`syn` 先放词源词典的近义词辨析，再放原有补充，最后追加同义词学习词典中同词性、词库已有、且中文释义匹配分 ≥ 0.3 的词；大小写不敏感去重，不设上限 |
+| `syn_sense` | number[] | 可选：与 `syn` 等长，值为该词所属的 `senses` 下标；`-1` 表示词卡义项不全、该词归入「其他义项」。只写在多义项词条上；由 `scripts/atlas/build_relations.py` 生成 |
 | `tip` | string | 一条中文用法或辨析提示 |
 | `cefr` | `A1`…`C2` | 估计难度 |
 | `topic` | string | 19 个话题之一：education, work, technology, science, environment, health, society, government, economy, media, arts, travel, city, nature, daily, emotion, thinking, sport, history |
