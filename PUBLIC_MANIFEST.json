@@ -1,11 +1,11 @@
 {
 "files": 44289,
-"bytes": 1159156464,
+"bytes": 1159156292,
 "items": [
 {
 "path": ".gitignore",
-"bytes": 1562,
-"sha256": "bbb7d24bdeaef47214029b5d6a45734a0d27bbd676c8e3203f7adc6a0a95c2a8"
+"bytes": 1442,
+"sha256": "de193827c41d1020939eceafa955941c1483b40bd40091cb215f90ac5c7bd364"
 },
 {
 "path": "CONTENT_LICENSE.md",
@@ -24,13 +24,13 @@
 },
 {
 "path": "data/word-atlas.csv",
-"bytes": 5511887,
-"sha256": "154e2b56f9da41a8d62b5f88b471672bb24c3693710128c9940709ece0c032c1"
+"bytes": 5511877,
+"sha256": "856d3b0fe8b0c4e614b4a22ec1f266ad98e3bdc58b2b4ec6e4373b25b3660d56"
 },
 {
 "path": "data/word-atlas.json",
-"bytes": 10170183,
-"sha256": "bfe03c9d317e61c37adca4b42a001d5ac33cd5eb658bf00afa58da83f6fd1012"
+"bytes": 10170169,
+"sha256": "212e549023561ed5ef9065a74bf4e8624b247e67e7da3a18900aa28d781a9ab6"
 },
 {
 "path": "docs/android-widgets.md",
@@ -40,7 +40,7 @@
 {
 "path": "docs/android.md",
 "bytes": 51602,
-"sha256": "738f1eccf5bf5b3abf6a39dbe5eb0953c30ce790264da612e2c727e2bdd9c611"
+"sha256": "06e3f9e984656f83b1cc85fffdd71715d2c8a9e7cdb7b5f989fa185093d2781c"
 },
 {
 "path": "docs/assets/android-atlas.jpg",
@@ -164,8 +164,8 @@
 },
 {
 "path": "docs/pipeline.md",
-"bytes": 5187,
-"sha256": "b21d1c81bbf4bb2d6c553b8b2dd2f598f3ed5c65cb1bac8eaed59e2d7e39ba23"
+"bytes": 5159,
+"sha256": "20471542e2d7d52bfaafa0f206adad51ca005804656c340c92e34c348d8de6ec"
 },
 {
 "path": "index.html",
@@ -179,13 +179,13 @@
 },
 {
 "path": "package-lock.json",
-"bytes": 83513,
-"sha256": "c413b1fb7a9005097ae0170245f5c4f3513c74af1344669a2313b3fc5cb652a1"
+"bytes": 83515,
+"sha256": "b14e96b071a8c75b55c706a72718f5df8185d416f75716668db9aad86d7f3c4d"
 },
 {
 "path": "package.json",
 "bytes": 1736,
-"sha256": "9f65983e195b23979f60eb5dd7fe3c2844428477fc50de108882203099200e5b"
+"sha256": "fbae0bb9d64801abd053d0577c91037c1cc79af5b82d6879cccbc56bf7aaa456"
 },
 {
 "path": "public/atlas/audio/ex/a-m.mp3",
@@ -147544,8 +147544,8 @@
 },
 {
 "path": "public/atlas/entries/70.json",
-"bytes": 101012,
-"sha256": "0c77467d111ae417f9fcafa55f90a3433a43d8362e7c1eb925b4938f81d09bea"
+"bytes": 101003,
+"sha256": "4ebb2f9f0403a80f8b51713384447a13c76e4bc35f450cd0746fa001c20168c2"
 },
 {
 "path": "public/atlas/entries/71.json",
@@ -221034,8 +221034,8 @@
 },
 {
 "path": "scripts/atlas/thesaurus.py",
-"bytes": 11004,
-"sha256": "7fcb498697f19a99066f194035e95beb87062e78722c971ac5abb8e036e9f49c"
+"bytes": 11011,
+"sha256": "cf78c0ecbb2f64263a900a10ee112eaf207f5d28f4e8b24ac48ad4a1a75c5b9b"
 },
 {
 "path": "scripts/check-atlas.mjs",
