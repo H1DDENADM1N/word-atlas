@@ -264,7 +264,13 @@ public class MainActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        if (web != null) web.loadUrl(launchUrl(intent));
+        if (web == null) return;
+        String url = launchUrl(intent);
+        // A plain return from the launcher or recents has no route to open.
+        // Reloading the page here would reset the reader's position and the
+        // ambience loop for no reason; only navigate when there is somewhere
+        // to go (a widget route or an external hand-off).
+        if (!START_URL.equals(url)) web.loadUrl(url);
     }
 
     private void configure(WebSettings s) {
@@ -881,6 +887,9 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         if (web != null) {
+            // Sent before pauseTimers() so the page can schedule the fade-out
+            // on the Web Audio thread; a JS setTimeout would never run after
+            // the timers are paused.
             web.evaluateJavascript("window.dispatchEvent(new Event('wa:pause'))", null);
             web.onPause();
             web.pauseTimers();
@@ -893,6 +902,9 @@ public class MainActivity extends Activity {
         if (web != null) {
             web.onResume();
             web.resumeTimers();
+            // Timers are live again: rebuild the ambience loop at the offset it
+            // was stopped at and fade it back in.
+            web.evaluateJavascript("window.dispatchEvent(new Event('wa:resume'))", null);
         }
         // The user may have switched the phone between light and dark while the
         // app sat in the background; a uiMode change is not always delivered.

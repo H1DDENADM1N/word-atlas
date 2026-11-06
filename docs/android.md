@@ -511,6 +511,17 @@ node scripts/android/verify_speech.mjs budget
 
 > 模拟器上的 WebView 是 113 版，比桌面 Chromium 旧。图鉴网格最初因 `<button>` 内的弹性子元素没有拿到宽度而空白，已通过给 `.tile .illo` 显式设宽修复——这类问题只有在真机 / 旧内核上才会暴露。
 
+## 环境声：随前后台淡出 / 淡入
+
+`MainActivity.onPause()` 在 `web.pauseTimers()` **之前**派发 `wa:pause`，`onResume()` 在 `web.resumeTimers()` 之后派发 `wa:resume`；`AmbienceController` 把两者接到 `sound.ts` 的 `setAppActive()`。网页版没有这两个事件，改用 `document.visibilitychange`。
+
+- **离开前台**：记下循环里当前的位置，`gain` 用 `linearRampToValueAtTime` 在 0.35 s 淡到 0，再用 `AudioBufferSourceNode.stop(when)` 真正停掉 source。**不能用 `setTimeout`** —— `pauseTimers()` 会停掉所有 JS 定时器，而 Web Audio 的自动化曲线跑在音频线程上，照常执行。
+- **回到前台**：用保存的 offset 重建 source、0.9 s 淡入，听感上从刚才那一点接着走，而不是从头开始。选「安静」时不恢复；读单词时的 `duck()` 状态照旧保留。
+- APK 里 `setMediaPlaybackRequiresUserGesture(false)`，所以 `AmbienceController` 不再等第一次点击才起播，冷启动 / 划掉最近任务后重进都能自己恢复；网页版仍保留「首次手势后起播」的限制。
+- `onNewIntent()` 只在确实有路由（小部件 / 外部查词）时才 `loadUrl`。从图标或最近任务单纯回到前台不再重载页面 —— 否则整页刷新会把刚恢复的循环状态清零。
+
+> 真机（Android 16 / ColorOS）验证：连续两个「HOME → 回到 App」周期，`wa:pause` 都在按 HOME 的同一秒到达，恢复日志为 `offset 8.47 s → 12.78 s`、`fade 0.9`，全程无需用户手势。
+
 ## 已知限制
 
 - **冷启动**比网页版慢一点：首次要从 APK 里读取内联数据并解析。

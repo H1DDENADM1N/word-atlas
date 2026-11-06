@@ -33,7 +33,8 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AMBIENCE, type AmbienceId } from "../lib/ambience";
-import { primeCues, setAmbience } from "../lib/sound";
+import { isShell } from "../lib/native";
+import { primeCues, setAmbience, setAppActive } from "../lib/sound";
 import { store, useStore } from "../store/store";
 
 const ICONS: Record<AmbienceId, typeof CloudRain> = {
@@ -75,6 +76,14 @@ export function AmbienceController() {
   const volume = useStore((s) => s.settings.ambienceVolume);
   const [armed, setArmed] = useState(false);
   useEffect(() => {
+    // The APK disables setMediaPlaybackRequiresUserGesture, so the ambience can
+    // come back by itself after a cold start — no tap needed. Browsers still
+    // require a gesture before an AudioContext may start.
+    if (isShell) {
+      primeCues();
+      setArmed(true);
+      return;
+    }
     const arm = () => {
       primeCues();
       setArmed(true);
@@ -89,6 +98,24 @@ export function AmbienceController() {
   useEffect(() => {
     if (armed) void setAmbience(ambience === "off" ? null : ambience, volume);
   }, [armed, ambience, volume]);
+
+  // Leaving the app fades the loop out and stops it; coming back rebuilds it
+  // at the same spot and fades in. Inside the APK the shell drives this from
+  // onPause/onResume, because WebView does not reliably change
+  // document.visibilityState with the activity. Browsers use visibilitychange.
+  useEffect(() => {
+    const pause = () => setAppActive(false);
+    const resume = () => setAppActive(true);
+    const onVisible = () => setAppActive(document.visibilityState === "visible");
+    window.addEventListener("wa:pause", pause);
+    window.addEventListener("wa:resume", resume);
+    if (!isShell) document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("wa:pause", pause);
+      window.removeEventListener("wa:resume", resume);
+      if (!isShell) document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
   return null;
 }
 

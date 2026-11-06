@@ -251,11 +251,32 @@ export function playTap() {
 
 /* ---------- ambience ---------- */
 
-let amb: { id: AmbienceId; src: AudioBufferSourceNode; gain: GainNode } | null = null;
+interface AmbLoop {
+  id: AmbienceId;
+  src: AudioBufferSourceNode;
+  gain: GainNode;
+  /** ctx.currentTime when the source started, for resuming at the same spot. */
+  startedAt: number;
+  /** Buffer offset passed to start(), inside the trimmed loop. */
+  offset: number;
+  loopStart: number;
+  loopEnd: number;
+}
+
+/** How long the ambience takes to leave / return when the app loses focus. */
+const FADE_OUT = 0.35;
+const FADE_IN = 0.9;
+
+let amb: AmbLoop | null = null;
 let ambVolume = 0.5;
 let ducked = false;
 /** What the last call actually asked for; a slow fetch must not win a later one. */
 let wanted: AmbienceId | null = null;
+/** The reader's choice, kept while the app is in the background. */
+let chosen: AmbienceId | null = null;
+/** Where the loop stopped, so coming back does not restart it from zero. */
+let paused: { id: AmbienceId; offset: number } | null = null;
+let appActive = true;
 const level = () => ambVolume * (ducked ? 0.35 : 1) * 0.9 * trim(amb?.id);
 
 function fadeTo(g: GainNode, v: number, seconds: number) {
@@ -265,9 +286,54 @@ function fadeTo(g: GainNode, v: number, seconds: number) {
   g.gain.linearRampToValueAtTime(v, c.currentTime + seconds);
 }
 
+function playLoop(id: AmbienceId, buf: AudioBuffer, offset: number | null, fade: number) {
+  const c = ctx!;
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+  // Skip the decoder's padding at both ends so the loop is seamless.
+  const loopStart = 0.06;
+  const loopEnd = Math.max(loopStart + 0.01, buf.duration - 0.06);
+  src.loopStart = loopStart;
+  src.loopEnd = loopEnd;
+  const at = Math.min(Math.max(offset ?? loopStart, loopStart), loopEnd - 0.001);
+  const gain = c.createGain();
+  gain.gain.value = 0;
+  src.connect(gain).connect(master!);
+  src.start(0, at);
+  amb = { id, src, gain, startedAt: c.currentTime, offset: at, loopStart, loopEnd };
+  fadeTo(gain, level(), fade);
+}
+
+/** Position inside the looping region at this instant. */
+function loopOffset(a: AmbLoop) {
+  const span = a.loopEnd - a.loopStart;
+  if (span <= 0 || !ctx) return a.offset;
+  const elapsed = ctx.currentTime - a.startedAt;
+  return a.loopStart + (((a.offset - a.loopStart + elapsed) % span) + span) % span;
+}
+
+async function startTrack(id: AmbienceId, offset: number | null, fade: number) {
+  const c = audio();
+  if (!c || !master) return;
+  wanted = id;
+  const buf = await loadAmb(`amb-${id}.mp3`);
+  // The track can be 400 KB over the network: by the time it arrives the
+  // learner may have picked another one, gone quiet, or left the app again.
+  if (!buf || amb || wanted !== id || !appActive) return;
+  playLoop(id, buf, offset, fade);
+}
+
 export async function setAmbience(id: AmbienceId | null, volume = ambVolume) {
   ambVolume = volume;
-  wanted = id;
+  chosen = id;
+  paused = null;
+  if (!appActive) {
+    // Settings can change while the page is alive but not visible. Never start
+    // audio in the background; setAppActive(true) will honour the choice.
+    wanted = null;
+    return;
+  }
   if (amb && amb.id === id) {
     fadeTo(amb.gain, level(), 0.4);
     return;
@@ -278,25 +344,40 @@ export async function setAmbience(id: AmbienceId | null, volume = ambVolume) {
     fadeTo(old.gain, 0, 1.2);
     old.src.stop(ctx!.currentTime + 1.3);
   }
-  if (!id) return;
-  const c = audio();
-  if (!c || !master) return;
-  const buf = await loadAmb(`amb-${id}.mp3`);
-  // The track can be 400 KB over the network: by the time it arrives the
-  // learner may have picked another one, or gone quiet.
-  if (!buf || amb || wanted !== id) return;
-  const src = c.createBufferSource();
-  src.buffer = buf;
-  src.loop = true;
-  // Skip the decoder's padding at both ends so the loop is seamless.
-  src.loopStart = 0.06;
-  src.loopEnd = buf.duration - 0.06;
-  const gain = c.createGain();
-  gain.gain.value = 0;
-  src.connect(gain).connect(master);
-  src.start(0, 0.06);
-  amb = { id, src, gain };
-  fadeTo(gain, level(), 2);
+  if (!id) {
+    wanted = null;
+    return;
+  }
+  await startTrack(id, null, 2);
+}
+
+/**
+ * Follow the app's foreground state.
+ *
+ * <p>Both the fade and the stop are scheduled on the audio thread with
+ * `linearRampToValueAtTime` / `AudioBufferSourceNode.stop(when)`: Android
+ * pauses all JavaScript timers in `onPause()`, so a `setTimeout` here would
+ * never run and the loop would keep playing. Coming back rebuilds the source
+ * at the saved offset and fades in — no gesture needed inside the APK.
+ */
+export function setAppActive(active: boolean) {
+  if (appActive === active) return;
+  appActive = active;
+  if (!active) {
+    const a = amb;
+    if (!a || !ctx) return;
+    paused = { id: a.id, offset: loopOffset(a) };
+    amb = null;
+    wanted = null; // cancel a decode that is still in flight
+    fadeTo(a.gain, 0, FADE_OUT);
+    a.src.stop(ctx.currentTime + FADE_OUT + 0.05);
+    return;
+  }
+  const resume = paused;
+  paused = null;
+  const id = resume?.id ?? chosen;
+  if (!id) return; // "安静", or the reader has not chosen a track yet
+  void startTrack(id, resume?.offset ?? null, FADE_IN);
 }
 
 /** Lower the ambience while a word or sentence is being spoken. */
@@ -306,3 +387,4 @@ export function duck(on: boolean) {
 }
 
 export const ambienceId = () => amb?.id ?? null;
+export const ambienceActive = () => amb !== null;
