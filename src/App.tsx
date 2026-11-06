@@ -119,6 +119,8 @@ export default function App() {
 function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   const { route, word } = useLocation();
   const onboarded = useStore((s) => s.settings.onboarded);
+  const hidePractice = useStore((s) => s.settings.hidePractice);
+  const nav = hidePractice ? NAV.filter((item) => item.page !== "practice") : NAV;
   const { mode } = useThemeSettings();
   const [palette, setPalette] = useState(false);
   const [splash, setSplash] = useState(shouldShowSplash);
@@ -126,6 +128,13 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   // The history page is reached from "我的", so keep that tab looking current.
   const activePage = route.page === "history" ? "me" : route.page;
   const closePalette = useCallback(() => setPalette(false), []);
+
+  // A hidden practice page has no tab to select. A direct link, a browser
+  // back navigation, or toggling the switch while standing on that page must
+  // not leave the reader on an orphaned screen.
+  useEffect(() => {
+    if (hidePractice && route.page === "practice") go({ page: "today" }, null, true);
+  }, [hidePractice, route.page]);
 
   // Any page (the empty history state, in particular) can raise the palette
   // without threading an open callback through the router.
@@ -166,7 +175,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
             <Logo />
           </a>
           <nav className="topnav" aria-label="主导航">
-            {NAV.map(({ page, label }) => (
+            {nav.map(({ page, label }) => (
               <a key={page} href={page === "today" ? "#/" : `#/${page}`} className={activePage === page ? "is-on" : ""} aria-current={activePage === page ? "page" : undefined}>
                 {label}
               </a>
@@ -214,7 +223,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
 
       {!focus && (
         <nav className="tabbar" aria-label="主导航">
-          {NAV.map(({ page, label, icon: Icon }) => (
+          {nav.map(({ page, label, icon: Icon }) => (
             <a key={page} href={page === "today" ? "#/" : `#/${page}`} className={activePage === page ? "is-on" : ""} aria-current={activePage === page ? "page" : undefined}>
               <Icon size={22} strokeWidth={route.page === page ? 2.1 : 1.7} />
               <span>{label}</span>

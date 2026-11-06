@@ -83,6 +83,8 @@ export interface Settings {
   ambience: AmbienceChoice;
   ambienceVolume: number;
   splash: boolean;
+  /** Hide the practice tab and its entry points; only today / atlas / me remain. */
+  hidePractice: boolean;
 }
 
 export const defaultSettings: Settings = {
@@ -104,6 +106,7 @@ export const defaultSettings: Settings = {
   ambience: "stars",
   ambienceVolume: 0.45,
   splash: true,
+  hidePractice: false,
 };
 
 export const emptyProgress = (datasetId: string): Progress => ({
@@ -237,6 +240,7 @@ export function sanitizeSettings(v: unknown): Settings {
   if (v.ambience === "off" || ambience) s.ambience = ambience ?? "off";
   if (num(v.ambienceVolume, 0, 1)) s.ambienceVolume = v.ambienceVolume as number;
   if (typeof v.splash === "boolean") s.splash = v.splash;
+  if (typeof v.hidePractice === "boolean") s.hidePractice = v.hidePractice;
   return s;
 }
 
@@ -408,7 +412,7 @@ export function importAnyBackup(text: string): ImportReport {
     progress,
     settings: {
       ...settings,
-      ...(web ? { autoplayEx: state.settings.autoplayEx, autoplayEx2: state.settings.autoplayEx2, blurZh: state.settings.blurZh, haptic: state.settings.haptic } : {}),
+      ...(web ? { autoplayEx: state.settings.autoplayEx, autoplayEx2: state.settings.autoplayEx2, blurZh: state.settings.blurZh, haptic: state.settings.haptic, hidePractice: state.settings.hidePractice } : {}),
       onboarded: true,
     },
   };

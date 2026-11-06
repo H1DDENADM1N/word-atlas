@@ -238,6 +238,12 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
               ))}
             </div>
           </Field>
+          <Toggle
+            label="隐藏练习"
+            hint="底部导航只留今日、图鉴和我的；今日页的打字练习入口也一起收起。"
+            on={settings.hidePractice}
+            set={(v) => set({ hidePractice: v })}
+          />
 
           <Group label="声音" />
           <Field label="发音">

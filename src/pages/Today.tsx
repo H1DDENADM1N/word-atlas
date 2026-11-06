@@ -142,7 +142,7 @@ export function Today() {
                 只复习
               </button>
             )}
-            {!active && total === 0 && (
+            {!active && total === 0 && !settings.hidePractice && (
               <button className="btn btn-glass" onClick={() => go({ page: "practice" })}>
                 <Keyboard size={18} /> 打字练习
               </button>

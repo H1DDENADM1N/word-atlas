@@ -37,6 +37,12 @@ test("界面震动 survives a backup and defaults to on", () => {
   assert.equal(sanitizeSettings({ haptic: "yes" }).haptic, true);
 });
 
+test("隐藏练习 survives a backup and defaults to off", () => {
+  assert.equal(sanitizeSettings({}).hidePractice, false);
+  assert.equal(sanitizeSettings({ hidePractice: true }).hidePractice, true);
+  assert.equal(sanitizeSettings({ hidePractice: "yes" }).hidePractice, false);
+});
+
 test("drops malformed quiz steps and clamps the index instead of crashing", () => {
   const p = sanitizeProgress(
     {
