@@ -27,6 +27,19 @@ npm run check:atlas
 
 `SUB2_BASE_URL` 指向任意 OpenAI 兼容的接口。
 
+## 查词兜底 / Out-of-atlas lookup
+
+词卡只有 7,298 张，例句里点到的词可能不在其中。`public/atlas/fallback/{a..z}.json` 是随站点/APK 一起发布的 ECDICT 精简表，只负责这种未命中：补一条音标、词性和一行中文释义，发音仍走内置 Kokoro，不显示插画，也不提供“查看词卡”。
+
+```bash
+python3 scripts/atlas/import_ecdict.py --source ../ECDICT/stardict.csv
+```
+
+- 数据来自 ECDICT 的 `stardict.csv`（不在本仓库，已在 `.gitignore` 忽略）；只收 ASCII 单词语、有中文释义且有可用音标的行，旧式音标会做 `ә→ə`、`'→ˈ` 等归一化，`英 … 美 …` 拆成 UK/US。
+- 每行 `[uk, us, pos, zh]`，按首字母分片；当前 341,575 条、约 26 MB。`import_ecdict.py --dry-run` 只统计不落盘。
+- 运行时 `src/lib/fallback.ts` 才加载对应首字母分片：Web 走 `fetch`，APK 走 `shell.assetDataUrl` 从打包资源读同一文件；最多缓存 4 片。
+- 这份数据不参与 `build_atlas.py` 编译，也不在 `data/word-atlas.json` 里；`npm run check:atlas` 不校验它。
+
 ## 同形异音 / Two readings of one spelling
 
 `tear`（撕 / 眼泪）、`use`、`present` 等 14 个词，一个拼写两个读音，两个读音各有自己的录音。词条用 `pron` 存读音组、`senses[i].v` 指回其中一组：

@@ -24,7 +24,7 @@ TOP = {
     ".gitignore", "package.json", "package-lock.json", "tsconfig.json", "vite.config.ts", "index.html",
 }
 SCRIPTS = {"check-atlas.mjs", "render-cards.mjs", "record-demo.mjs", "package_public.py"}
-ATLAS_SCRIPTS = {"common.py", "gen_text.py", "gen_images.py", "gen_brand.py", "gen_word_audio.py", "gen_sentence_audio.py", "gen_sfx.py", "gen_galaxy_audio.sh", "fix_blocked.py", "build_atlas.py", "build_sfx.py", "apply_pron.py", "pron.json", "thesaurus.py", "import_thesaurus.py", "thesaurus.json"}
+ATLAS_SCRIPTS = {"common.py", "gen_text.py", "gen_images.py", "gen_brand.py", "gen_word_audio.py", "gen_sentence_audio.py", "gen_sfx.py", "gen_galaxy_audio.sh", "fix_blocked.py", "build_atlas.py", "build_sfx.py", "apply_pron.py", "pron.json", "thesaurus.py", "import_thesaurus.py", "thesaurus.json", "import_ecdict.py"}
 TEXT = {".ts", ".tsx", ".css", ".svg", ".md", ".json", ".mjs", ".js", ".py", ".html", ".csv", ".yml", ".webmanifest", ""}
 PATTERNS = {
     "API credential pattern": re.compile(rb"\b(?:sk[_-][A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{25,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[A-Z0-9]{16}|xi-[A-Za-z0-9]{20,})\b"),
@@ -67,6 +67,8 @@ def allowed(rel: Path) -> bool:
                 return True
             if len(sub) == 2 and sub[0] == "entries":
                 return re.fullmatch(r"\d+\.json", sub[1]) is not None
+            if len(sub) == 2 and sub[0] == "fallback":
+                return re.fullmatch(r"[a-z]\.json", sub[1]) is not None
             if len(sub) == 2 and sub[0] in {"img", "thumb"}:
                 return rel.suffix == ".webp"
             if len(sub) == 3 and sub[0] == "audio" and sub[1] in {"uk", "us", "uk2", "us2", "ex", "ex2"}:

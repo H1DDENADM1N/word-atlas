@@ -1,16 +1,16 @@
 {
-"files": 44289,
-"bytes": 1159156292,
+"files": 44319,
+"bytes": 1185466084,
 "items": [
 {
 "path": ".gitignore",
-"bytes": 1442,
-"sha256": "de193827c41d1020939eceafa955941c1483b40bd40091cb215f90ac5c7bd364"
+"bytes": 1535,
+"sha256": "2fc084e98bba1356b4e082ec839652daf10d2c6225bd65594c4c09e595458a78"
 },
 {
 "path": "CONTENT_LICENSE.md",
-"bytes": 5702,
-"sha256": "8530c54a61707005eb76f8e21de76b44de2feb4b38d0231e4188b6390ebaa431"
+"bytes": 6278,
+"sha256": "52c049540b65f6112d236bc98703b382463d1e612149f41e9262f858fc16b067"
 },
 {
 "path": "CONTRIBUTING.md",
@@ -164,8 +164,8 @@
 },
 {
 "path": "docs/pipeline.md",
-"bytes": 5159,
-"sha256": "20471542e2d7d52bfaafa0f206adad51ca005804656c340c92e34c348d8de6ec"
+"bytes": 6288,
+"sha256": "929367027f22dbe52abd94643219d71aa548232b95bd07e2bb23f8a8c05e2eaf"
 },
 {
 "path": "index.html",
@@ -147568,6 +147568,136 @@
 "sha256": "9d22ad5b1fb812a334c880721f72382380a88f5f921e266040b74921632f6b71"
 },
 {
+"path": "public/atlas/fallback/a.json",
+"bytes": 1845616,
+"sha256": "f5dcaa3bcddcaf9c4c4f1dc8f7dbe49be9e2ce2cde558e19084592b300074c50"
+},
+{
+"path": "public/atlas/fallback/b.json",
+"bytes": 1475736,
+"sha256": "d7c833864d5d434cc13898b35b5ee13964b3c9cc17ee3cccd7884e98437660b9"
+},
+{
+"path": "public/atlas/fallback/c.json",
+"bytes": 2373431,
+"sha256": "93d06e4c3246b5afeb9641f1d27e070ebf61b261efbbd617e1b6eb2c95442986"
+},
+{
+"path": "public/atlas/fallback/d.json",
+"bytes": 1576758,
+"sha256": "56a92bbfaa2733ac7fb272661343f457b942c63698128d6e530c87f31912e454"
+},
+{
+"path": "public/atlas/fallback/e.json",
+"bytes": 1103730,
+"sha256": "cce25f78de36e9a28643b3db364c6c0cfcf93d4ad83954d1bdaddcd33d75a016"
+},
+{
+"path": "public/atlas/fallback/f.json",
+"bytes": 1001974,
+"sha256": "c75c9517ceee639ae93264a66faf32b70dfa062cb98d8e716dd8efc690d549b7"
+},
+{
+"path": "public/atlas/fallback/g.json",
+"bytes": 861684,
+"sha256": "a0807888873f7a02af4753a81302e6c1ed4b80671c281a03fc9f4ea889ccc8b1"
+},
+{
+"path": "public/atlas/fallback/h.json",
+"bytes": 1161400,
+"sha256": "e21ae13f5b35ad48c92419c323ffc23d5ef24de79664d50f6a2dd87366115590"
+},
+{
+"path": "public/atlas/fallback/i.json",
+"bytes": 928456,
+"sha256": "4c798b826b25564f33cf834990206c00836b7d1243664f3ac28ff0e1e7497296"
+},
+{
+"path": "public/atlas/fallback/j.json",
+"bytes": 218715,
+"sha256": "2c05f579299db3652412ef0a2028db69e36250e96a65836845ade95928461138"
+},
+{
+"path": "public/atlas/fallback/k.json",
+"bytes": 312568,
+"sha256": "d1c4e5cb0fe199c0c7e3674cb10a730535494b9dc0f4ddc4ee4bd56167e13d83"
+},
+{
+"path": "public/atlas/fallback/l.json",
+"bytes": 827227,
+"sha256": "ac8d2fefe0b7ea42162c3281e3d14d8cb3ad4478bc3399fb0856567bc070d11f"
+},
+{
+"path": "public/atlas/fallback/m.json",
+"bytes": 1540648,
+"sha256": "089f5879c76e82b5e7cec846d7742fbce82e31183a00da94275673490b9c5233"
+},
+{
+"path": "public/atlas/fallback/n.json",
+"bytes": 670318,
+"sha256": "72ca4186151d9c66b0cb723677f79476634c8d6aba06db2c846517bb666bdfd5"
+},
+{
+"path": "public/atlas/fallback/o.json",
+"bytes": 726497,
+"sha256": "6d1d24f36a1f0bcfb3649a13f04f2c9b9c2dc03ab2bf619e15c696c312045137"
+},
+{
+"path": "public/atlas/fallback/p.json",
+"bytes": 2312783,
+"sha256": "ad3a74360d834bc3828ed1f3037a9a536b680861da561b1215869cad52584f70"
+},
+{
+"path": "public/atlas/fallback/q.json",
+"bytes": 121891,
+"sha256": "bc6dba31c3b5c1bcd5f8340d7cf21e3b0d5a3cacdcbad4546bd58c71c68b1599"
+},
+{
+"path": "public/atlas/fallback/r.json",
+"bytes": 1078878,
+"sha256": "3a47cd0d30944bfc5138bfeb4c8b1c2202e3bfbea30bb6a6b55e8cbc89d1bf9d"
+},
+{
+"path": "public/atlas/fallback/s.json",
+"bytes": 2859170,
+"sha256": "637bdabf38a813b9aaeeaf5787440ef9d7a5a25c511fee0f027f3aa08d202014"
+},
+{
+"path": "public/atlas/fallback/t.json",
+"bytes": 1479488,
+"sha256": "c6a06a440011c94ebeb5d08791e7158125ca3ce80b33602453dcbde1c195cc5b"
+},
+{
+"path": "public/atlas/fallback/u.json",
+"bytes": 640293,
+"sha256": "6725763e2007e77c92d617a71cfdb9a0607c7f249d90309de8ee53514200068d"
+},
+{
+"path": "public/atlas/fallback/v.json",
+"bytes": 379545,
+"sha256": "5cd78ca3d8d5ae2ce976dedb733038f104b70a548f2ec50ffc628a663edb3afa"
+},
+{
+"path": "public/atlas/fallback/w.json",
+"bytes": 553549,
+"sha256": "e7194fe2f900874c5addef96a4ab1792776b4b21b873c2644964186d5c0ce113"
+},
+{
+"path": "public/atlas/fallback/x.json",
+"bytes": 39084,
+"sha256": "0ba8f3f532d847bddb5e697a1dd97e8002f9026832d2aafae352a13f92e303dd"
+},
+{
+"path": "public/atlas/fallback/y.json",
+"bytes": 90227,
+"sha256": "efb303666fe70e43c3353d0786c3fb3eef859ab0fbf416a5ebad3d826a5b53dc"
+},
+{
+"path": "public/atlas/fallback/z.json",
+"bytes": 108776,
+"sha256": "ad463b016cf416cb1411cc3d8b91a1931b3a97007ebb02f3721ccc4f4bf5fac6"
+},
+{
 "path": "public/atlas/img/a-m.webp",
 "bytes": 29564,
 "sha256": "ed3f79d198415fec999e75cdfca144f1beb896e87b1c9949fe1f99d59054994e"
@@ -220954,8 +221084,8 @@
 },
 {
 "path": "README.md",
-"bytes": 34186,
-"sha256": "399ae98499bf4537cd623d62e49cc7e7074af0d7f859c522635133ba22ebc68e"
+"bytes": 36017,
+"sha256": "40a37fbf13ab5983d77092ddb9949e651921c19fc9f68a5ce0a0bcdfc121c6b7"
 },
 {
 "path": "scripts/atlas/apply_pron.py",
@@ -221018,6 +221148,11 @@
 "sha256": "031e4f5d68aa32e444f893c21687fb235e60a9174836a9a5fad2a33f72ff4bb6"
 },
 {
+"path": "scripts/atlas/import_ecdict.py",
+"bytes": 9068,
+"sha256": "7024ad2bc17476f1847928b4c4d96a55216d1e9ad9c6c932188e31f76fc50b1e"
+},
+{
 "path": "scripts/atlas/import_thesaurus.py",
 "bytes": 7578,
 "sha256": "dd0433bfcae805e993b7cd0ef5e437d336ca5ea64f894e1d568a8b5dc2896273"
@@ -221044,8 +221179,8 @@
 },
 {
 "path": "scripts/package_public.py",
-"bytes": 6079,
-"sha256": "7bc0444755e387f28074c1b20476607b4dd5add87dc5cdfc46a824f06561cef3"
+"bytes": 6228,
+"sha256": "77599c979f7e6d975681add47d420ee556a53763c408b54bf15bfea0167c890a"
 },
 {
 "path": "scripts/record-demo.mjs",
@@ -221138,6 +221273,11 @@
 "sha256": "52502c124cd819030acaacbb17bb91c9bc34f9a1f398d77cb384a99d873e1178"
 },
 {
+"path": "src/lib/asset.ts",
+"bytes": 859,
+"sha256": "9e88be3746c2f5de80ef1570b0c58c434c4523010e95d22a8ffd48b3da930db2"
+},
+{
 "path": "src/lib/audio.ts",
 "bytes": 3309,
 "sha256": "193b046fc9a54c01d32eaf57aeb737f693d5e15b16c05ee9ca340959acd76171"
@@ -221151,6 +221291,16 @@
 "path": "src/lib/canvasImage.ts",
 "bytes": 1113,
 "sha256": "95513c0c33e6e4b1db240e599aab5d86a005b2f30e900a54113ae75f49d2e2aa"
+},
+{
+"path": "src/lib/fallback.test.ts",
+"bytes": 1020,
+"sha256": "b205d5dce0e372396276c9e3f26b93333b63b19ae4071e5c4f6c346c0b4f6c0d"
+},
+{
+"path": "src/lib/fallback.ts",
+"bytes": 3909,
+"sha256": "35bcb2efb40b09f9fb5b757409b6251cb43a5b667f210353d8b5eab6ca0ce196"
 },
 {
 "path": "src/lib/feedback.ts",
@@ -221184,8 +221334,8 @@
 },
 {
 "path": "src/lib/native.ts",
-"bytes": 9668,
-"sha256": "e30f5acf5a0d3595e32f0a73abc5bc464a08bf90c52ba3ab22a4bb0ad438c513"
+"bytes": 9136,
+"sha256": "56eb9352062f2afe0c5b7114386c297f7dafe1018769222d90f38f418b6ffe08"
 },
 {
 "path": "src/lib/palette.ts",
@@ -221274,8 +221424,8 @@
 },
 {
 "path": "src/pages/About.tsx",
-"bytes": 20214,
-"sha256": "023d0fac719f94d25602b66f75c48405d6a35d4b39bc3c9f895727066a11dcf1"
+"bytes": 21941,
+"sha256": "50aa2be09bd51987d9e072d2fc28f384d10ebbb078445349d440f0f2474014ca"
 },
 {
 "path": "src/pages/Atlas.tsx",
@@ -221354,8 +221504,8 @@
 },
 {
 "path": "src/styles/app.css",
-"bytes": 135670,
-"sha256": "03cd425cd9729e4f233fb61d47c6c93f710b635496cf8035cedab0b2104032a9"
+"bytes": 135769,
+"sha256": "982bd99286cbfb7016f71b5d5f6fb6d6255d75a2a3d4ad8b993f0c271ed9e4e0"
 },
 {
 "path": "src/ui/Ambience.tsx",
@@ -221379,8 +221529,8 @@
 },
 {
 "path": "src/ui/Lookup.tsx",
-"bytes": 9520,
-"sha256": "e1b5c106d57afd50b1a071749d0379a7719fbee5e23409a681e4936d89382ca1"
+"bytes": 10942,
+"sha256": "24f6718de432d2561edb3c465ed582c75e9714fb5a216b30b8558320863a6992"
 },
 {
 "path": "src/ui/Palette.tsx",

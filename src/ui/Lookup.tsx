@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAtlas } from "../atlas/context";
+import { lookupFallback, type FallbackEntry } from "../lib/fallback";
 import { findWord } from "../lib/lookup";
 import { registerOverlay } from "../lib/native";
 import { openWord } from "../lib/router";
@@ -154,7 +155,26 @@ function LookupCard({ token, anchor, onClose }: { token: string; anchor: HTMLEle
   const ref = findWord(atlas, token);
   const card = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const [fallback, setFallback] = useState<FallbackEntry | null>(null);
   const narrow = typeof matchMedia === "function" && matchMedia(NARROW).matches;
+
+  // A miss still gets a transcription and one gloss from the bundled ECDICT
+  // extract. The atlas answers synchronously; this is the only lookup that
+  // waits on a file, and a failure just leaves the "not in the atlas" line.
+  useEffect(() => {
+    if (ref) {
+      setFallback(null);
+      return;
+    }
+    let live = true;
+    setFallback(null);
+    lookupFallback(token).then((row) => {
+      if (live) setFallback(row);
+    });
+    return () => {
+      live = false;
+    };
+  }, [ref, token]);
 
   // Escape and the hardware back key close the card, not the entry behind it.
   useEffect(() => {
@@ -252,8 +272,27 @@ function LookupCard({ token, anchor, onClose }: { token: string; anchor: HTMLEle
           </>
         ) : (
           <>
-            <h2 lang="en">{token}</h2>
-            <p className="lookup-meaning">这个词不在词光词库里</p>
+            <div className="lookup-heading">
+              <div>
+                <h2 lang="en">{token}</h2>
+                {fallback && (
+                  <p className="ipa" lang="en">
+                    /{fallback[0]}/
+                    {fallback[1] && fallback[1] !== fallback[0] ? ` · US /${fallback[1]}/` : ""}
+                  </p>
+                )}
+              </div>
+            </div>
+            {fallback && (
+              <p className="lookup-meaning lookup-fallback-gloss">
+                {fallback[2] ? `${fallback[2]} ` : ""}
+                {fallback[3]}
+              </p>
+            )}
+            <div className="lookup-actions">
+              <Speak url={null} text={token} accent={accent} size="sm" label="播放发音" />
+              <span className="lookup-missing">这个词不在词光词库里</span>
+            </div>
           </>
         )}
       </div>

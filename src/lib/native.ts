@@ -43,6 +43,8 @@ export const shell: Shell | undefined = typeof window === "undefined" ? undefine
 /** True inside the packaged Android app. */
 export const isShell = !!shell;
 
+export { assetDataUrl } from "./asset";
+
 /* ---------- files ---------- */
 
 const CHUNK = 0x8000;
@@ -84,23 +86,6 @@ export async function saveBlob(
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   return "browser";
-}
-
-/**
- * Read a packaged asset as a `data:` URL, or null on the web.
- *
- * The page runs from `file://` inside the APK, and drawing such an image into a
- * canvas taints it — `canvas.toBlob()` then throws, so the share card could
- * never be exported. A `data:` URL is origin-clean, so the card renders from
- * the same bytes the page displays.
- */
-export function assetDataUrl(src: string): string | null {
-  if (!shell?.assetDataUrl) return null;
-  try {
-    return shell.assetDataUrl(new URL(src, location.href).href);
-  } catch {
-    return null;
-  }
 }
 
 /* ---------- speech ---------- */

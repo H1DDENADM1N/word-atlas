@@ -1495,6 +1495,11 @@ code {
   line-height: 1.6;
   color: var(--ink-2);
 }
+.lookup-fallback-gloss {
+  margin-top: 6px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
 .lookup-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1502,6 +1507,15 @@ code {
   margin-top: 16px;
   align-items: center;
   justify-content: space-between;
+}
+/* A miss has no "查看词卡" button; its notice takes that bottom-right slot. */
+.lookup-missing {
+  margin-left: auto;
+  max-width: 62%;
+  text-align: right;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-3);
 }
 @media (max-width: 640px) {
   /* A card near the tapped word would cover the sentence it belongs to, so on
