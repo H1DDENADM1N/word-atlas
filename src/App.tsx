@@ -84,8 +84,12 @@ export default function App() {
   // with a compact snapshot. No-op in the browser (the shell method is absent).
   useEffect(() => {
     if (!atlas) return;
-    installWidgetLaunch(atlas);
-    return installWidgetPublisher(atlas);
+    const stopLaunch = installWidgetLaunch(atlas);
+    const stopPublish = installWidgetPublisher(atlas);
+    return () => {
+      stopLaunch();
+      stopPublish();
+    };
   }, [atlas]);
 
   if (error)

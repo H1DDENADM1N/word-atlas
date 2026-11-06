@@ -83,6 +83,9 @@ public abstract class WidgetBase extends AppWidgetProvider {
     public void onUpdate(Context ctx, AppWidgetManager mgr, int[] ids) {
         WidgetData.Snapshot s = WidgetData.read(ctx);
         String today = WidgetData.today();
+        // Cover the case where a widget is added before the app is ever opened.
+        // A background FGS start may be refused; MainActivity retries on launch.
+        WidgetKeepAlive.startIfNeeded(ctx);
         for (int id : ids) {
             RemoteViews views = new RemoteViews(ctx.getPackageName(), layout());
             if ("tough".equals(kind())) renderTough(ctx, views, id, s, today);
@@ -289,6 +292,13 @@ public abstract class WidgetBase extends AppWidgetProvider {
     /**
      * A distinct request code per widget and per tap target; otherwise
      * FLAG_UPDATE_CURRENT would let one widget overwrite another's route extra.
+     *
+     * <p>An activity PendingIntent, not a broadcast: a force-stop cancels every
+     * PendingIntent the package created, and the launcher then has nothing to
+     * send. For an activity it still falls back to starting the app itself (so
+     * the tap opens the app); for a broadcast it does nothing at all, which
+     * leaves the widget dead. See {@code MainActivity.isLauncherFallback()} for
+     * what happens to the route in that case.
      */
     private static PendingIntent tap(Context ctx, int widgetId, int slot, String route, String action) {
         Intent intent = new Intent(ctx, MainActivity.class)
@@ -301,8 +311,13 @@ public abstract class WidgetBase extends AppWidgetProvider {
 
     /** The tough-word card's refresh button advances one slot in today's queue. */
     private static PendingIntent next(Context ctx, int widgetId) {
+        // The refresh must work with no app process running. Some OEMs drop a
+        // plain background broadcast instead of cold-starting its receiver, so
+        // ask the system to include stopped packages and treat this as a
+        // foreground-priority broadcast.
         Intent intent = new Intent(ctx, WidgetTough.class)
                 .setAction(ACTION_NEXT)
+                .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES | Intent.FLAG_RECEIVER_FOREGROUND)
                 .putExtra(EXTRA_WIDGET_ID, widgetId);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
         return PendingIntent.getBroadcast(ctx, widgetId * 10 + 2, intent, flags);

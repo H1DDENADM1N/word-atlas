@@ -6,6 +6,8 @@
   android.permission.INTERNET. Without it the OS refuses to create sockets for
   this UID, so the app cannot reach the network under any circumstances. All
   content is unpacked from the APK and opened through file:///android_asset.
+  The widget keep-alive service is a plain Service, so it needs no permission
+  and shows no notification.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="tech.wordatlas.app">
@@ -45,6 +47,16 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+
+        <!--
+          Only while widgets are on the home screen: keeps the launcher's
+          widget PendingIntents alive when the task is swiped out of recents.
+          See WidgetKeepAlive.java.
+        -->
+        <service
+            android:name=".WidgetKeepAlive"
+            android:exported="false"
+            android:stopWithTask="false" />
 
         <!--
           Hands a generated card to another app. Not exported: a receiver can

@@ -2,8 +2,10 @@ package tech.wordatlas.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -129,6 +131,7 @@ public class MainActivity extends Activity {
         setContentView(root);
         voice = new OfflineVoice(this);
         maybeExportSample();
+        WidgetKeepAlive.startIfNeeded(this);
         web.loadUrl(launchUrl(getIntent()));
     }
 
@@ -139,16 +142,17 @@ public class MainActivity extends Activity {
      */
     private String launchUrl(Intent intent) {
         String route = intent == null ? "" : intent.getStringExtra(WidgetBase.EXTRA_ROUTE);
-        if (route == null || !route.startsWith("#/") || !route.matches("^#/[A-Za-z0-9/?=&_%.-]*$")) route = "";
+        if (!isRoute(route)) route = "";
+        String action = intent == null ? null : intent.getStringExtra(WidgetBase.EXTRA_ACTION);
 
         // External hand-off: another app passed a word (PROCESS_TEXT / SEND).
         // Decode the raw text once here, then URL-encode it into the route so
         // the page reads a clean word from the query string.
         String word = null;
         if (route.isEmpty()) {
-            String action = intent == null ? null : intent.getAction();
-            if ("android.intent.action.PROCESS_TEXT".equals(action)
-                    || "android.intent.action.SEND".equals(action)) {
+            String intentAction = intent == null ? null : intent.getAction();
+            if ("android.intent.action.PROCESS_TEXT".equals(intentAction)
+                    || "android.intent.action.SEND".equals(intentAction)) {
                 CharSequence text = intent == null ? null : intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
                 if (text == null || text.length() == 0)
                     text = intent == null ? null : intent.getCharSequenceExtra(Intent.EXTRA_TEXT);
@@ -167,12 +171,92 @@ public class MainActivity extends Activity {
             return START_URL + SEARCH_ROUTE + URLEncoder.encode(word, StandardCharsets.UTF_8) + EXTERNAL_SOURCE;
         }
 
-        String action = intent == null ? null : intent.getStringExtra(WidgetBase.EXTRA_ACTION);
+        if (action == null && isLauncherFallback(intent)) {
+            // A widget tap whose PendingIntent was cancelled by a force-stop:
+            // the launcher could not deliver the route and started the app
+            // itself. Use the widget inventory to recover what we can.
+            String guessed = fallbackRoute();
+            if ("#/learn".equals(guessed)) action = "start";
+            else if (isRoute(guessed)) route = guessed;
+            // More than one widget kind: leave the route empty. Today shows the
+            // journey card and the word of the day, so no tap lands on a page
+            // that has nothing to do with what was pressed.
+        }
         if ("start".equals(action)) {
             if (route.isEmpty()) route = "#/learn";
             route += (route.contains("?") ? "&" : "?") + "waStart=1";
         }
+        // A repeated tap on the same widget must still be a new URL: the page
+        // only reacts to a fragment change, and an identical URL navigates
+        // nowhere. The value is ignored by the router and stripped again by the
+        // page as soon as the launch flag is handled.
+        if (!route.isEmpty()) route += (route.contains("?") ? "&" : "?") + "waT=" + System.currentTimeMillis();
         return START_URL + route;
+    }
+
+    /** A widget route, as accepted from an intent extra. */
+    private static boolean isRoute(String route) {
+        return route != null && route.startsWith("#/") && route.matches("^#/[A-Za-z0-9/?=&_%.-]*$");
+    }
+
+    /**
+     * Best route for a tap whose intent was lost to a force-stop.
+     *
+     * <p>After a force-stop the launcher cancels every PendingIntent this
+     * package created and falls back to a single plain MAIN start. On ColorOS
+     * 16 that intent is byte-identical for all three widgets (no extras, no
+     * bounds, no widget id), and the system sends APPWIDGET_UPDATE to all three
+     * providers afterwards — so there is no signal anywhere in the app that
+     * says which card was pressed. Guessing "learn" for every fallback sends
+     * 今日一句 and 顽固词 taps to the wrong screen, which is worse than an
+     * extra tap.
+     *
+     * <p>When the user has only one kind of widget, though, the answer is
+     * unambiguous, so we can still open exactly what they tapped. With more
+     * than one kind we return "" and land on Today: it shows the journey card
+     * and the word of the day, which covers two of the three intents.
+     */
+    private String fallbackRoute() {
+        AppWidgetManager mgr = AppWidgetManager.getInstance(this);
+        int[] quotes = mgr.getAppWidgetIds(new ComponentName(this, WidgetQuote.class));
+        int[] toughs = mgr.getAppWidgetIds(new ComponentName(this, WidgetTough.class));
+        int[] plans = mgr.getAppWidgetIds(new ComponentName(this, WidgetPlan.class));
+        int kinds = (quotes.length > 0 ? 1 : 0) + (toughs.length > 0 ? 1 : 0) + (plans.length > 0 ? 1 : 0);
+        if (kinds != 1) return "";
+
+        WidgetData.Snapshot snapshot = WidgetData.read(this);
+        String today = WidgetData.today();
+        if (quotes.length > 0) {
+            WidgetData.Quote q = snapshot.sentence;
+            if (q == null || q.en.isEmpty() || !today.equals(q.date)) q = WidgetData.fallbackQuote(this, today);
+            return q == null || q.id.isEmpty() ? "" : "#/w/" + Uri.encode(q.id);
+        }
+        if (toughs.length > 0) {
+            WidgetData.Card c = WidgetData.currentCard(
+                    snapshot, System.currentTimeMillis(), WidgetData.offset(this, toughs[0], today));
+            return c == null || c.id.isEmpty() ? "" : "#/w/" + Uri.encode(c.id);
+        }
+        return "#/learn";
+    }
+
+    /**
+     * Whether this is the launcher's "the widget click could not be delivered"
+     * fallback.
+     *
+     * <p>When a widget's PendingIntent has been cancelled (a force-stop cancels
+     * every PendingIntent the package created), the launcher's send throws and
+     * it starts the app's plain launcher intent instead — the route is lost.
+     * That start looks different from a real app-icon tap on the launchers we
+     * have seen: the fallback carries the package name and no
+     * {@code FLAG_ACTIVITY_RESET_TASK_IF_NEEDED}, while an icon tap is the other
+     * way round. Nothing else in the intent distinguishes them.
+     */
+    private static boolean isLauncherFallback(Intent intent) {
+        if (intent == null || !Intent.ACTION_MAIN.equals(intent.getAction())) return false;
+        java.util.Set<String> categories = intent.getCategories();
+        if (categories == null || !categories.contains(Intent.CATEGORY_LAUNCHER)) return false;
+        if (intent.getPackage() == null) return false;
+        return (intent.getFlags() & Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED) == 0;
     }
 
     /** singleTask: a tap on a widget while the app is alive arrives here. */

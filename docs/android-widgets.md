@@ -263,8 +263,23 @@ assets (插画 / 话题图) --------------------------------------> RemoteViews 
 | 4×1 按钮 | 等价于主页 `start()`（`Today.tsx:56-64`）：无 active session 时先 `buildSession()`，再进 `#/learn` |
 | 4×1 卡片其余区域 | `#/` 今日主页，看完整计划 |
 
-- **不能只跳 `#/learn`**：没有 session 时学习页是空的。实现为 `MainActivity` 读内部 extra `wa.route` / `wa.action`，拼出 `file:///android_asset/www/index.html#/learn?waStart=1`；Web 层在 atlas 就绪后读这个一次性参数，执行 `buildSession()` 再 `go({page:"learn"}, null, true)`（`replaceState` 会清掉参数）。冷启动与 `singleTask` 的 `onNewIntent` 走同一条路径。
-- 不新增 intent scheme / 自定义 URL，全部复用现有 hash 路由；`PendingIntent` 必须带 `FLAG_IMMUTABLE`。4×1 的子 View 热区优先于父布局。
+- **不能只跳 `#/learn`**：没有 session 时学习页是空的。实现为 `MainActivity` 读内部 extra `wa.route` / `wa.action`，拼出 `file:///android_asset/www/index.html#/learn?waStart=1`；Web 层读这个一次性参数，`buildSession()` 后进 `#/learn`（`replaceState` 会清掉参数）。冷启动与 `singleTask` 的 `onNewIntent` 走同一条路径。
+  - 第 15 轮修正：`waStart` 原来只在 atlas 就绪的 effect 里处理一次，且 `finished` 的 session 被当成「进行中」直接恢复 —— 于是「上一程结束后、今天还没开始」时点按钮，落回的是上一轮的「这一程结束了」。现在改为订阅 `hashchange` / `wa:loc`：每次点击都重新判定，`finished` 的会话一律重建；当天确实无词可学（`buildSession` 为空）才回今日页。
+  - 同一轮修正：`launchUrl()` 给每条路由追加 `waT=<毫秒>`，保证连点同一个按钮也是新的 fragment（相同 URL 不会触发 `hashchange`，点了没反应）。
+- 不新增 intent scheme / 自定义 URL，全部复用现有 hash 路由；`PendingIntent` 用 `FLAG_IMMUTABLE`。4×1 的子 View 热区优先于父布局。
+- **force-stop 会作废该包创建的全部 PendingIntent** —— 包括烤进 RemoteViews 里的三个点击目标。此后点击在启动器侧就失败（logcat `E/RemoteViews: Cannot send pending intent ... ActivityNotFoundException`），启动器退回 `act=MAIN cat=LAUNCHER` 的普通启动，`wa.route` 无从传递。
+  - 触发方式：设置里的「强行停止」，以及 **ColorOS 在最近任务里划掉卡片**（实测 `stopped=false→true`、本包 PendingIntent 记录 5→0）。单纯的进程回收（`am kill`）不会 —— 两者不能用同一种方式测「App 不在后台」。
+  - **实测结论：兜底 intent 无法区分三张卡**。强制停止后分别点今日一句 / 顽固词 / 进度条，启动器发出的 `START u0` **逐字节相同**（`act=MAIN cat=[LAUNCHER] flg=0x10000000 pkg=...`、`mCallingUid=1000 mRealCallingUid=10270`、无 extras、无 bounds）；桌面图标点击反而不同（`flg=0x10200000`、带 `bnds`、有 extras）。失败后系统给三个 provider 都发全量 `APPWIDGET_UPDATE`（顺序固定），也没有可用信号。所以「被 force-stop 后猜是哪张卡」在应用侧做不到。
+- **保活（第 16 轮，用户思路，已实测有效）**：`WidgetKeepAlive` 是一个**普通 Service**（非前台），仅在小部件存在时启动。它不要求进程常驻，只是让系统在划掉最近任务卡片时**不做包级 force-stop**。
+  - Android 16 / ColorOS 16 实测：加 Service 前划掉卡片 → `stopped=true`、PendingIntent 5→0、四个点击目标全部失灵；加 Service 后划掉卡片 → `stopped=false`、PendingIntent 保持 5 条、进程仍在（`am kill` 都杀不动）。
+  - 结果：进度条「继续旅程」→ 学习页；今日一句 → `monitor` 词卡；顽固词 → `decision` 词卡；顽固词刷新 → `abroad → interest → burger`，全程不打开 App。**四个目标完全区分**。
+  - **零权限、零通知**：实测普通 Service 就够，不需要前台服务，因此没有 `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_DATA_SYNC` 权限，也没有常驻通知。仍保持 manifest 无任何 `<uses-permission>`。不加 `excludeFromRecents`：App 正常出现在最近任务里，用户照样能划掉，只是划掉不再破坏小部件。
+  - 顽固词刷新另加 `FLAG_INCLUDE_STOPPED_PACKAGES | FLAG_RECEIVER_FOREGROUND`：某些 OEM 会丢掉「需要冷启动接收进程」的后台广播，这两个 flag 让 `WIDGET_NEXT` 在进程已被回收时也能送达。
+  - 注意：这是 OEM 行为而非 AOSP 保证；`MainActivity.isLauncherFallback()` 仍作为真正 force-stop（设置 → 强行停止）时的安全网。
+- **兜底（安全网）**：`MainActivity.isLauncherFallback()` 认兜底形状 —— `action=MAIN` + `CATEGORY_LAUNCHER` + **intent 带 `pkg`** + **没有 `FLAG_ACTIVITY_RESET_TASK_IF_NEEDED`**（图标点击相反）。命中时 `fallbackRoute()` 用 `AppWidgetManager.getAppWidgetIds()` 查用户装了几种卡：
+  - 恰好一种 → 精确打开它（今日一句取当天句子词、顽固词取当前卡面词、进度条 `#/learn?waStart=1`）；
+  - 多种 → **回今日页**（中性），不再像上一版那样一律进学习页，避免点词卡被错送到学习页。
+  - 注意：不要把这个判断放宽成"任何 MAIN 启动"，否则从桌面图标进入也会跳过今日页。
 - 手动「换一个」按钮已取消，轮播只自动进行；「去练它」入口回到应用内 Practice 页。
 
 ---

@@ -18,7 +18,6 @@ import {
   type WidgetSentence,
 } from "./widget-data";
 
-let launched = false;
 let sentenceCache: { date: string; value: WidgetSentence } | null = null;
 let dotsCache: Record<string, string> | null = null;
 
@@ -43,20 +42,54 @@ function resolveTheme(theme: string): "dark" | "light" {
 /**
  * Equivalent to the Today page's `start()`: create a session if there is none,
  * then enter the learning page. A bare `#/learn` would render an empty stage.
+ *
+ * Two things make this more than a one-shot boot hook:
+ *
+ * <ul>
+ *   <li>A tap while the app is already open arrives as a new fragment, and the
+ *       page is not remounted — so the flag has to be handled on every
+ *       location change, not only on the first render.
+ *   <li>A finished session is not "in progress". Resuming it would drop the
+ *       reader on the previous round's summary instead of starting the new
+ *       journey, which is exactly what a tap on 继续旅程 asks for.
+ * </ul>
+ *
+ * Returns a cleanup function; safe under React StrictMode's double mount.
  */
 export function installWidgetLaunch(atlas: Atlas) {
-  if (launched) return;
-  const params = new URLSearchParams((location.hash || "").split("?")[1] || "");
-  if (params.get("waStart") !== "1") return;
-  launched = true;
-  const { progress, settings } = store.get();
-  const active = progress.session && !progress.session.finished ? progress.session : null;
-  if (!active) {
-    const session = buildSession(atlas, progress, settings);
-    if (session.steps.length) store.progress((p) => ({ ...p, session }));
-  }
-  // replaceState drops the waStart flag so a later reload does not replay it.
-  go({ page: "learn" }, null, true);
+  const run = () => {
+    const params = new URLSearchParams((location.hash || "").split("?")[1] || "");
+    if (params.get("waStart") !== "1") return;
+    const { progress, settings } = store.get();
+    const s = progress.session;
+    // Same test the learning page uses to decide between a step and the
+    // summary, so the two can never disagree about what "in progress" means.
+    const active = s && !s.finished && s.index < s.steps.length ? s : null;
+    if (!active) {
+      const session = buildSession(atlas, progress, settings);
+      if (!session.steps.length) {
+        // Nothing due and today's new words are used up: the day is done, and
+        // an empty stage would be a worse answer than the Today page.
+        go({ page: "today" }, null, true);
+        return;
+      }
+      store.progress((p) => ({ ...p, session }));
+    }
+    // The hash already names the page — the router has applied it (or is about
+    // to) — so only the one-shot flag is dropped here. Navigating again would
+    // start a second view transition for a route that is already current.
+    if (location.hash.startsWith("#/learn")) history.replaceState(null, "", "#/learn");
+    else go({ page: "learn" }, null, true);
+  };
+  run();
+  // hashchange covers the tap that arrives while the app is already open;
+  // wa:loc covers the same change once the router has applied it.
+  window.addEventListener("hashchange", run);
+  window.addEventListener("wa:loc", run);
+  return () => {
+    window.removeEventListener("hashchange", run);
+    window.removeEventListener("wa:loc", run);
+  };
 }
 
 /** Returns a cleanup function; safe under React StrictMode's double mount. */
