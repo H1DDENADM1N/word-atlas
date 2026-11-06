@@ -18,6 +18,7 @@ import shutil
 import subprocess
 
 from common import FORGE, ROOT
+import thesaurus
 
 TOPICS = [
     ("education", "教育"), ("work", "职场"), ("technology", "科技"), ("science", "科学"),
@@ -32,6 +33,8 @@ PUB = ROOT / "public" / "atlas"
 DATA = ROOT / "data"
 # Parsed 词源词典: 词源图景 / 近义词 / 同根词, see scripts/etymology/import_etymology.py
 ETY = ROOT / "scripts" / "etymology" / "etymology.json"
+# Parsed 同义词学习词典: synonym groups by part of speech, see scripts/atlas/thesaurus.py
+THESAURUS = ROOT / "scripts" / "atlas" / "thesaurus.json"
 
 
 def slugify(word):
@@ -102,6 +105,28 @@ def apply_etymology(entries):
     return hit
 
 
+def apply_thesaurus(entries):
+    """Append 同义词学习词典 synonyms to every card that has a matching group.
+
+    Part of speech must agree and the word must already be an atlas headword, so
+    every lookup button resolves. A synonym group is kept only when its Chinese
+    gloss matches the card's gloss of that part of speech (thesaurus.MIN_RELEVANCE).
+    There is deliberately no per-card cap: the groups are only ranked by gloss
+    relevance, closest sense first.
+    """
+    if not THESAURUS.exists():
+        return 0
+    data = thesaurus.load(THESAURUS)
+    canon = thesaurus.canonical(entries)
+    added = 0
+    for c in entries:
+        extra = thesaurus.new_synonyms(c, data, canon)
+        if extra:
+            c["syn"] = c["syn"] + extra
+            added += len(extra)
+    return added
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-media", action="store_true")
@@ -130,6 +155,7 @@ def main():
     # so neighbouring words come from different topics.
     entries.sort(key=lambda c: (CEFR.index(c["cefr"]), hashlib.sha1(c["id"].encode()).hexdigest()))
     ety = apply_etymology(entries)
+    thes = apply_thesaurus(entries)
 
     for d in ("img", "thumb", "audio/uk", "audio/us", "audio/ex", "audio/ex2", "entries"):
         (PUB / d).mkdir(parents=True, exist_ok=True)
@@ -204,7 +230,7 @@ def main():
                         ex[0]["en"], ex[0]["zh"], ex[1]["en"], ex[1]["zh"],
                         " ; ".join(c["col"]), " ; ".join(c["fam"]), ", ".join(c["syn"]), ", ".join(c["ant"]), c["tip"]])
     (FORGE / "build-warnings.json").write_text(json.dumps(warnings, ensure_ascii=False, indent=1))
-    print(json.dumps({k: meta[k] for k in ("count", "examples", "illustrated", "voiced")}), "warnings", len(warnings), "etymology", ety)
+    print(json.dumps({k: meta[k] for k in ("count", "examples", "illustrated", "voiced")}), "warnings", len(warnings), "etymology", ety, "thesaurus", thes)
 
 
 if __name__ == "__main__":

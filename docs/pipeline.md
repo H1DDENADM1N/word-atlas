@@ -8,9 +8,10 @@
 4. **发音** `gen_word_audio.py`：ElevenLabs，英音 Alice、美音 Sarah。
 5. **例句朗读** `gen_sentence_audio.py`：为 `ex[0]` 合成朗读，按学习路线顺序。
 6. **词源** `scripts/etymology/import_etymology.py`：解析 `etymology/etymology.mdx`（`Encrypted="2"` 的 MDict，键表加密、记录块是普通 zlib，所以只读记录块，词头取自每条开头的 `<font size=3>`），抽出【词源图景】小结、【近义词辨析】与【同根词】，写入 `scripts/etymology/etymology.json`。`build_atlas.py` 编译时按词头并入 `ety` / `syn` / `root`；不带参数直接跑，则把这三项补进已有的 `public/atlas/entries/`。
-7. **编译** `build_atlas.py`：清洗字段、排序、切块，生成 `public/atlas/` 与 `data/`。
-8. **同形异音** `apply_pron.py`：把 [`pron.json`](../scripts/atlas/pron.json) 里的 14 个双读音词写进词条（`pron` + `senses[].v`），并把 `uk`/`us` 收敛成第一读音。`build_atlas.py` 不认识 `pron`，重建后必须再跑一次；`npm run check:pron` 可以查有没有漏。
-9. **校验** `npm run check:atlas`：结构、顺序、引用与媒体文件存在性。
+7. **同义词** `scripts/atlas/thesaurus.py`：解析 `同义词学习词典/同义词学习词典.mdx`（同样是 `Encrypted="2"` 的 MDict，按 `entry-content` 的 eid 去重），把 2,370 个同义词组的词头、词性、中英文组释义与组内词写入 `scripts/atlas/thesaurus.json`。`import_thesaurus.py` 按词性把组内词追加到 `syn`（只保留词库已有词头、去重、不设上限；组的中文释义与卡片义项匹配分须 ≥ 0.3，组按相关性排序），并重建 `data/`；`build_atlas.py` 编译时也调用同一套合并逻辑。
+8. **编译** `build_atlas.py`：清洗字段、排序、切块，生成 `public/atlas/` 与 `data/`。
+9. **同形异音** `apply_pron.py`：把 [`pron.json`](../scripts/atlas/pron.json) 里的 14 个双读音词写进词条（`pron` + `senses[].v`），并把 `uk`/`us` 收敛成第一读音。`build_atlas.py` 不认识 `pron`，重建后必须再跑一次；`npm run check:pron` 可以查有没有漏。
+10. **校验** `npm run check:atlas`：结构、顺序、引用与媒体文件存在性。
 
 ```bash
 export SUB2_BASE_URL=... SUB2_API_KEY=... ELEVENLABS_API_KEY=...
