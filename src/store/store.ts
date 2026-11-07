@@ -1,23 +1,38 @@
 import { useSyncExternalStore } from "react";
 import type { Accent } from "../atlas/types";
 import { asAmbienceId, type AmbienceChoice } from "../lib/ambience";
+import { normalizeSeed } from "../lib/m3";
+import {
+  FALLBACK_SEED,
+  fromLegacyTheme,
+  legacyTheme,
+  PALETTES,
+  VARIANTS,
+  VARIANT_LABEL,
+  type M3Variant,
+  type NightSkin,
+  type ThemeFamily,
+  type ThemeMode,
+} from "../lib/theme-model";
 import type { CardState, Grade } from "./srs";
 import { webProgress, webSettings } from "./web-backup";
 
 export type QuizKind = "meaning" | "picture" | "listen" | "spell";
 
-/** Light, dark, or one of the two night skies that repaint the whole palette. */
-export type Theme = "system" | "light" | "dark" | "aurora" | "starlight";
 /** Typeface for English words and example sentences. */
 export type WordFont = "serif" | "sans" | "classic";
 
-export const THEMES: Theme[] = ["system", "light", "dark", "aurora", "starlight"];
 export const WORD_FONTS: WordFont[] = ["serif", "sans", "classic"];
-/** The two themes that are dark at heart but repaint every pigment. */
-export const SKINS: Theme[] = ["aurora", "starlight"];
-export const isSkin = (t: Theme): t is "aurora" | "starlight" => SKINS.includes(t);
+/** The three looks the picker offers, coarsest first. */
+export const FAMILIES: ThemeFamily[] = ["ink", "night", "m3e"];
+export const MODES: ThemeMode[] = ["system", "light", "dark"];
+export const NIGHT_SKINS: NightSkin[] = ["aurora", "starlight"];
+export { FALLBACK_SEED, PALETTES, VARIANTS, VARIANT_LABEL };
+export type { M3Variant, NightSkin, ThemeFamily, ThemeMode };
 
-export type Step = { id: string; kind: "intro" } | { id: string; kind: QuizKind; retry?: boolean; options?: string[] };
+export type Step =
+  | { id: string; kind: "intro" }
+  | { id: string; kind: QuizKind; retry?: boolean; options?: string[] };
 
 export interface ActiveSession {
   id: string;
@@ -71,7 +86,16 @@ export interface Settings {
   blurZh: boolean;
   dailyNew: number;
   retention: number;
-  theme: Theme;
+  /** Which look: the paper app, the night skies, or Material Expressive. */
+  themeFamily: ThemeFamily;
+  /** Follow the phone, or pin light / dark. */
+  themeMode: ThemeMode;
+  /** Which night sky the night family paints with. */
+  nightSkin: NightSkin;
+  /** Palette style for the expressive family. */
+  m3Variant: M3Variant;
+  /** "#RRGGBB", or "wallpaper" to follow the phone's wallpaper. */
+  m3Accent: string;
   wordFont: WordFont;
   sfx: boolean;
   /** Short vibration on presses, flips and verdicts (Android: no permission needed). */
@@ -95,7 +119,11 @@ export const defaultSettings: Settings = {
   blurZh: false,
   dailyNew: 10,
   retention: 0.9,
-  theme: "dark",
+  themeFamily: "ink",
+  themeMode: "dark",
+  nightSkin: "aurora",
+  m3Variant: "tonalSpot",
+  m3Accent: "wallpaper",
   wordFont: "serif",
   sfx: true,
   haptic: true,
@@ -145,16 +173,22 @@ function write(key: string, value: unknown) {
 
 /* ---------- validation (backups and stored data are untrusted) ---------- */
 
-const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
-const num = (v: unknown, lo = -Infinity, hi = Infinity) => typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi;
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === "object" && !Array.isArray(v);
+const num = (v: unknown, lo = -Infinity, hi = Infinity) =>
+  typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi;
 
 const QUIZ_KINDS = new Set<QuizKind>(["meaning", "picture", "listen", "spell"]);
 
 function validStep(v: unknown): v is Step {
-  if (!isObj(v) || typeof v.id !== "string" || typeof v.kind !== "string") return false;
+  if (!isObj(v) || typeof v.id !== "string" || typeof v.kind !== "string")
+    return false;
   if (v.kind === "intro") return true;
   if (!QUIZ_KINDS.has(v.kind as QuizKind)) return false;
-  return v.options === undefined || (Array.isArray(v.options) && v.options.every((x) => typeof x === "string"));
+  return (
+    v.options === undefined ||
+    (Array.isArray(v.options) && v.options.every((x) => typeof x === "string"))
+  );
 }
 
 function validCard(v: unknown): v is CardState {
@@ -177,29 +211,66 @@ function validCard(v: unknown): v is CardState {
 export function sanitizeProgress(v: unknown, datasetId: string): Progress {
   const out = emptyProgress(datasetId);
   if (!isObj(v) || v.version !== 2) return out;
-  if (isObj(v.cards)) for (const [k, c] of Object.entries(v.cards)) if (validCard(c)) out.cards[k] = c;
-  if (Array.isArray(v.bookmarks)) out.bookmarks = v.bookmarks.filter((x): x is string => typeof x === "string").slice(0, 20000);
-  if (Array.isArray(v.mistakes)) out.mistakes = v.mistakes.filter((x): x is string => typeof x === "string").slice(0, 300);
+  if (isObj(v.cards))
+    for (const [k, c] of Object.entries(v.cards))
+      if (validCard(c)) out.cards[k] = c;
+  if (Array.isArray(v.bookmarks))
+    out.bookmarks = v.bookmarks
+      .filter((x): x is string => typeof x === "string")
+      .slice(0, 20000);
+  if (Array.isArray(v.mistakes))
+    out.mistakes = v.mistakes
+      .filter((x): x is string => typeof x === "string")
+      .slice(0, 300);
   if (isObj(v.days))
     for (const [k, d] of Object.entries(v.days))
-      if (/^\d{4}-\d{2}-\d{2}$/.test(k) && isObj(d) && num(d.n, 0) && num(d.r, 0) && num(d.c, 0) && num(d.t, 0))
-        out.days[k] = { n: d.n as number, r: d.r as number, c: d.c as number, t: d.t as number };
+      if (
+        /^\d{4}-\d{2}-\d{2}$/.test(k) &&
+        isObj(d) &&
+        num(d.n, 0) &&
+        num(d.r, 0) &&
+        num(d.c, 0) &&
+        num(d.t, 0)
+      )
+        out.days[k] = {
+          n: d.n as number,
+          r: d.r as number,
+          c: d.c as number,
+          t: d.t as number,
+        };
   if (Array.isArray(v.typing))
     out.typing = v.typing
       .filter(
         (t): t is TypingRound =>
-          isObj(t) && num(t.at, 0) && ["word", "sentence", "dictation"].includes(t.mode as string) && num(t.items, 0) && num(t.wpm, 0, 400) && num(t.accuracy, 0, 100),
+          isObj(t) &&
+          num(t.at, 0) &&
+          ["word", "sentence", "dictation"].includes(t.mode as string) &&
+          num(t.items, 0) &&
+          num(t.wpm, 0, 400) &&
+          num(t.accuracy, 0, 100),
       )
       .slice(-500);
   const s = v.session;
-  if (isObj(s) && typeof s.id === "string" && Array.isArray(s.steps) && num(s.index, 0) && isObj(s.graded)) {
+  if (
+    isObj(s) &&
+    typeof s.id === "string" &&
+    Array.isArray(s.steps) &&
+    num(s.index, 0) &&
+    isObj(s.graded)
+  ) {
     // A half-finished quiz is device state and can come from an older build or
     // a hand-edited file. Drop malformed steps instead of crashing on them.
     const steps = s.steps.filter(validStep);
     if (steps.length) {
-      const graded = Object.fromEntries(Object.entries(s.graded).filter(([, g]) => [0, 1, 2, 3].includes(g as number)));
+      const graded = Object.fromEntries(
+        Object.entries(s.graded).filter(([, g]) =>
+          [0, 1, 2, 3].includes(g as number),
+        ),
+      );
       const pending =
-        isObj(s.pending) && typeof s.pending.correct === "boolean" && typeof s.pending.value === "string"
+        isObj(s.pending) &&
+        typeof s.pending.correct === "boolean" &&
+        typeof s.pending.value === "string"
           ? { correct: s.pending.correct, value: s.pending.value }
           : undefined;
       out.session = {
@@ -208,8 +279,12 @@ export function sanitizeProgress(v: unknown, datasetId: string): Progress {
         steps,
         index: Math.min(Math.floor(s.index as number), steps.length),
         graded: graded as Record<string, Grade>,
-        newIds: Array.isArray(s.newIds) ? s.newIds.filter((x): x is string => typeof x === "string") : [],
-        reviewIds: Array.isArray(s.reviewIds) ? s.reviewIds.filter((x): x is string => typeof x === "string") : [],
+        newIds: Array.isArray(s.newIds)
+          ? s.newIds.filter((x): x is string => typeof x === "string")
+          : [],
+        reviewIds: Array.isArray(s.reviewIds)
+          ? s.reviewIds.filter((x): x is string => typeof x === "string")
+          : [],
         pending,
         finished: num(s.finished, 0) ? (s.finished as number) : undefined,
       };
@@ -219,8 +294,15 @@ export function sanitizeProgress(v: unknown, datasetId: string): Progress {
 }
 
 export function sanitizeSettings(v: unknown): Settings {
-  const s = { ...defaultSettings };
+  const s: Settings = { ...defaultSettings };
   if (!isObj(v)) return s;
+  // A file written before the family model carries one `theme`; map it in first.
+  const legacy = fromLegacyTheme((v as Record<string, unknown>).theme);
+  if (legacy) {
+    s.themeFamily = legacy.themeFamily;
+    s.themeMode = legacy.themeMode;
+    s.nightSkin = legacy.nightSkin;
+  }
   if (v.accent === "uk" || v.accent === "us") s.accent = v.accent;
   if (typeof v.autoplay === "boolean") s.autoplay = v.autoplay;
   if (typeof v.autoplayEx === "boolean") s.autoplayEx = v.autoplayEx;
@@ -228,17 +310,29 @@ export function sanitizeSettings(v: unknown): Settings {
   if (typeof v.blurZh === "boolean") s.blurZh = v.blurZh;
   if (num(v.dailyNew, 0, 100)) s.dailyNew = Math.round(v.dailyNew as number);
   if (num(v.retention, 0.7, 0.97)) s.retention = v.retention as number;
-  if (THEMES.includes(v.theme as Theme)) s.theme = v.theme as Theme;
-  if (WORD_FONTS.includes(v.wordFont as WordFont)) s.wordFont = v.wordFont as WordFont;
+  if (FAMILIES.includes(v.themeFamily as ThemeFamily))
+    s.themeFamily = v.themeFamily as ThemeFamily;
+  if (MODES.includes(v.themeMode as ThemeMode))
+    s.themeMode = v.themeMode as ThemeMode;
+  if (NIGHT_SKINS.includes(v.nightSkin as NightSkin))
+    s.nightSkin = v.nightSkin as NightSkin;
+  if (VARIANTS.includes(v.m3Variant as M3Variant))
+    s.m3Variant = v.m3Variant as M3Variant;
+  const seed = normalizeSeed(v.m3Accent);
+  if (v.m3Accent === "wallpaper" || seed) s.m3Accent = seed || "wallpaper";
+  if (WORD_FONTS.includes(v.wordFont as WordFont))
+    s.wordFont = v.wordFont as WordFont;
   if (typeof v.sfx === "boolean") s.sfx = v.sfx;
   if (typeof v.haptic === "boolean") s.haptic = v.haptic;
   if (typeof v.spell === "boolean") s.spell = v.spell;
-  if (num(v.startLevel, 0, 5)) s.startLevel = Math.round(v.startLevel as number);
+  if (num(v.startLevel, 0, 5))
+    s.startLevel = Math.round(v.startLevel as number);
   if (typeof v.onboarded === "boolean") s.onboarded = v.onboarded;
   if (v.dataset === "open" || v.dataset === "private") s.dataset = v.dataset;
   const ambience = asAmbienceId(v.ambience);
   if (v.ambience === "off" || ambience) s.ambience = ambience ?? "off";
-  if (num(v.ambienceVolume, 0, 1)) s.ambienceVolume = v.ambienceVolume as number;
+  if (num(v.ambienceVolume, 0, 1))
+    s.ambienceVolume = v.ambienceVolume as number;
   if (typeof v.splash === "boolean") s.splash = v.splash;
   if (typeof v.hidePractice === "boolean") s.hidePractice = v.hidePractice;
   return s;
@@ -283,7 +377,9 @@ export function flush() {
   window.clearTimeout(saveTimer);
   if (!dirty) return;
   dirty = false;
-  const progressOk = loadedId !== state.progress.datasetId || write(progressKey(state.progress.datasetId), state.progress);
+  const progressOk =
+    loadedId !== state.progress.datasetId ||
+    write(progressKey(state.progress.datasetId), state.progress);
   const ok = progressOk && write(SETTINGS_KEY, state.settings);
   if (ok === state.saveError) {
     state = { ...state, saveError: !ok };
@@ -293,14 +389,27 @@ export function flush() {
 
 if (typeof window !== "undefined") {
   window.addEventListener("pagehide", flush);
-  document.addEventListener("visibilitychange", () => document.visibilityState === "hidden" && flush());
+  document.addEventListener(
+    "visibilitychange",
+    () => document.visibilityState === "hidden" && flush(),
+  );
   // Another tab saved: adopt its data instead of keeping a stale copy.
   window.addEventListener("storage", (e) => {
     if (!e.newValue) return;
     try {
-      if (e.key === SETTINGS_KEY) state = { ...state, settings: sanitizeSettings(JSON.parse(e.newValue)) };
+      if (e.key === SETTINGS_KEY)
+        state = {
+          ...state,
+          settings: sanitizeSettings(JSON.parse(e.newValue)),
+        };
       else if (e.key === progressKey(state.progress.datasetId))
-        state = { ...state, progress: sanitizeProgress(JSON.parse(e.newValue), state.progress.datasetId) };
+        state = {
+          ...state,
+          progress: sanitizeProgress(
+            JSON.parse(e.newValue),
+            state.progress.datasetId,
+          ),
+        };
       else return;
       emit();
     } catch {
@@ -317,7 +426,10 @@ export const store = {
   },
   useDataset(datasetId: string) {
     flush();
-    state = { ...state, progress: sanitizeProgress(read(progressKey(datasetId)), datasetId) };
+    state = {
+      ...state,
+      progress: sanitizeProgress(read(progressKey(datasetId)), datasetId),
+    };
     loadedId = datasetId;
     emit();
   },
@@ -334,7 +446,11 @@ export const store = {
 };
 
 export function useStore<T>(select: (s: State) => T): T {
-  return useSyncExternalStore(store.subscribe, () => select(state), () => select(state));
+  return useSyncExternalStore(
+    store.subscribe,
+    () => select(state),
+    () => select(state),
+  );
 }
 
 export function bumpDay(p: Progress, patch: Partial<DayStat>): Progress {
@@ -344,7 +460,12 @@ export function bumpDay(p: Progress, patch: Partial<DayStat>): Progress {
     ...p,
     days: {
       ...p.days,
-      [k]: { n: d.n + (patch.n ?? 0), r: d.r + (patch.r ?? 0), c: d.c + (patch.c ?? 0), t: d.t + (patch.t ?? 0) },
+      [k]: {
+        n: d.n + (patch.n ?? 0),
+        r: d.r + (patch.r ?? 0),
+        c: d.c + (patch.c ?? 0),
+        t: d.t + (patch.t ?? 0),
+      },
     },
   };
 }
@@ -352,17 +473,44 @@ export function bumpDay(p: Progress, patch: Partial<DayStat>): Progress {
 export function toggleBookmark(id: string) {
   store.progress((p) => ({
     ...p,
-    bookmarks: p.bookmarks.includes(id) ? p.bookmarks.filter((x) => x !== id) : [id, ...p.bookmarks],
+    bookmarks: p.bookmarks.includes(id)
+      ? p.bookmarks.filter((x) => x !== id)
+      : [id, ...p.bookmarks],
   }));
 }
 
 /* ---------- backup ---------- */
 
+/**
+ * Settings as an older build expects them: one `theme`, none of the family
+ * fields. The theme itself does not travel — it is bound to the device — but a
+ * backup restored by this same app must still find the old key.
+ */
+function backupSettings(s: Settings) {
+  const { themeFamily, themeMode, nightSkin, m3Variant, m3Accent, ...rest } = s;
+  void themeFamily;
+  void themeMode;
+  void nightSkin;
+  void m3Variant;
+  void m3Accent;
+  return { ...rest, theme: legacyTheme(s) };
+}
+
 /** This app's own file: everything it knows, for another install of this app. */
 export function exportBackup() {
   flush();
   const { progress, settings } = state;
-  return JSON.stringify({ app: "word-atlas", version: 2, exported: new Date().toISOString(), progress: { ...progress, session: null }, settings }, null, 1);
+  return JSON.stringify(
+    {
+      app: "word-atlas",
+      version: 2,
+      exported: new Date().toISOString(),
+      progress: { ...progress, session: null },
+      settings: backupSettings(settings),
+    },
+    null,
+    1,
+  );
 }
 
 /**
@@ -373,19 +521,33 @@ export function exportBackup() {
 export function exportWebBackup() {
   flush();
   const { progress, settings } = state;
-  return JSON.stringify({ app: "word-atlas", version: 2, exported: new Date().toISOString(), progress: webProgress(progress), settings: webSettings(settings) }, null, 1);
+  return JSON.stringify(
+    {
+      app: "word-atlas",
+      version: 2,
+      exported: new Date().toISOString(),
+      progress: webProgress(progress),
+      settings: webSettings(settings),
+    },
+    null,
+    1,
+  );
 }
 
 function markDirty() {
   dirty = true;
 }
 
-export type ImportReport = { ok: true; cards: number; days: number; web: boolean } | { ok: false; error: string };
+export type ImportReport =
+  | { ok: true; cards: number; days: number; web: boolean }
+  | { ok: false; error: string };
 
 /** A file from the site is the one carrying `drills`, or the reader's book state. */
 function looksWeb(data: Record<string, unknown>) {
   const p = data.progress;
-  return isObj(p) && (isObj(p.drills) || "books" in data || "booksReader" in data);
+  return (
+    isObj(p) && (isObj(p.drills) || "books" in data || "booksReader" in data)
+  );
 }
 
 /**
@@ -400,10 +562,16 @@ export function importAnyBackup(text: string): ImportReport {
   } catch {
     return { ok: false, error: "文件不是有效的 JSON。" };
   }
-  if (!isObj(data) || data.app !== "word-atlas" || data.version !== 2 || !isObj(data.progress))
+  if (
+    !isObj(data) ||
+    data.app !== "word-atlas" ||
+    data.version !== 2 ||
+    !isObj(data.progress)
+  )
     return { ok: false, error: "这不是词光的学习备份。" };
   const id = state.progress.datasetId;
-  if (data.progress.datasetId !== id) return { ok: false, error: "备份来自另一个词库，请先切换到对应词库。" };
+  if (data.progress.datasetId !== id)
+    return { ok: false, error: "备份来自另一个词库，请先切换到对应词库。" };
   const web = looksWeb(data);
   const progress = sanitizeProgress({ ...data.progress, session: null }, id);
   const settings = sanitizeSettings(data.settings);
@@ -412,18 +580,33 @@ export function importAnyBackup(text: string): ImportReport {
     progress,
     settings: {
       ...settings,
-      ...(web ? { autoplayEx: state.settings.autoplayEx, autoplayEx2: state.settings.autoplayEx2, blurZh: state.settings.blurZh, haptic: state.settings.haptic, hidePractice: state.settings.hidePractice } : {}),
+      ...(web
+        ? {
+            autoplayEx: state.settings.autoplayEx,
+            autoplayEx2: state.settings.autoplayEx2,
+            blurZh: state.settings.blurZh,
+            haptic: state.settings.haptic,
+            hidePractice: state.settings.hidePractice,
+          }
+        : {}),
       onboarded: true,
     },
   };
   emit();
   markDirty();
   flush();
-  return { ok: true, cards: Object.keys(progress.cards).length, days: Object.keys(progress.days).length, web };
+  return {
+    ok: true,
+    cards: Object.keys(progress.cards).length,
+    days: Object.keys(progress.days).length,
+    web,
+  };
 }
 
 /** The plain 导入备份 button: one summary line, whichever dialect the file is in. */
-export function importBackup(text: string): { ok: true; cards: number } | { ok: false; error: string } {
+export function importBackup(
+  text: string,
+): { ok: true; cards: number } | { ok: false; error: string } {
   const r = importAnyBackup(text);
   return r.ok ? { ok: true, cards: r.cards } : r;
 }

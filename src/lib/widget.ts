@@ -8,6 +8,7 @@
 import type { Atlas } from "../atlas/types";
 import { embedded } from "../atlas/embedded";
 import { getSystemDark, shell } from "./native";
+import { legacyTheme } from "./theme-model";
 import { go } from "./router";
 import { dayKey, store } from "../store/store";
 import { buildSession } from "../store/session";
@@ -26,7 +27,9 @@ function syllableDots(): Record<string, string> {
   if (dotsCache) return dotsCache;
   try {
     const raw = embedded()?.syllables;
-    dotsCache = raw ? (JSON.parse(raw) as { dots?: Record<string, string> }).dots ?? {} : {};
+    dotsCache = raw
+      ? ((JSON.parse(raw) as { dots?: Record<string, string> }).dots ?? {})
+      : {};
   } catch {
     dotsCache = {};
   }
@@ -58,7 +61,9 @@ function resolveTheme(theme: string): "dark" | "light" {
  */
 export function installWidgetLaunch(atlas: Atlas) {
   const run = () => {
-    const params = new URLSearchParams((location.hash || "").split("?")[1] || "");
+    const params = new URLSearchParams(
+      (location.hash || "").split("?")[1] || "",
+    );
     if (params.get("waStart") !== "1") return;
     const { progress, settings } = store.get();
     const s = progress.session;
@@ -78,7 +83,8 @@ export function installWidgetLaunch(atlas: Atlas) {
     // The hash already names the page — the router has applied it (or is about
     // to) — so only the one-shot flag is dropped here. Navigating again would
     // start a second view transition for a route that is already current.
-    if (location.hash.startsWith("#/learn")) history.replaceState(null, "", "#/learn");
+    if (location.hash.startsWith("#/learn"))
+      history.replaceState(null, "", "#/learn");
     else go({ page: "learn" }, null, true);
   };
   run();
@@ -119,7 +125,7 @@ export function installWidgetPublisher(atlas: Atlas): () => void {
         settings,
         sentence: sentenceCache?.value ?? null,
         date,
-        theme: resolveTheme(settings.theme),
+        theme: resolveTheme(legacyTheme(settings)),
         dots: syllableDots(),
       });
       shell?.publishWidgetSnapshot?.(JSON.stringify(snapshot));

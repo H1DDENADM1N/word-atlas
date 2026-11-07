@@ -26,7 +26,9 @@ const progress = (): Progress => ({
     "2026-10-31": { n: 2, r: 3, c: 3, t: 210 },
     "2026-11-01": { n: 1, r: 2, c: 1, t: 90 },
   },
-  typing: [{ at: 1_759_000_000_000, mode: "word", items: 12, wpm: 44, accuracy: 97 }],
+  typing: [
+    { at: 1_759_000_000_000, mode: "word", items: 12, wpm: 44, accuracy: 97 },
+  ],
   mistakes: ["star-2"],
 });
 
@@ -45,35 +47,62 @@ test("the web export passes the site's import gate", () => {
 
 test("the plain export is what the site rejects, and why", () => {
   // This is the file the app shipped before: same data, none of the site's keys.
-  const file = envelope({ ...progress(), session: null } as unknown as Progress, defaultSettings);
+  const file = envelope(
+    { ...progress(), session: null } as unknown as Progress,
+    defaultSettings,
+  );
   const problems = webBackupProblems(file, "word-atlas-open");
-  assert.ok(problems.includes("缺少 drills（网页版 1.0 之后才有）"), problems.join("；"));
+  assert.ok(
+    problems.includes("缺少 drills（网页版 1.0 之后才有）"),
+    problems.join("；"),
+  );
   assert.ok(problems.includes("设置项 examDate 缺失"), problems.join("；"));
 });
 
+const cases: Partial<Settings>[] = [
+  { themeFamily: "ink", themeMode: "system" },
+  { themeFamily: "ink", themeMode: "light" },
+  { themeFamily: "ink", themeMode: "dark" },
+  { themeFamily: "night", nightSkin: "aurora" },
+  { themeFamily: "night", nightSkin: "starlight" },
+  {
+    themeFamily: "m3e",
+    themeMode: "dark",
+    m3Variant: "expressive",
+    m3Accent: "#5F88A8",
+  },
+  { themeFamily: "m3e", themeMode: "system", m3Variant: "fruitSalad" },
+  { wordFont: "serif" },
+  { wordFont: "sans" },
+  { wordFont: "classic" },
+  { dailyNew: 5 },
+  { dailyNew: 30 },
+  { retention: 0.85 },
+  { retention: 0.95 },
+  { startLevel: 5 },
+  { accent: "us" },
+  { ambience: "cafe" },
+  { ambience: "off" },
+];
+
 test("every theme, face and pace survives the round trip to the site", () => {
-  const cases: Partial<Settings>[] = [
-    { theme: "system" },
-    { theme: "light" },
-    { theme: "dark" },
-    { theme: "aurora" },
-    { theme: "starlight" },
-    { wordFont: "serif" },
-    { wordFont: "sans" },
-    { wordFont: "classic" },
-    { dailyNew: 5 },
-    { dailyNew: 30 },
-    { retention: 0.85 },
-    { retention: 0.95 },
-    { startLevel: 5 },
-    { accent: "us" },
-    { ambience: "cafe" },
-    { ambience: "off" },
-  ];
   for (const patch of cases) {
     const s = { ...defaultSettings, ...patch };
-    const problems = webBackupProblems(envelope(webProgress(progress()), webSettings(s)), "word-atlas-open");
+    const problems = webBackupProblems(
+      envelope(webProgress(progress()), webSettings(s)),
+      "word-atlas-open",
+    );
     assert.deepEqual(problems, [], JSON.stringify(patch));
+  }
+});
+
+test("the folded theme always stays inside the site's five values", () => {
+  const ok = ["system", "light", "dark", "aurora", "starlight"];
+  for (const patch of [{}, ...cases]) {
+    assert.ok(
+      ok.includes(webSettings({ ...defaultSettings, ...patch }).theme),
+      JSON.stringify(patch),
+    );
   }
 });
 
@@ -82,7 +111,10 @@ test("a track the site has never heard of travels as the default bed", () => {
   // sanitiser fall back to "stars" — and the mismatch then fails the whole file.
   const s = webSettings({ ...defaultSettings, ambience: "rain-window" });
   assert.equal(s.ambience, "stars");
-  assert.equal(webSettings({ ...defaultSettings, ambience: "forest" }).ambience, "forest");
+  assert.equal(
+    webSettings({ ...defaultSettings, ambience: "forest" }).ambience,
+    "forest",
+  );
 });
 
 test("days never leave with more correct answers than reviews", () => {
@@ -93,7 +125,13 @@ test("days never leave with more correct answers than reviews", () => {
   };
   const out = webProgress(p).days["2026-10-31"];
   assert.equal(out.c, 1);
-  assert.deepEqual(webBackupProblems(envelope(webProgress(p), webSettings(defaultSettings)), "word-atlas-open"), []);
+  assert.deepEqual(
+    webBackupProblems(
+      envelope(webProgress(p), webSettings(defaultSettings)),
+      "word-atlas-open",
+    ),
+    [],
+  );
 });
 
 test("a web backup lands in this app, minus what it cannot hold", () => {
@@ -108,7 +146,7 @@ test("a web backup lands in this app, minus what it cannot hold", () => {
       session: null,
     },
     settings: {
-      ...webSettings({ ...defaultSettings, theme: "light" }),
+      ...webSettings({ ...defaultSettings, themeMode: "light" }),
       examDate: "2027-03-06",
       targetBand: 7,
     },
@@ -122,13 +160,27 @@ test("a web backup lands in this app, minus what it cannot hold", () => {
 });
 
 test("a native backup still restores through the same door", () => {
-  const r = importAnyBackup(JSON.stringify(envelope({ ...progress(), session: null } as unknown as Progress, defaultSettings)));
+  const r = importAnyBackup(
+    JSON.stringify(
+      envelope(
+        { ...progress(), session: null } as unknown as Progress,
+        defaultSettings,
+      ),
+    ),
+  );
   assert.ok(r.ok, r.ok ? "" : r.error);
   assert.equal(r.web, false);
   assert.equal(r.cards, 1);
 });
 
 test("a backup from another atlas is refused before anything changes", () => {
-  const r = importAnyBackup(JSON.stringify(envelope({ ...webProgress(progress()), datasetId: "word-atlas-private" }, webSettings(defaultSettings))));
+  const r = importAnyBackup(
+    JSON.stringify(
+      envelope(
+        { ...webProgress(progress()), datasetId: "word-atlas-private" },
+        webSettings(defaultSettings),
+      ),
+    ),
+  );
   assert.equal(r.ok, false);
 });
