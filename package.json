@@ -18,7 +18,8 @@
     "render:cards": "node scripts/render-cards.mjs",
     "pack:public": "python3 scripts/package_public.py --out ../开源发布/word-atlas",
     "format": "prettier --write src vite.config.ts scripts/*.mjs package.json tsconfig.json",
-    "check:shape": "node scripts/check-shape-tokens.mjs"
+    "check:shape": "node scripts/check-shape-tokens.mjs",
+    "gen:motion": "node scripts/gen-motion.mjs"
   },
   "dependencies": {
     "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
