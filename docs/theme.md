@@ -42,7 +42,7 @@
 
 中文另有一档与主题平级的选择：`cjkFont: "system" | "wenkai"`，默认 `system`。它与配色无关，任何家族下都能用。
 
-- **实现方式是字体栈位置，不是换字体族。** `:root[data-cjk="wenkai"]` 只重写 `--sans` 与 `--serif`，把 `"LXGW WenKai Screen"` 插在拉丁字体之后、所有系统中文族（`PingFang SC`、`Noto Sans SC`、`Songti SC`…）之前。`-apple-system` / `Segoe UI` / `Roboto` 先接走英文与数字，中文没有字形可用才落到文楷，所以英文单词与数字的字形完全不变。
+- **实现方式是字体栈位置，不是换字体族。** `:root` 里有一个 `--cjk-serif` 令牌（`"Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif`），`--serif`、`--word-face`、顶栏字标 `.logo-text b` 与开屏字标都由它拼出；`:root[data-cjk="wenkai"]` 只重写 `--cjk-serif` 与 `--sans`，把 `"LXGW WenKai Screen"` 插在拉丁字体之后、所有系统中文族之前。**新加需要画中文的栈时，把系统中文族写成 `var(--cjk-serif)`，不要另抄一份**——早先顶栏字标与开屏字标各抄了一份宋体栈，切到文楷后它们仍停在系统字体上。`-apple-system` / `Segoe UI` / `Roboto` 先接走英文与数字，中文没有字形可用才落到文楷，所以英文单词与数字的字形完全不变。
 - **字体资源**来自 `lxgw-wenkai-screen-webfont` 的 GB 简体子集（`lxgwwenkaigbscreen.css`），97 个 `unicode-range` 分片、约 4.3 MB，随包内置；屏幕只请求实际画到的分片。GB 子集之外的生僻字会自然退回系统中文，这是有意的降级。
 - **不随备份迁移**：`backupSettings()` 把 `cjkFont` 与五个主题字段一起剥掉，`webSettings()` 不写，导入端缺省回 `system`。理由与主题相同——它描述的是这台设备的阅读口味。
 

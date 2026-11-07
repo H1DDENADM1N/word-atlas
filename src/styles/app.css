@@ -30,11 +30,14 @@
   --shadow-sm: 0 1px 2px rgba(30, 38, 64, 0.06), 0 2px 6px -2px rgba(30, 38, 64, 0.06);
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 1px 2px rgba(30, 38, 64, 0.05), 0 18px 40px -24px rgba(30, 38, 64, 0.28);
   --shadow-lg: 0 30px 80px -30px rgba(20, 26, 46, 0.45), 0 8px 24px -12px rgba(20, 26, 46, 0.2);
-  --serif: "Fraunces Variable", "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
+  /* Every stack that can draw Chinese ends with this, so one rule swaps the
+     CJK face for all of them — see [data-cjk] below. */
+  --cjk-serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif;
+  --serif: "Fraunces Variable", var(--cjk-serif);
   --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Segoe UI", "Microsoft YaHei", "Noto Sans SC", Roboto, sans-serif;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   /* English words and example sentences: 衬线 / 无衬线 / 复古, see [data-font]. */
-  --word-face: "Source Serif 4 Variable", "Songti SC", "STSong", Georgia, serif;
+  --word-face: "Source Serif 4 Variable", var(--cjk-serif);
   --word-opsz: 20;
   --word-opsz-lg: 48;
   /* Corner scale, one step per visual weight. The Material Expressive family
@@ -146,12 +149,13 @@
 
 /* Chinese typeface. The bundled face is slotted in after the Latin families
    and before every system CJK family, so Latin letters and digits keep the
-   face the stacks already chose while Chinese falls through to WenKai. */
+   face the stacks already chose while Chinese falls through to WenKai. The
+   serif stack is shared by --serif and --word-face, so swapping it here also
+   reaches the logo and the splash wordmark. */
 :root[data-cjk="wenkai"] {
+  --cjk-serif: "LXGW WenKai Screen", "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "LXGW WenKai Screen", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-  --serif: "Fraunces Variable", "LXGW WenKai Screen", "Songti SC", "STSong", "Noto Serif SC", Georgia,
-    serif;
 }
 
 /* ---------- base ---------- */
@@ -571,6 +575,10 @@ code {
   flex-wrap: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
+  /* The row is a grid item: without min-width 0 its automatic minimum is the
+     full run of chips, which used to widen the page instead of scrolling. */
+  min-width: 0;
+  max-width: calc(100% + 2 * var(--gutter));
   margin: 0 calc(-1 * var(--gutter));
   padding: 2px var(--gutter);
   mask-image: linear-gradient(90deg, transparent, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent);
@@ -696,6 +704,9 @@ code {
 }
 .page {
   width: 100%;
+  /* Full-bleed chip rows bleed by one gutter on each side; the clip keeps that
+     bleed from widening the document on screens narrower than the row. */
+  overflow-x: clip;
   max-width: 1200px;
   margin: 0 auto;
   padding: 28px var(--gutter) 64px;
@@ -732,6 +743,12 @@ code {
 .topbar-logo {
   margin-right: 8px;
   border-radius: var(--shape-md);
+  /* The header is the one row that must never be wider than the screen: the
+     wordmark gives width back first, and `overflow: hidden` keeps its
+     min-content contribution small enough for a 320 px phone. */
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
 }
 .logo {
   display: inline-flex;
@@ -747,9 +764,14 @@ code {
   display: flex;
   align-items: baseline;
   gap: 8px;
+  /* A narrow screen has to be able to take width away from the wordmark:
+     without this the nowrap children pin the header's min-content width and
+     the whole page, tab bar included, ends up wider than the viewport. */
+  min-width: 0;
+  overflow: hidden;
 }
 .logo-text b {
-  font: 700 21px/1 "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif;
+  font: 700 21px/1 var(--cjk-serif);
   letter-spacing: 0.06em;
   white-space: nowrap;
   flex: none;
@@ -2658,6 +2680,12 @@ code {
   align-items: end;
   margin-bottom: 22px;
 }
+/* A search field is an intrinsic-width element: without this the grid column
+   takes the input's own width, and a wider CJK face pushes the whole page
+   past the screen edge. */
+.atlas-head > * {
+  min-width: 0;
+}
 .atlas-head .eyebrow {
   margin-bottom: 12px;
 }
@@ -2666,6 +2694,8 @@ code {
   align-items: center;
   gap: 10px;
   height: 52px;
+  max-width: 100%;
+  min-width: 0;
   padding: 0 8px 0 18px;
   background: var(--card);
   border: 1px solid var(--line-strong);
@@ -2680,6 +2710,7 @@ code {
 }
 .search input {
   flex: 1;
+  width: 100%;
   border: 0;
   outline: 0;
   background: none;
@@ -4917,7 +4948,7 @@ a:hover .mark-needle,
   pointer-events: none;
 }
 .splash-tag {
-  font: 600 clamp(20px, 3vw, 30px) / 1.2 "Songti SC", "STSong", "Noto Serif SC", serif;
+  font: 600 clamp(20px, 3vw, 30px) / 1.2 var(--cjk-serif);
   letter-spacing: 0.32em;
   padding-left: 0.32em;
   opacity: 0;
@@ -5018,7 +5049,7 @@ a:hover .mark-needle,
   place-content: center;
   justify-items: center;
   gap: 8px;
-  font: 700 72px "Songti SC", serif;
+  font: 700 72px var(--cjk-serif);
   transition: opacity 0.4s;
 }
 .splash-static small {
