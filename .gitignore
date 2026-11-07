@@ -56,3 +56,7 @@ android/vendor/
 # Python bytecode from local checks
 __pycache__/
 *.pyc
+
+# Local build scratch and superpowers ledger
+.tmp-build/
+.superpowers/
