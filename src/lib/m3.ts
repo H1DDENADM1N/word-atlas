@@ -42,7 +42,7 @@ export const M3_VARS = [
 ] as const;
 
 export type M3Var = (typeof M3_VARS)[number];
-export type Palette = Record<M3Var, string>;
+export type M3Palette = Record<M3Var, string>;
 
 const SCHEMES: Record<
   M3Variant,
@@ -91,49 +91,49 @@ export function buildPalette(
   seed: string,
   isDark: boolean,
   variant: M3Variant,
-): Palette {
+): M3Palette {
   const clean = normalizeSeed(seed) || FALLBACK_SEED;
   const source = Hct.fromInt(parseInt(clean.slice(1), 16) | 0xff000000);
-  const Scheme = SCHEMES[variant] ?? (SchemeTonalSpot as never);
+  const Scheme = SCHEMES[variant];
   const scheme = new (
     Scheme as new (h: Hct, d: boolean, c: number, s: "2025") => DynamicScheme
   )(source, isDark, 0, "2025");
 
-  const c = (role: { getArgb(s: DynamicScheme): number }) =>
+  const argb = (role: { getArgb(s: DynamicScheme): number }) =>
     role.getArgb(scheme);
-  const primary = c(MaterialDynamicColors.primary);
-  const tertiary = c(MaterialDynamicColors.tertiary);
-  const outlineVariant = c(MaterialDynamicColors.outlineVariant);
+  const primary = argb(MaterialDynamicColors.primary);
+  const tertiary = argb(MaterialDynamicColors.tertiary);
+  const outlineVariant = argb(MaterialDynamicColors.outlineVariant);
 
   // --sky keeps the old "cool counterweight" job: a muted tone 150° from the accent.
   const skyTone = Hct.from(wrapHue(source.hue - 150), 20, isDark ? 72 : 55);
 
   return {
-    "--paper": hexOf(c(MaterialDynamicColors.surface)),
-    "--paper-2": hexOf(c(MaterialDynamicColors.surfaceContainerLow)),
-    "--paper-3": hexOf(c(MaterialDynamicColors.surfaceContainer)),
+    "--paper": hexOf(argb(MaterialDynamicColors.surface)),
+    "--paper-2": hexOf(argb(MaterialDynamicColors.surfaceContainerLow)),
+    "--paper-3": hexOf(argb(MaterialDynamicColors.surfaceContainer)),
     "--card": hexOf(
-      c(
+      argb(
         isDark
           ? MaterialDynamicColors.surfaceContainerLow
           : MaterialDynamicColors.surfaceContainerLowest,
       ),
     ),
-    "--card-2": hexOf(c(MaterialDynamicColors.surfaceContainer)),
-    "--ink": hexOf(c(MaterialDynamicColors.onSurface)),
-    "--ink-2": hexOf(c(MaterialDynamicColors.onSurfaceVariant)),
-    "--ink-3": hexOf(c(MaterialDynamicColors.outline)),
+    "--card-2": hexOf(argb(MaterialDynamicColors.surfaceContainer)),
+    "--ink": hexOf(argb(MaterialDynamicColors.onSurface)),
+    "--ink-2": hexOf(argb(MaterialDynamicColors.onSurfaceVariant)),
+    "--ink-3": hexOf(argb(MaterialDynamicColors.outline)),
     "--ink-4": hexOf(outlineVariant),
     "--line": rgba(outlineVariant, 0.6),
     "--line-strong": rgba(outlineVariant, 0.9),
     "--terra": hexOf(primary),
-    "--terra-ink": hexOf(c(MaterialDynamicColors.onPrimaryContainer)),
-    "--terra-soft": hexOf(c(MaterialDynamicColors.primaryContainer)),
+    "--terra-ink": hexOf(argb(MaterialDynamicColors.onPrimaryContainer)),
+    "--terra-soft": hexOf(argb(MaterialDynamicColors.primaryContainer)),
     "--ochre": hexOf(tertiary),
-    "--ochre-soft": hexOf(c(MaterialDynamicColors.tertiaryContainer)),
-    "--sage": hexOf(c(MaterialDynamicColors.secondary)),
-    "--sage-ink": hexOf(c(MaterialDynamicColors.onSecondaryContainer)),
-    "--sage-soft": hexOf(c(MaterialDynamicColors.secondaryContainer)),
+    "--ochre-soft": hexOf(argb(MaterialDynamicColors.tertiaryContainer)),
+    "--sage": hexOf(argb(MaterialDynamicColors.secondary)),
+    "--sage-ink": hexOf(argb(MaterialDynamicColors.onSecondaryContainer)),
+    "--sage-soft": hexOf(argb(MaterialDynamicColors.secondaryContainer)),
     "--sky": hexOf(skyTone.toInt()),
     "--glow": rgba(primary, isDark ? 0.14 : 0.26),
     "--mark": rgba(tertiary, isDark ? 0.28 : 0.32),

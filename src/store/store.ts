@@ -3,9 +3,12 @@ import type { Accent } from "../atlas/types";
 import { asAmbienceId, type AmbienceChoice } from "../lib/ambience";
 import { normalizeSeed } from "../lib/m3";
 import {
+  FAMILY_LABEL,
   FALLBACK_SEED,
   fromLegacyTheme,
   legacyTheme,
+  MODE_LABEL,
+  NIGHT_LABEL,
   PALETTES,
   VARIANTS,
   VARIANT_LABEL,
@@ -27,7 +30,7 @@ export const WORD_FONTS: WordFont[] = ["serif", "sans", "classic"];
 export const FAMILIES: ThemeFamily[] = ["ink", "night", "m3e"];
 export const MODES: ThemeMode[] = ["system", "light", "dark"];
 export const NIGHT_SKINS: NightSkin[] = ["aurora", "starlight"];
-export { FALLBACK_SEED, PALETTES, VARIANTS, VARIANT_LABEL };
+export { FAMILY_LABEL, FALLBACK_SEED, MODE_LABEL, NIGHT_LABEL, PALETTES, VARIANTS, VARIANT_LABEL };
 export type { M3Variant, NightSkin, ThemeFamily, ThemeMode };
 
 export type Step =
@@ -487,12 +490,11 @@ export function toggleBookmark(id: string) {
  * backup restored by this same app must still find the old key.
  */
 function backupSettings(s: Settings) {
+  // Drop the five family fields by destructuring them out, then add the one
+  // word an older build (and the website) knows. `void` marks the drop as
+  // deliberate for the compiler's unused-locals check.
   const { themeFamily, themeMode, nightSkin, m3Variant, m3Accent, ...rest } = s;
-  void themeFamily;
-  void themeMode;
-  void nightSkin;
-  void m3Variant;
-  void m3Accent;
+  void [themeFamily, themeMode, nightSkin, m3Variant, m3Accent];
   return { ...rest, theme: legacyTheme(s) };
 }
 

@@ -2,37 +2,46 @@ import { ChevronRight, Clock3, Download, Globe, RotateCcw, Upload } from "lucide
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtlas } from "../atlas/context";
 import { isMastered } from "../store/srs";
-import { buildPalette, normalizeSeed } from "../lib/m3";
-import { saveBlob, wallpaperSeed } from "../lib/native";
+import { buildPalette } from "../lib/m3";
+import { saveBlob } from "../lib/native";
 import { previewHaptic } from "../lib/feedback";
 import { go } from "../lib/router";
 import { RECENT_CAP, resolveRecent, subscribeRecent } from "../lib/recent";
-import { useThemeSettings } from "../lib/theme";
-import { FALLBACK_SEED, PALETTES, VARIANTS, VARIANT_LABEL, type M3Variant, type ThemeFamily } from "../lib/theme-model";
-import { dayKey, exportBackup, exportWebBackup, importAnyBackup, resetProgress, store, useStore, type Settings } from "../store/store";
+import { resolveSeed, useThemeSettings } from "../lib/theme";
+import {
+  FAMILY_LABEL,
+  MODE_LABEL,
+  NIGHT_LABEL,
+  PALETTES,
+  VARIANTS,
+  VARIANT_LABEL,
+  type M3Variant,
+  type ThemeFamily,
+} from "../lib/theme-model";
+import { dayKey, exportBackup, exportWebBackup, FAMILIES as FAMILY_KEYS, MODES as MODE_KEYS, NIGHT_SKINS, importAnyBackup, resetProgress, store, useStore, type Settings } from "../store/store";
 import { toast } from "../ui/Toast";
 import { streakOf } from "./Today";
 
 /** A three-colour preview of each palette: page, surface, accent. */
 type Swatch = [string, string, string];
 
-const FAMILIES: { key: ThemeFamily; label: string; hint: string; swatch: Swatch }[] = [
-  { key: "ink", label: "纸墨", hint: "浅色纸面与陶土点缀，就是现在的样子。", swatch: ["#f6f1e7", "#fffdf8", "#cb922c"] },
-  { key: "night", label: "夜空", hint: "把整页配色换成极光或星光的深空。", swatch: ["#05060f", "#171d35", "#4fe8b8"] },
+const FAMILY_HINT: Record<ThemeFamily, string> = {
+  ink: "浅色纸面与陶土点缀，就是现在的样子。",
+  night: "把整页配色换成极光或星光的深空。",
   // The third chip is painted from the live seed, so it always matches the page.
-  { key: "m3e", label: "Material Expressive", hint: "跟随壁纸取色，圆角更柔和，回弹更活泼。", swatch: ["#f6f1e7", "#fffdf8", "#c4573a"] },
-];
+  m3e: "跟随壁纸取色，圆角更柔和，回弹更活泼。",
+};
 
-const MODES: { key: "system" | "light" | "dark"; label: string }[] = [
-  { key: "system", label: "跟随系统" },
-  { key: "light", label: "浅色" },
-  { key: "dark", label: "深色" },
-];
+const FAMILY_SWATCH: Record<ThemeFamily, Swatch> = {
+  ink: ["#f6f1e7", "#fffdf8", "#cb922c"],
+  night: ["#05060f", "#171d35", "#4fe8b8"],
+  m3e: ["#f6f1e7", "#fffdf8", "#c4573a"],
+};
 
-const NIGHTS: { key: "aurora" | "starlight"; label: string; swatch: Swatch }[] = [
-  { key: "aurora", label: "极光", swatch: ["#05060f", "#171d35", "#4fe8b8"] },
-  { key: "starlight", label: "星光", swatch: ["#06080f", "#10142a", "#e8c48a"] },
-];
+const NIGHT_SWATCH: Record<"aurora" | "starlight", Swatch> = {
+  aurora: ["#05060f", "#171d35", "#4fe8b8"],
+  starlight: ["#06080f", "#10142a", "#e8c48a"],
+};
 
 export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   const atlas = useAtlas();
@@ -41,7 +50,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   const { mode } = useThemeSettings();
   const dark = mode === "dark";
   // Every chip in the expressive group previews the same seed the page uses.
-  const seed = useMemo(() => normalizeSeed(settings.m3Accent) || wallpaperSeed() || FALLBACK_SEED, [settings.m3Accent]);
+  const seed = useMemo(() => resolveSeed(settings.m3Accent), [settings.m3Accent]);
   const saveError = useStore((s) => s.saveError);
   const file = useRef<HTMLInputElement>(null);
   const webFile = useRef<HTMLInputElement>(null);
@@ -217,21 +226,21 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           </Field>
 
           <Group label="外观" />
-          <Field label="主题家族" hint={FAMILIES.find((f) => f.key === settings.themeFamily)?.hint} stack>
+          <Field label="主题家族" hint={FAMILY_HINT[settings.themeFamily]} stack>
             <div className="theme-picker" role="group" aria-label="主题家族">
-              {FAMILIES.map((f) => (
+              {FAMILY_KEYS.map((key) => (
                 <button
-                  key={f.key}
-                  className={settings.themeFamily === f.key ? "is-on" : ""}
-                  onClick={() => set({ themeFamily: f.key })}
-                  aria-pressed={settings.themeFamily === f.key}
+                  key={key}
+                  className={settings.themeFamily === key ? "is-on" : ""}
+                  onClick={() => set({ themeFamily: key })}
+                  aria-pressed={settings.themeFamily === key}
                 >
-                  {f.key === "m3e" ? (
+                  {key === "m3e" ? (
                     <ThemeChip seed={seed} dark={dark} variant={settings.m3Variant} />
                   ) : (
-                    <Chip swatch={f.swatch} />
+                    <Chip swatch={FAMILY_SWATCH[key]} />
                   )}
-                  <span>{f.label}</span>
+                  <span>{FAMILY_LABEL[key]}</span>
                 </button>
               ))}
             </div>
@@ -239,15 +248,15 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           {settings.themeFamily === "night" ? (
             <Field label="夜空" hint="极光偏冷绿，星光偏暖金。" stack>
               <div className="theme-picker" role="group" aria-label="夜空">
-                {NIGHTS.map((n) => (
+                {NIGHT_SKINS.map((key) => (
                   <button
-                    key={n.key}
-                    className={settings.nightSkin === n.key ? "is-on" : ""}
-                    onClick={() => set({ nightSkin: n.key })}
-                    aria-pressed={settings.nightSkin === n.key}
+                    key={key}
+                    className={settings.nightSkin === key ? "is-on" : ""}
+                    onClick={() => set({ nightSkin: key })}
+                    aria-pressed={settings.nightSkin === key}
                   >
-                    <Chip swatch={n.swatch} />
-                    <span>{n.label}</span>
+                    <Chip swatch={NIGHT_SWATCH[key]} />
+                    <span>{NIGHT_LABEL[key]}</span>
                   </button>
                 ))}
               </div>
@@ -255,9 +264,9 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           ) : (
             <Field label="深浅" hint="跟随系统会随手机的深色模式切换。">
               <div className="segmented">
-                {MODES.map((m) => (
-                  <button key={m.key} className={settings.themeMode === m.key ? "is-on" : ""} onClick={() => set({ themeMode: m.key })}>
-                    {m.label}
+                {MODE_KEYS.map((key) => (
+                  <button key={key} className={settings.themeMode === key ? "is-on" : ""} onClick={() => set({ themeMode: key })}>
+                    {MODE_LABEL[key]}
                   </button>
                 ))}
               </div>

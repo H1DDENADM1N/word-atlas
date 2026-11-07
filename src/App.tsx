@@ -152,7 +152,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   const nav = hidePractice
     ? NAV.filter((item) => item.page !== "practice")
     : NAV;
-  const { mode } = useThemeSettings();
+  const { family, mode } = useThemeSettings();
   const [palette, setPalette] = useState(false);
   const [splash, setSplash] = useState(shouldShowSplash);
   const focus = route.page === "learn";
@@ -236,9 +236,22 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
             <button
               className="icon-btn"
               onClick={() =>
-                store.settings({ themeMode: dark ? "light" : "dark" })
+                // The night family ignores the mode, so its switch leaves the
+                // family instead of writing a field nothing reads.
+                family === "night"
+                  ? store.settings({
+                      themeFamily: "ink",
+                      themeMode: dark ? "light" : "dark",
+                    })
+                  : store.settings({ themeMode: dark ? "light" : "dark" })
               }
-              aria-label={dark ? "切换到浅色" : "切换到深色"}
+              aria-label={
+                family === "night"
+                  ? "退出夜空，切换到纸墨"
+                  : dark
+                    ? "切换到浅色"
+                    : "切换到深色"
+              }
             >
               {dark ? <Sun size={19} /> : <Moon size={19} />}
             </button>

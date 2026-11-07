@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Hct } from "@material/material-color-utilities";
+import {
+  Hct,
+  MaterialDynamicColors,
+  SchemeTonalSpot,
+} from "@material/material-color-utilities";
 import { buildPalette, M3_VARS, normalizeSeed } from "./m3";
 import { PALETTES, VARIANTS } from "./theme-model";
 
@@ -56,6 +60,27 @@ test("derives --sky about 150 degrees away from the accent", () => {
   );
   const delta = Math.min(d, 360 - d);
   assert.ok(Math.abs(delta - 150) <= 6, `delta ${delta}`);
+});
+
+test("paints with the 2025 spec rather than the library's 2021 default", () => {
+  const hex = (argb: number) =>
+    `#${(argb & 0xffffff).toString(16).padStart(6, "0").toUpperCase()}`;
+  const older = new SchemeTonalSpot(Hct.fromInt(0xffc4573a), false, 0, "2021");
+  const ours = buildPalette("#C4573A", false, "tonalSpot");
+  // The two specs disagree on the container tones for this seed, so matching
+  // the old one would mean we silently fell back to the library's default.
+  assert.notEqual(
+    ours["--paper-3"],
+    hex(MaterialDynamicColors.surfaceContainer.getArgb(older)),
+  );
+  assert.equal(
+    ours["--paper-3"],
+    hex(
+      MaterialDynamicColors.surfaceContainer.getArgb(
+        new SchemeTonalSpot(Hct.fromInt(0xffc4573a), false, 0, "2025"),
+      ),
+    ),
+  );
 });
 
 test("rejects malformed seeds instead of throwing", () => {

@@ -13,7 +13,7 @@
  */
 import { useMemo, useSyncExternalStore } from "react";
 import { useStore } from "../store/store";
-import { buildPalette, normalizeSeed } from "./m3";
+import { buildPalette, normalizeSeed, type M3Palette } from "./m3";
 import { getSystemDark, subscribeSystemTheme, wallpaperSeed } from "./native";
 import {
   FALLBACK_SEED,
@@ -46,10 +46,19 @@ export function chromeColor(
   family: ThemeFamily,
   mode: Mode,
   nightSkin: NightSkin,
-  palette: Record<string, string> | null,
+  palette: M3Palette | null,
 ) {
   if (family === "m3e" && palette) return palette["--paper"];
   return family === "night" ? CHROME[nightSkin] : CHROME[mode];
+}
+
+/**
+ * The seed the expressive family paints with: the swatch the user picked, else
+ * the phone's wallpaper accent, else the brand terracotta. Used by the settings
+ * screen too, so its chips preview exactly what the page will show.
+ */
+export function resolveSeed(accent: string): string {
+  return normalizeSeed(accent) || wallpaperSeed() || FALLBACK_SEED;
 }
 
 export function useThemeSettings() {
@@ -67,11 +76,10 @@ export function useThemeSettings() {
     m3Accent: accent,
   } = settings;
   const mode = resolveMode(family, themeMode, systemDark);
-  // systemDark is a dependency on purpose: the seed is the same, the tones are not.
   const palette = useMemo(() => {
     if (family !== "m3e") return null;
-    const seed = normalizeSeed(accent) || wallpaperSeed() || FALLBACK_SEED;
-    return buildPalette(seed, mode === "dark", variant);
+    // mode folds in the resolved system preference, so it belongs here.
+    return buildPalette(resolveSeed(accent), mode === "dark", variant);
   }, [family, accent, variant, mode]);
   return { family, mode, nightSkin, variant, accent, palette };
 }

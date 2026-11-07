@@ -696,7 +696,7 @@ public class MainActivity extends Activity {
     }
 
     private final class Bridge {
-        /** Read once: the wallpaper colour cannot change while the app is open. */
+        /** The last resolved wallpaper colour; "" means "try again next call". */
         private volatile String wallpaperCache;
 
         @JavascriptInterface
@@ -850,7 +850,10 @@ public class MainActivity extends Activity {
                     color = "";
                 }
             }
-            wallpaperCache = color;
+            // Cache only a real answer: an empty one means "not resolved yet"
+            // (cold start, or a ROM that hides the colour), and caching it would
+            // pin the app to the brand seed until the process restarts.
+            if (!color.isEmpty()) wallpaperCache = color;
             return color;
         }
 

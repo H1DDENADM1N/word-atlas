@@ -10,6 +10,30 @@ export type ThemeFamily = "ink" | "night" | "m3e";
 export type ThemeMode = "system" | "light" | "dark";
 export type NightSkin = "aurora" | "starlight";
 
+/** The three fields that together decide which colours get painted. */
+export type ThemeChoice = {
+  themeFamily: ThemeFamily;
+  themeMode: ThemeMode;
+  nightSkin: NightSkin;
+};
+
+export const FAMILY_LABEL: Record<ThemeFamily, string> = {
+  ink: "纸墨",
+  night: "夜空",
+  m3e: "Material Expressive",
+};
+
+export const MODE_LABEL: Record<ThemeMode, string> = {
+  system: "跟随系统",
+  light: "浅色",
+  dark: "深色",
+};
+
+export const NIGHT_LABEL: Record<NightSkin, string> = {
+  aurora: "极光",
+  starlight: "星光",
+};
+
 export type M3Variant =
   | "monochrome"
   | "neutral"
@@ -64,10 +88,7 @@ export const FALLBACK_SEED = "#C4573A";
 /** What older builds and the website call the theme. */
 export type LegacyTheme = "system" | "light" | "dark" | "aurora" | "starlight";
 
-const LEGACY: Record<
-  string,
-  { themeFamily: ThemeFamily; themeMode: ThemeMode; nightSkin: NightSkin }
-> = {
+const LEGACY: Record<string, ThemeChoice> = {
   system: { themeFamily: "ink", themeMode: "system", nightSkin: "aurora" },
   light: { themeFamily: "ink", themeMode: "light", nightSkin: "aurora" },
   dark: { themeFamily: "ink", themeMode: "dark", nightSkin: "aurora" },
@@ -85,13 +106,7 @@ const LEGACY: Record<
  * Returns null for anything unrecognised — the caller keeps its defaults
  * rather than writing a broken value into the new five-field model.
  */
-export function fromLegacyTheme(
-  v: unknown,
-): {
-  themeFamily: ThemeFamily;
-  themeMode: ThemeMode;
-  nightSkin: NightSkin;
-} | null {
+export function fromLegacyTheme(v: unknown): ThemeChoice | null {
   if (typeof v !== "string") return null;
   const hit = LEGACY[v];
   return hit ? { ...hit } : null;

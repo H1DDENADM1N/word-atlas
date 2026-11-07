@@ -10,6 +10,7 @@
     "apk": "python3 scripts/android/build_apk.py",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --import tsx --test src/**/*.test.ts",
+    "pretest": "node scripts/check-shape-tokens.mjs",
     "check:atlas": "node scripts/check-atlas.mjs",
     "check:pron": "python3 scripts/atlas/apply_pron.py --check",
     "pron": "python3 scripts/atlas/apply_pron.py",

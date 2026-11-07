@@ -174,7 +174,7 @@ export function buildPalette(seed: string, isDark: boolean, variant: M3Variant):
 
 ```ts
 root.setAttribute("data-family", family);            // ink | night | m3e
-if (family === "m3e") 对 30 个变量执行 root.style.setProperty(...)
+if (family === "m3e") 对 22 个变量执行 root.style.setProperty(...)
 else                  逐个 removeProperty（回到 app.css 静态值）
 ```
 
@@ -207,7 +207,7 @@ else                  逐个 removeProperty（回到 app.css 静态值）
 仅 3 处 hairline 保留裸值，并在护栏脚本白名单里显式登记：
 
 - `.amb-bars i { border-radius: 1px }`
-- `::view-transition-new(word-art) { border-radius: 20px }`（伪元素，不参与主题）
+- （原计划第二项 `::view-transition-new(word-art) { border-radius: 20px }` 在 `app.css` 中并不存在，改动时该规则实际使用 `var(--shape-xl)`，因此白名单只保留下面一项。）
 - 其余 79 处全部替换为 `var(--shape-*)`
 
 ### 6.3 防回退
@@ -368,3 +368,10 @@ JS 侧在 `src/lib/native.ts` 的 `Shell` 接口加 `wallpaperColor?(): string`�
 | `linear()` 在老 WebView 不支持 | `@supports` 回退 cubic-bezier |
 | 82 处半径替换引入视觉漂移 | 吸附位移 ≤3px；白名单锁死 hairline；逐家族目视复核 |
 | M3E 备份只能退化到纸墨 | 已记录为接受的限制（§4.4） |
+
+## 修订记录
+
+- `resolveMode` 最终签名为 `resolveMode(family, mode, systemDark)`：夜空家族恒为深色，`nightSkin` 在函数体内无用，留着会触发未使用参数；调用方只有 `useThemeSettings` 一处。
+- `wallpaperSeed(): string | null`：桥接侧只缓存解析成功的颜色，空结果不缓存（缓存空串会让整个进程退回品牌陶土种子，直到重启）。
+- `specVersion: "2025"` 现在由 `src/lib/m3.test.ts` 的「paints with the 2025 spec」守住：同一 seed 下，2025 的 container 色调必须与库默认的 2021 不同。
+- `--card-2` = `surfaceContainer`（实现需要，见 `M3_VARS` 共 22 项）。

@@ -218,15 +218,15 @@ export function subscribeSystemTheme(listener: () => void) {
 /**
  * The phone's wallpaper accent, as a seed for the expressive palette.
  *
- * Read once per call rather than cached: a new wallpaper should repaint the
- * next time the setting is applied, and the shell call is cheap. Returns "" in
- * the browser, where there is no wallpaper to ask about.
+ * The shell caches whatever it can resolve, so this is cheap to call; it only
+ * returns null while there is no answer (cold start, or any browser, where
+ * there is no wallpaper to ask about). Callers fall back to the brand seed.
  */
-export function wallpaperSeed(): string {
+export function wallpaperSeed(): string | null {
   try {
-    return normalizeSeed(shell?.wallpaperColor?.()) || "";
+    return normalizeSeed(shell?.wallpaperColor?.()) || null;
   } catch {
-    return "";
+    return null;
   }
 }
 
