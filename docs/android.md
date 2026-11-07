@@ -120,7 +120,8 @@ adb install -r word-atlas-android-v1.0.5_O.apk
 | 系统返回键 | `src/lib/native.ts` 把路由状态同步给原生层：先关词卡，再回上一页，最后才退出应用 |
 | 分享卡片、备份文件 | 交给原生层写入系统「下载 / Word Atlas」目录（Android 10+ 走 MediaStore，无需存储权限） |
 | WebView 没有语音合成引擎 | 原生层用 APK 内自带的 Kokoro 音色合成（见下一节），不用系统 `TextToSpeech`，也不需要用户在系统里装语音包 |
-| 状态栏颜色 | 主题切换时通过桥接同步状态栏与导航栏配色 |
+| 状态栏颜色 | 主题切换时通过桥接同步状态栏与导航栏配色（Material Expressive 家族取算出来的页面底色，保证状态栏与正文同色） |
+| 壁纸取色 | 桥接 `wallpaperColor()` 返回 `"#RRGGBB"` 或 `""`：Android 12+ 读系统采样的 `system_accent1_500`，8.1–11 退回 `WallpaperManager.getWallpaperColors()`，更早的系统返回空串由页面用品牌色兜底。两条路径都不申请任何权限 |
 | `confirm()` / `alert()` 静默失效 | 设置 `WebChromeClient` 并实现 `onJsConfirm` / `onJsAlert` / `onJsPrompt`，改用系统对话框 |
 | `<input type="file">` 点不开 | 同一个 `WebChromeClient` 实现 `onShowFileChooser`，拉起系统文件选择器，`onActivityResult` 回传 `Uri[]` |
 

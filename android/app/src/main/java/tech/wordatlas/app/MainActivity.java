@@ -2,6 +2,8 @@ package tech.wordatlas.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.WallpaperColors;
+import android.app.WallpaperManager;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
@@ -694,6 +696,9 @@ public class MainActivity extends Activity {
     }
 
     private final class Bridge {
+        /** Read once: the wallpaper colour cannot change while the app is open. */
+        private volatile String wallpaperCache;
+
         @JavascriptInterface
         public void saveFile(String name, String mime, String base64) {
             MainActivity.this.saveFile(name, mime, base64);
@@ -805,6 +810,48 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String systemTheme() {
             return systemDark() ? "dark" : "light";
+        }
+
+        /**
+         * The phone's wallpaper accent, as "#RRGGBB", or "" when this ROM will
+         * not tell us.
+         *
+         * <p>Two fallbacks, best first: Android 12+ publishes the wallpaper's
+         * sampled colours as {@code android.R.color.system_accent1_*}, which is
+         * exactly the seed Material You itself uses. Below that we can still ask
+         * the wallpaper for its primary colour, and below Android 8.1 there is
+         * no public API at all — the page then keeps its own brand seed.
+         *
+         * <p>No permission is involved: both paths read a colour the system
+         * already computed for the launcher.
+         */
+        @JavascriptInterface
+        public String wallpaperColor() {
+            String cached = wallpaperCache;
+            if (cached != null) return cached;
+            String color = "";
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    int c = getResources().getColor(android.R.color.system_accent1_500, getTheme());
+                    color = String.format("#%06X", 0xFFFFFF & c);
+                }
+            } catch (Throwable ignored) {
+                color = "";
+            }
+            if (color.isEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                try {
+                    WallpaperManager wm = WallpaperManager.getInstance(MainActivity.this);
+                    WallpaperColors wc = wm.getWallpaperColors(WallpaperManager.FLAG_SYSTEM);
+                    if (wc != null) {
+                        int c = wc.getPrimaryColor().toArgb();
+                        color = String.format("#%06X", 0xFFFFFF & c);
+                    }
+                } catch (Throwable ignored) {
+                    color = "";
+                }
+            }
+            wallpaperCache = color;
+            return color;
         }
 
         @JavascriptInterface
