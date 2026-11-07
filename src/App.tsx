@@ -1,12 +1,31 @@
-import { BookOpen, ChevronLeft, ChevronRight, Compass, Github, Keyboard, Moon, Search, Sun, User } from "lucide-react";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Github,
+  Keyboard,
+  Moon,
+  Search,
+  Sun,
+  User,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { AtlasContext, useAtlas, useEntry } from "./atlas/context";
 import { loadOpenAtlas, loadPrivateAtlas } from "./atlas/data";
 import type { Atlas } from "./atlas/types";
 import { REPO_URL } from "./config";
-import { closeWord, currentLocation, go, openWord, useLocation, type Route } from "./lib/router";
+import {
+  closeWord,
+  currentLocation,
+  go,
+  openWord,
+  useLocation,
+  type Route,
+} from "./lib/router";
 import { setChrome } from "./lib/native";
 import { PALETTE_EVENT } from "./lib/palette";
+import { M3_VARS } from "./lib/m3";
 import { chromeColor, useThemeSettings } from "./lib/theme";
 import { AtlasPage } from "./pages/Atlas";
 import { About } from "./pages/About";
@@ -17,7 +36,7 @@ import { Onboarding } from "./pages/Onboarding";
 import { Practice } from "./pages/Practice";
 import { Today } from "./pages/Today";
 import { cue } from "./lib/sound";
-import { isSkin, store, useStore } from "./store/store";
+import { store, useStore } from "./store/store";
 import { EntryView } from "./ui/EntryView";
 import { AmbienceController, AmbiencePicker } from "./ui/Ambience";
 import { Logo } from "./ui/Logo";
@@ -36,21 +55,31 @@ const NAV: { page: Route["page"]; label: string; icon: typeof Compass }[] = [
 ];
 
 function useTheme() {
-  const { theme, mode } = useThemeSettings();
+  const { family, mode, nightSkin, palette } = useThemeSettings();
   const font = useStore((s) => s.settings.wordFont);
   useEffect(() => {
     const root = document.documentElement;
     // Always explicit: "system" has already been resolved against the phone's
     // setting, and an explicit attribute overrides the WebView's own idea of it.
     root.setAttribute("data-theme", mode);
-    if (isSkin(theme)) root.setAttribute("data-skin", theme);
+    root.setAttribute("data-family", family);
+    if (family === "night") root.setAttribute("data-skin", nightSkin);
     else root.removeAttribute("data-skin");
     root.setAttribute("data-font", font);
-    const color = chromeColor(theme, mode);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
+    // Expressive colours are computed, not authored in CSS: write them inline,
+    // and clear every one on the way out or the paper theme inherits them.
+    for (const k of M3_VARS) {
+      const v = family === "m3e" ? palette?.[k] : "";
+      if (v) root.style.setProperty(k, v);
+      else root.style.removeProperty(k);
+    }
+    const color = chromeColor(family, mode, nightSkin, palette);
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", color);
     // Keep the Android system bars in step with the page.
     setChrome(color, mode === "dark");
-  }, [theme, mode, font]);
+  }, [family, mode, nightSkin, palette, font]);
   return mode;
 }
 
@@ -120,7 +149,9 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   const { route, word } = useLocation();
   const onboarded = useStore((s) => s.settings.onboarded);
   const hidePractice = useStore((s) => s.settings.hidePractice);
-  const nav = hidePractice ? NAV.filter((item) => item.page !== "practice") : NAV;
+  const nav = hidePractice
+    ? NAV.filter((item) => item.page !== "practice")
+    : NAV;
   const { mode } = useThemeSettings();
   const [palette, setPalette] = useState(false);
   const [splash, setSplash] = useState(shouldShowSplash);
@@ -133,7 +164,8 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   // back navigation, or toggling the switch while standing on that page must
   // not leave the reader on an orphaned screen.
   useEffect(() => {
-    if (hidePractice && route.page === "practice") go({ page: "today" }, null, true);
+    if (hidePractice && route.page === "practice")
+      go({ page: "today" }, null, true);
   }, [hidePractice, route.page]);
 
   // Any page (the empty history state, in particular) can raise the palette
@@ -171,27 +203,51 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
       <Starfield />
       {!focus && (
         <header className="topbar">
-          <a className="topbar-logo" href="#/" aria-label="词光 Word Atlas 首页">
+          <a
+            className="topbar-logo"
+            href="#/"
+            aria-label="词光 Word Atlas 首页"
+          >
             <Logo />
           </a>
           <nav className="topnav" aria-label="主导航">
             {nav.map(({ page, label }) => (
-              <a key={page} href={page === "today" ? "#/" : `#/${page}`} className={activePage === page ? "is-on" : ""} aria-current={activePage === page ? "page" : undefined}>
+              <a
+                key={page}
+                href={page === "today" ? "#/" : `#/${page}`}
+                className={activePage === page ? "is-on" : ""}
+                aria-current={activePage === page ? "page" : undefined}
+              >
                 {label}
               </a>
             ))}
           </nav>
           <div className="topbar-tools">
-            <button className="search-pill" onClick={() => setPalette(true)} aria-label="搜索单词">
+            <button
+              className="search-pill"
+              onClick={() => setPalette(true)}
+              aria-label="搜索单词"
+            >
               <Search size={17} />
               <span>搜索单词</span>
               <kbd>⌘K</kbd>
             </button>
             <AmbiencePicker />
-            <button className="icon-btn" onClick={() => store.settings({ theme: dark ? "light" : "dark" })} aria-label={dark ? "切换到浅色" : "切换到深色"}>
+            <button
+              className="icon-btn"
+              onClick={() =>
+                store.settings({ themeMode: dark ? "light" : "dark" })
+              }
+              aria-label={dark ? "切换到浅色" : "切换到深色"}
+            >
               {dark ? <Sun size={19} /> : <Moon size={19} />}
             </button>
-            <a className="icon-btn hide-sm" href="#/about" aria-label="关于与开源" title="关于与开源">
+            <a
+              className="icon-btn hide-sm"
+              href="#/about"
+              aria-label="关于与开源"
+              title="关于与开源"
+            >
               <Github size={19} />
             </a>
           </div>
@@ -224,7 +280,12 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
       {!focus && (
         <nav className="tabbar" aria-label="主导航">
           {nav.map(({ page, label, icon: Icon }) => (
-            <a key={page} href={page === "today" ? "#/" : `#/${page}`} className={activePage === page ? "is-on" : ""} aria-current={activePage === page ? "page" : undefined}>
+            <a
+              key={page}
+              href={page === "today" ? "#/" : `#/${page}`}
+              className={activePage === page ? "is-on" : ""}
+              aria-current={activePage === page ? "page" : undefined}
+            >
               <Icon size={22} strokeWidth={route.page === page ? 2.1 : 1.7} />
               <span>{label}</span>
             </a>
@@ -269,7 +330,12 @@ function WordSheet({ id }: { id: string | null }) {
     return () => window.removeEventListener("keydown", on);
   }, [id, neighbor]);
   return (
-    <Sheet open={!!id} onClose={closeWord} label={ref ? `${ref.word} 词条` : "词条"} wide>
+    <Sheet
+      open={!!id}
+      onClose={closeWord}
+      label={ref ? `${ref.word} 词条` : "词条"}
+      wide
+    >
       {entry ? (
         <EntryView key={entry.id} entry={entry} />
       ) : error ? (
@@ -279,13 +345,23 @@ function WordSheet({ id }: { id: string | null }) {
       )}
       {ref && (
         <nav className="sheet-nav" aria-label="切换词条">
-          <button className="icon-btn" onClick={() => neighbor(-1)} disabled={ref.order === 0} aria-label="上一个">
+          <button
+            className="icon-btn"
+            onClick={() => neighbor(-1)}
+            disabled={ref.order === 0}
+            aria-label="上一个"
+          >
             <ChevronLeft size={20} />
           </button>
           <span>
             {(ref.order + 1).toLocaleString()} / {atlas.count.toLocaleString()}
           </span>
-          <button className="icon-btn" onClick={() => neighbor(1)} disabled={ref.order >= atlas.count - 1} aria-label="下一个">
+          <button
+            className="icon-btn"
+            onClick={() => neighbor(1)}
+            disabled={ref.order >= atlas.count - 1}
+            aria-label="下一个"
+          >
             <ChevronRight size={20} />
           </button>
         </nav>

@@ -5,6 +5,7 @@
  * missing every helper falls back to the browser behaviour, so the site and the
  * APK share one code base.
  */
+import { normalizeSeed } from "./m3";
 import { closeWord, currentLocation, go, historyDepth } from "./router";
 
 interface Shell {
@@ -18,6 +19,8 @@ interface Shell {
   setBackEnabled(enabled: boolean): void;
   /** "light" | "dark" — the phone's own setting, not the app theme. */
   systemTheme?(): string;
+  /** The wallpaper's accent as "#RRGGBB", or "" when the platform will not say. */
+  wallpaperColor?(): string;
   /** Short "tick" | "click" | "success" | "error" haptic, via the View channel. */
   vibrate?(kind: string): void;
   /** Raise / lower the soft keyboard (the typing stages use an invisible field). */
@@ -39,7 +42,8 @@ declare global {
   }
 }
 
-export const shell: Shell | undefined = typeof window === "undefined" ? undefined : window.WordAtlasAndroid;
+export const shell: Shell | undefined =
+  typeof window === "undefined" ? undefined : window.WordAtlasAndroid;
 /** True inside the packaged Android app. */
 export const isShell = !!shell;
 
@@ -76,7 +80,8 @@ export async function saveBlob(
   if (shell) {
     const type = blob.type || "application/octet-stream";
     const base64 = toBase64(new Uint8Array(await blob.arrayBuffer()));
-    if (share && shell.saveAndShare) shell.saveAndShare(name, type, base64, share.title);
+    if (share && shell.saveAndShare)
+      shell.saveAndShare(name, type, base64, share.title);
     else shell.saveFile(name, type, base64);
     return "shell";
   }
@@ -159,7 +164,9 @@ export function vibrate(kind: string) {
     }
   }
   try {
-    const nav = navigator as Navigator & { vibrate?: (pattern: number | number[]) => boolean };
+    const nav = navigator as Navigator & {
+      vibrate?: (pattern: number | number[]) => boolean;
+    };
     nav.vibrate?.(WEB_VIBRATION[kind] ?? WEB_VIBRATION.tick);
   } catch {
     /* not a browser that vibrates */
@@ -184,7 +191,10 @@ function readSystemDark(): boolean {
   } catch {
     /* older shell without the method */
   }
-  return typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
+  return (
+    typeof matchMedia === "function" &&
+    matchMedia("(prefers-color-scheme: dark)").matches
+  );
 }
 
 let systemDark = typeof window === "undefined" ? false : readSystemDark();
@@ -205,11 +215,29 @@ export function subscribeSystemTheme(listener: () => void) {
   return () => themeListeners.delete(listener);
 }
 
+/**
+ * The phone's wallpaper accent, as a seed for the expressive palette.
+ *
+ * Read once per call rather than cached: a new wallpaper should repaint the
+ * next time the setting is applied, and the shell call is cheap. Returns "" in
+ * the browser, where there is no wallpaper to ask about.
+ */
+export function wallpaperSeed(): string {
+  try {
+    return normalizeSeed(shell?.wallpaperColor?.()) || "";
+  } catch {
+    return "";
+  }
+}
+
 /** Wires the shell's push and the browser's own `change` event. */
 export function installSystemTheme() {
   window.__waSystemTheme = (theme) => publishSystemDark(theme === "dark");
   if (typeof matchMedia === "function") {
-    matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => publishSystemDark(readSystemDark()));
+    matchMedia("(prefers-color-scheme: dark)").addEventListener?.(
+      "change",
+      () => publishSystemDark(readSystemDark()),
+    );
   }
 }
 
@@ -248,7 +276,12 @@ export function registerOverlay(close: () => boolean) {
 function syncBack() {
   if (!shell) return;
   const loc = currentLocation();
-  shell.setBackEnabled(!!loc.word || historyDepth() > 0 || loc.route.page !== "today" || overlays.size > 0);
+  shell.setBackEnabled(
+    !!loc.word ||
+      historyDepth() > 0 ||
+      loc.route.page !== "today" ||
+      overlays.size > 0,
+  );
 }
 
 /** Wires the hardware back key to in-app navigation. Returns true when consumed. */
