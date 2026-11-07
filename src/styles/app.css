@@ -4203,7 +4203,7 @@ code {
 
 .theme-picker {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
   gap: 6px;
   width: 100%;
 }
@@ -4266,6 +4266,63 @@ code {
   .theme-picker button.is-on .theme-chip {
     transition: none;
     transform: none;
+  }
+}
+
+/* Accent seeds for the expressive family: one "follow the wallpaper" pill plus
+   the eight curated pigments, as dots you can actually compare side by side. */
+.accent-dots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.accent-follow {
+  padding: 6px 12px;
+  border-radius: var(--shape-full);
+  border: 1px solid var(--line-strong);
+  font-size: 12px;
+  color: var(--ink-2);
+  transition:
+    border-color 0.18s,
+    color 0.18s,
+    background-color 0.18s;
+}
+.accent-follow:hover {
+  color: var(--ink);
+  background: var(--paper-2);
+}
+.accent-follow.is-on {
+  color: var(--ink);
+  font-weight: 600;
+  border-color: color-mix(in oklab, var(--ochre) 55%, transparent);
+  background: var(--paper-2);
+}
+.accent-dot {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition:
+    transform 0.2s var(--spring),
+    outline-color 0.18s;
+}
+.accent-dot:hover {
+  transform: scale(1.06);
+}
+.accent-dot.is-on {
+  outline-color: var(--ink);
+  transform: scale(1.06);
+}
+@media (prefers-reduced-motion: reduce) {
+  .accent-dot,
+  .accent-dot:hover,
+  .accent-dot.is-on {
+    transform: none;
+    transition: none;
   }
 }
 

@@ -2,36 +2,46 @@ import { ChevronRight, Clock3, Download, Globe, RotateCcw, Upload } from "lucide
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtlas } from "../atlas/context";
 import { isMastered } from "../store/srs";
-import { saveBlob } from "../lib/native";
+import { buildPalette, normalizeSeed } from "../lib/m3";
+import { saveBlob, wallpaperSeed } from "../lib/native";
 import { previewHaptic } from "../lib/feedback";
 import { go } from "../lib/router";
 import { RECENT_CAP, resolveRecent, subscribeRecent } from "../lib/recent";
-import { dayKey, exportBackup, exportWebBackup, importAnyBackup, resetProgress, store, useStore, type Settings, type Theme } from "../store/store";
+import { useThemeSettings } from "../lib/theme";
+import { FALLBACK_SEED, PALETTES, VARIANTS, VARIANT_LABEL, type M3Variant, type ThemeFamily } from "../lib/theme-model";
+import { dayKey, exportBackup, exportWebBackup, importAnyBackup, resetProgress, store, useStore, type Settings } from "../store/store";
 import { toast } from "../ui/Toast";
 import { streakOf } from "./Today";
 
 /** A three-colour preview of each palette: page, surface, accent. */
-const SWATCH: Record<Theme, [string, string, string]> = {
-  // "follows the system" shows both skies at once, split down the middle.
-  system: ["linear-gradient(135deg, #f6f1e7 0 50%, #0d1120 50% 100%)", "#8f8b84", "#cb922c"],
-  light: ["#f6f1e7", "#fffdf8", "#cb922c"],
-  dark: ["#0d1120", "#131a2b", "#e8b65a"],
-  aurora: ["#05060f", "#171d35", "#4fe8b8"],
-  starlight: ["#06080f", "#10142a", "#e8c48a"],
-};
+type Swatch = [string, string, string];
 
-const THEME_LABEL: [Theme, string][] = [
-  ["system", "跟随系统"],
-  ["light", "浅色"],
-  ["dark", "深色"],
-  ["aurora", "极光"],
-  ["starlight", "星光"],
+const FAMILIES: { key: ThemeFamily; label: string; hint: string; swatch: Swatch }[] = [
+  { key: "ink", label: "纸墨", hint: "浅色纸面与陶土点缀，就是现在的样子。", swatch: ["#f6f1e7", "#fffdf8", "#cb922c"] },
+  { key: "night", label: "夜空", hint: "把整页配色换成极光或星光的深空。", swatch: ["#05060f", "#171d35", "#4fe8b8"] },
+  // The third chip is painted from the live seed, so it always matches the page.
+  { key: "m3e", label: "Material Expressive", hint: "跟随壁纸取色，圆角更柔和，回弹更活泼。", swatch: ["#f6f1e7", "#fffdf8", "#c4573a"] },
+];
+
+const MODES: { key: "system" | "light" | "dark"; label: string }[] = [
+  { key: "system", label: "跟随系统" },
+  { key: "light", label: "浅色" },
+  { key: "dark", label: "深色" },
+];
+
+const NIGHTS: { key: "aurora" | "starlight"; label: string; swatch: Swatch }[] = [
+  { key: "aurora", label: "极光", swatch: ["#05060f", "#171d35", "#4fe8b8"] },
+  { key: "starlight", label: "星光", swatch: ["#06080f", "#10142a", "#e8c48a"] },
 ];
 
 export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   const atlas = useAtlas();
   const progress = useStore((s) => s.progress);
   const settings = useStore((s) => s.settings);
+  const { mode } = useThemeSettings();
+  const dark = mode === "dark";
+  // Every chip in the expressive group previews the same seed the page uses.
+  const seed = useMemo(() => normalizeSeed(settings.m3Accent) || wallpaperSeed() || FALLBACK_SEED, [settings.m3Accent]);
   const saveError = useStore((s) => s.saveError);
   const file = useRef<HTMLInputElement>(null);
   const webFile = useRef<HTMLInputElement>(null);
@@ -207,22 +217,93 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           </Field>
 
           <Group label="外观" />
-          <Field label="主题" hint="极光和星光会把整页配色换成夜空。" stack>
-            <div className="theme-picker" role="group" aria-label="主题">
-              {THEME_LABEL.map(([k, label]) => {
-                const [page, surface, accent] = SWATCH[k];
-                return (
-                  <button key={k} className={settings.theme === k ? "is-on" : ""} onClick={() => set({ theme: k })} aria-pressed={settings.theme === k}>
-                    <span className="theme-chip" style={{ "--tp": page, "--ts": surface, "--ta": accent } as React.CSSProperties} aria-hidden="true">
-                      <i />
-                      <i />
-                    </span>
-                    <span>{label}</span>
-                  </button>
-                );
-              })}
+          <Field label="主题家族" hint={FAMILIES.find((f) => f.key === settings.themeFamily)?.hint} stack>
+            <div className="theme-picker" role="group" aria-label="主题家族">
+              {FAMILIES.map((f) => (
+                <button
+                  key={f.key}
+                  className={settings.themeFamily === f.key ? "is-on" : ""}
+                  onClick={() => set({ themeFamily: f.key })}
+                  aria-pressed={settings.themeFamily === f.key}
+                >
+                  {f.key === "m3e" ? (
+                    <ThemeChip seed={seed} dark={dark} variant={settings.m3Variant} />
+                  ) : (
+                    <Chip swatch={f.swatch} />
+                  )}
+                  <span>{f.label}</span>
+                </button>
+              ))}
             </div>
           </Field>
+          {settings.themeFamily === "night" ? (
+            <Field label="夜空" hint="极光偏冷绿，星光偏暖金。" stack>
+              <div className="theme-picker" role="group" aria-label="夜空">
+                {NIGHTS.map((n) => (
+                  <button
+                    key={n.key}
+                    className={settings.nightSkin === n.key ? "is-on" : ""}
+                    onClick={() => set({ nightSkin: n.key })}
+                    aria-pressed={settings.nightSkin === n.key}
+                  >
+                    <Chip swatch={n.swatch} />
+                    <span>{n.label}</span>
+                  </button>
+                ))}
+              </div>
+            </Field>
+          ) : (
+            <Field label="深浅" hint="跟随系统会随手机的深色模式切换。">
+              <div className="segmented">
+                {MODES.map((m) => (
+                  <button key={m.key} className={settings.themeMode === m.key ? "is-on" : ""} onClick={() => set({ themeMode: m.key })}>
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </Field>
+          )}
+          {settings.themeFamily === "m3e" && (
+            <>
+              <Field label="强调色" hint="默认跟随手机壁纸的主色。" stack>
+                <div className="accent-dots" role="group" aria-label="强调色">
+                  <button
+                    className={`accent-follow ${settings.m3Accent === "wallpaper" ? "is-on" : ""}`}
+                    onClick={() => set({ m3Accent: "wallpaper" })}
+                    aria-pressed={settings.m3Accent === "wallpaper"}
+                  >
+                    跟随壁纸
+                  </button>
+                  {PALETTES.map((p) => (
+                    <button
+                      key={p.hex}
+                      className={`accent-dot ${settings.m3Accent === p.hex ? "is-on" : ""}`}
+                      style={{ background: p.hex }}
+                      title={p.name}
+                      aria-label={p.name}
+                      aria-pressed={settings.m3Accent === p.hex}
+                      onClick={() => set({ m3Accent: p.hex })}
+                    />
+                  ))}
+                </div>
+              </Field>
+              <Field label="调色板风格" hint="同一个种子在不同风格下会生成不同气质的整套配色。" stack>
+                <div className="theme-picker" role="group" aria-label="调色板风格">
+                  {VARIANTS.map((v) => (
+                    <button
+                      key={v}
+                      className={settings.m3Variant === v ? "is-on" : ""}
+                      onClick={() => set({ m3Variant: v })}
+                      aria-pressed={settings.m3Variant === v}
+                    >
+                      <ThemeChip seed={seed} dark={dark} variant={v} />
+                      <span>{VARIANT_LABEL[v]}</span>
+                    </button>
+                  ))}
+                </div>
+              </Field>
+            </>
+          )}
           <Field label="英文字体" hint="调整英文单词和例句的字体。">
             <div className="segmented">
               {(
@@ -384,5 +465,36 @@ function Heatmap({ days }: { days: Record<string, { r: number }> }) {
         <span key={c.k} className={`h${c.future ? "x" : lvl(c.v)}`} title={`${c.k} · ${c.v} 题`} />
       ))}
     </div>
+  );
+}
+
+/** A static three-colour swatch, the same shape the theme chips use. */
+function Chip({ swatch }: { swatch: Swatch }) {
+  return (
+    <span
+      className="theme-chip"
+      style={{ "--tp": swatch[0], "--ts": swatch[1], "--ta": swatch[2] } as React.CSSProperties}
+      aria-hidden="true"
+    >
+      <i />
+      <i />
+    </span>
+  );
+}
+
+/** One palette-style chip, painted from that style's own computed palette.
+ *  The page colour is the primary container, so the styles differ at a glance
+ *  instead of nine near-identical dark squares with different pinpricks. */
+function ThemeChip({ seed, dark, variant }: { seed: string; dark: boolean; variant: M3Variant }) {
+  const p = useMemo(() => buildPalette(seed, dark, variant), [seed, dark, variant]);
+  return (
+    <span
+      className="theme-chip"
+      style={{ "--tp": p["--terra-soft"], "--ts": p["--card"], "--ta": p["--terra"] } as React.CSSProperties}
+      aria-hidden="true"
+    >
+      <i />
+      <i />
+    </span>
   );
 }

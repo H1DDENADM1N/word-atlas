@@ -42,7 +42,7 @@
 - Consumes: 无
 - Produces: CSS 自定义属性 `--shape-none|xs|sm|md|lg|xl|2xl|3xl|4xl|5xl|full`（11 个），默认值 0/4/8/12/16/20/24/28/32/36/999px；`npm run check:shape` 退出码 0/1。
 
-- [ ] **Step 1: 写护栏脚本 `scripts/check-shape-tokens.mjs`**
+- [x] **Step 1: 写护栏脚本 `scripts/check-shape-tokens.mjs`**
 
 两条断言，任一失败 `process.exit(1)` 并打印命中行号：
 
@@ -51,12 +51,12 @@
 
 用 `node:fs` 读文件后按行正则匹配，白名单用「选择器名 + 值」二元组登记，不做行号豁免。
 
-- [ ] **Step 2: 运行护栏确认当前失败**
+- [x] **Step 2: 运行护栏确认当前失败**
 
 Run: `node scripts/check-shape-tokens.mjs`
 Expected: 退出码 1，报「82 处裸 border-radius」，列出前若干行号。
 
-- [ ] **Step 3: 替换 `:root` 里的四个旧令牌（`app.css:44-47`）**
+- [x] **Step 3: 替换 `:root` 里的四个旧令牌（`app.css:44-47`）**
 
 删除 `--r-sm: 10px; --r: 16px; --r-lg: 24px; --r-xl: 32px;`，换成 11 档阶梯：
 
@@ -67,13 +67,13 @@ Expected: 退出码 1，报「82 处裸 border-radius」，列出前若干行号
 --shape-5xl: 36px;    --shape-full: 999px;
 ```
 
-- [ ] **Step 4: 把 82 处裸值按吸附表替换**
+- [x] **Step 4: 把 82 处裸值按吸附表替换**
 
 映射（左 = 现值，右 = 令牌）：`1,3 →` 白名单保留字面量；`4 → --shape-xs`；`6,8 → --shape-sm`；`10,11,12,13,14 → --shape-md`；`16 → --shape-lg`；`18,20 → --shape-xl`；`22,24 → --shape-2xl`；`28 → --shape-3xl`；`32 → --shape-4xl`；`36 → --shape-5xl`；`999 → --shape-full`。
 
 同时把既有的 `var(--r-sm)` → `var(--shape-md)`、`var(--r)` → `var(--shape-lg)`、`var(--r-lg)` → `var(--shape-2xl)`、`var(--r-xl)` → `var(--shape-4xl)`（全库共 18 处引用）。
 
-- [ ] **Step 5: 在 `app.css` 末尾追加 M3E 形状段**
+- [x] **Step 5: 在 `app.css` 末尾追加 M3E 形状段**
 
 紧跟现有极光/星光段（:5628-5822）之后：
 
@@ -88,18 +88,18 @@ Expected: 退出码 1，报「82 处裸 border-radius」，列出前若干行号
 }
 ```
 
-- [ ] **Step 6: 运行护栏确认通过**
+- [x] **Step 6: 运行护栏确认通过**
 
 Run: `node scripts/check-shape-tokens.mjs`
 Expected: 退出码 0，输出「ok · 0 处裸半径 · M3E 段 11/11 令牌」。
 
-- [ ] **Step 7: 加 npm 脚本并确认构建**
+- [x] **Step 7: 加 npm 脚本并确认构建**
 
 `package.json` scripts 加 `"check:shape": "node scripts/check-shape-tokens.mjs"`。
 Run: `npm run check:shape && npm run build`
 Expected: 两者均通过，`dist/` 产出正常。
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add scripts/check-shape-tokens.mjs src/styles/app.css package.json
@@ -128,7 +128,7 @@ git commit -m "refactor(theme): replace hard-coded radii with an 11-step shape s
   - `function fromLegacyTheme(v: unknown): { themeFamily: ThemeFamily; themeMode: ThemeMode; nightSkin: NightSkin } | null`
   - `function legacyTheme(s: { themeFamily: ThemeFamily; themeMode: ThemeMode; nightSkin: NightSkin }): "system" | "light" | "dark" | "aurora" | "starlight"`
 
-- [ ] **Step 1: 写失败测试 `src/lib/theme-model.test.ts`**
+- [x] **Step 1: 写失败测试 `src/lib/theme-model.test.ts`**
 
 ```ts
 import assert from "node:assert/strict";
@@ -164,21 +164,21 @@ test("ships nine variants and eight curated palettes", () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `node --import tsx --test src/lib/theme-model.test.ts`
 Expected: FAIL — `Cannot find module './theme-model'`。
 
-- [ ] **Step 3: 实现 `src/lib/theme-model.ts`**
+- [x] **Step 3: 实现 `src/lib/theme-model.ts`**
 
 按 Interfaces 导出。`fromLegacyTheme` 用一个 `Record<string, {...}>` 查表，未命中返回 `null`（不抛异常，因为输入来自备份文件）。`legacyTheme` 用 `if (s.themeFamily === "night") return s.nightSkin;` 提前返回，其余返回 `themeMode`。
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 Run: `node --import tsx --test src/lib/theme-model.test.ts`
 Expected: PASS，3 个 test。
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/theme-model.ts src/lib/theme-model.test.ts
@@ -201,12 +201,12 @@ git commit -m "feat(theme): add the family/mode model and its legacy mapping"
   - `function normalizeSeed(v: unknown): string` —— 合法 `#RRGGBB` 原样返回（大写），否则返回 `""`
   - `function buildPalette(seed: string, isDark: boolean, variant: M3Variant): Record<string, string>`
 
-- [ ] **Step 1: 装依赖**
+- [x] **Step 1: 装依赖**
 
 Run: `npm install @material/material-color-utilities@^0.4.0`
 Expected: `package.json` dependencies 多一条，`node_modules/@material/material-color-utilities` 存在。
 
-- [ ] **Step 2: 写失败测试 `src/lib/m3.test.ts`**
+- [x] **Step 2: 写失败测试 `src/lib/m3.test.ts`**
 
 ```ts
 import assert from "node:assert/strict";
@@ -275,12 +275,12 @@ test("rejects malformed seeds instead of throwing", () => {
 });
 ```
 
-- [ ] **Step 3: 运行测试确认失败**
+- [x] **Step 3: 运行测试确认失败**
 
 Run: `node --import tsx --test src/lib/m3.test.ts`
 Expected: FAIL — `Cannot find module './m3'`。
 
-- [ ] **Step 4: 实现 `src/lib/m3.ts`**
+- [x] **Step 4: 实现 `src/lib/m3.ts`**
 
 ```ts
 export function normalizeSeed(v: unknown): string {
@@ -305,17 +305,17 @@ export function buildPalette(seed: string, isDark: boolean, variant: M3Variant):
 
 `--shadow-sm` / `--shadow` / `--shadow-lg` / `--plum` 不参与：前三个沿用 app.css 的静态两套阴影，`--plum` 全库 0 处引用。`--card-2` 映射 `surfaceContainer`。
 
-- [ ] **Step 5: 运行测试确认通过**
+- [x] **Step 5: 运行测试确认通过**
 
 Run: `node --import tsx --test src/lib/m3.test.ts`
 Expected: PASS，6 个 test。若色相断言失败，先确认 `Hct.fromInt` 收到的是 `0xffRRGGBB`（漏 alpha 会让 hue 全错）。
 
-- [ ] **Step 6: 确认可以进 iife 单文件**
+- [x] **Step 6: 确认可以进 iife 单文件**
 
 Run: `npm run build:android`
 Expected: 构建通过；`dist-android/assets/app.js` gzip 后与 177,145 B 相比增量在 15–30 KB 之间（实测 21.3 KB）。若超出 40 KB，说明 9 个 scheme 未被 tree-shake，检查是否 `import * as` 全集引入。
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add package.json package-lock.json src/lib/m3.ts src/lib/m3.test.ts
@@ -336,7 +336,7 @@ git commit -m "feat(theme): compute the M3 expressive palette at runtime from a 
 - Consumes: `fromLegacyTheme`, `legacyTheme`, `ThemeFamily`, `ThemeMode`, `NightSkin`, `M3Variant` from `../lib/theme-model`；`normalizeSeed` from `../lib/m3`
 - Produces: `Settings` 新字段 `themeFamily` / `themeMode` / `nightSkin` / `m3Variant` / `m3Accent`；`Theme`、`THEMES`、`SKINS`、`isSkin` 全部删除。
 
-- [ ] **Step 1: 改 `store.test.ts` 的两处旧断言（先让测试红）**
+- [x] **Step 1: 改 `store.test.ts` 的两处旧断言（先让测试红）**
 
 `:27-31` 去掉 `theme: "dark"` 断言，改为：
 
@@ -388,12 +388,12 @@ test("accepts the new fields and rejects junk in each", () => {
 });
 ```
 
-- [ ] **Step 2: 运行确认失败**
+- [x] **Step 2: 运行确认失败**
 
 Run: `node --import tsx --test src/store/store.test.ts`
 Expected: FAIL —— `s.themeFamily` 为 `undefined`。
 
-- [ ] **Step 3: 改 `store.ts` 的类型与默认值**
+- [x] **Step 3: 改 `store.ts` 的类型与默认值**
 
 删除 `:10` 的 `Theme` 联合、`:14` `THEMES`、`:17` `SKINS`、`:18` `isSkin`，改从 `../lib/theme-model` 重导出类型与常量。`Settings`（:63-88）删 `theme: Theme`，加：
 
@@ -408,7 +408,7 @@ m3Accent: string;
 
 `defaultSettings`（:90-110）把 `theme: "dark"` 换成 `themeFamily: "ink", themeMode: "dark", nightSkin: "aurora", m3Variant: "tonalSpot", m3Accent: "wallpaper"`。
 
-- [ ] **Step 4: 改 `sanitizeSettings`（:221-245）**
+- [x] **Step 4: 改 `sanitizeSettings`（:221-245）**
 
 原 `:231` 那行替换为先读旧值、再覆盖：
 
@@ -420,11 +420,11 @@ if (legacy) Object.assign(s, legacy);
 
 随后逐字段校验（白名单数组判断），`m3Accent` 用 `normalizeSeed(v.m3Accent) || "wallpaper"`。
 
-- [ ] **Step 5: 改两个导出函数**
+- [x] **Step 5: 改两个导出函数**
 
 `exportBackup()`（:362）与 `exportWebBackup()`（:373）里，凡出现 `theme: settings.theme` 的地方全部换成 `theme: legacyTheme(settings)`；`web-backup.ts:150` 同样。**不要**把 5 个新字段写进载荷。
 
-- [ ] **Step 6: 改 `web-backup.test.ts:54-80`**
+- [x] **Step 6: 改 `web-backup.test.ts:54-80`**
 
 `cases` 数组里的 5 个 `{ theme: ... }` 改为新模型等价物（`{ themeFamily: "ink", themeMode: "system" }` 等），断言改为「`webSettings` 产出的 `theme` 落在上游五值白名单内」：
 
@@ -438,12 +438,12 @@ test("the folded theme always stays inside the site's five values", () => {
 });
 ```
 
-- [ ] **Step 7: 运行全部测试**
+- [x] **Step 7: 运行全部测试**
 
 Run: `npm test`
 Expected: 全部 PASS。若有 tsx 编译错误指向别处 `settings.theme`，`grep -rn "settings.theme\|\.theme ===\|theme: " src` 一并清理（App.tsx 与 Me.tsx 允许暂时红，Task 5/6 修）。
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/store/store.ts src/store/web-backup.ts src/store/store.test.ts src/store/web-backup.test.ts
@@ -467,7 +467,7 @@ git commit -m "feat(theme): migrate settings to family/mode and keep backups unc
   - `useThemeSettings(): { family; mode; nightSkin; variant; accent; palette: Record<string,string> | null }`
   - `native.ts`: `Shell.wallpaperColor?(): string`，导出 `function wallpaperSeed(): string`
 
-- [ ] **Step 1: `theme.ts` 重写**
+- [x] **Step 1: `theme.ts` 重写**
 
 `resolveMode`：`if (family === "night") return "dark"; if (mode === "system") return systemDark ? "dark" : "light"; return mode;`
 
@@ -475,7 +475,7 @@ git commit -m "feat(theme): migrate settings to family/mode and keep backups unc
 
 `useThemeSettings`：`const s = useStore((x) => x.settings);` 取五个字段，`useMemo` 里在 `family === "m3e"` 时算 `buildPalette(normalizeSeed(accent) || wallpaperSeed() || FALLBACK_SEED, mode === "dark", variant)`，否则 `null`。依赖数组必须含 `systemDark`，否则系统切深浅不会重算。
 
-- [ ] **Step 2: `native.ts` 加壁纸色**
+- [x] **Step 2: `native.ts` 加壁纸色**
 
 `Shell` 接口加 `wallpaperColor?(): string;`。新增：
 
@@ -492,7 +492,7 @@ export function wallpaperSeed(): string {
 
 （`normalizeSeed` 从 `./m3` import；此处只做一次同步调用，不缓存——`shell` 缺失时返回 `""`。）
 
-- [ ] **Step 3: 改 `App.tsx:38-55`**
+- [x] **Step 3: 改 `App.tsx:38-55`**
 
 ```ts
 function useTheme() {
@@ -520,12 +520,12 @@ function useTheme() {
 }
 ```
 
-- [ ] **Step 4: 类型检查**
+- [x] **Step 4: 类型检查**
 
 Run: `npx tsc -b`
 Expected: 只剩 `Me.tsx` 的报错（Task 6 修）；`App.tsx` / `theme.ts` / `native.ts` 干净。
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/theme.ts src/App.tsx src/lib/native.ts
