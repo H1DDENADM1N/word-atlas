@@ -57,6 +57,7 @@ const NAV: { page: Route["page"]; label: string; icon: typeof Compass }[] = [
 function useTheme() {
   const { family, mode, nightSkin, palette } = useThemeSettings();
   const font = useStore((s) => s.settings.wordFont);
+  const cjk = useStore((s) => s.settings.cjkFont);
   useEffect(() => {
     const root = document.documentElement;
     // Always explicit: "system" has already been resolved against the phone's
@@ -66,6 +67,10 @@ function useTheme() {
     if (family === "night") root.setAttribute("data-skin", nightSkin);
     else root.removeAttribute("data-skin");
     root.setAttribute("data-font", font);
+    // Only the bundled face gets an attribute; the phone's own is the default
+    // stack, so removing it is the whole switch back.
+    if (cjk === "wenkai") root.setAttribute("data-cjk", "wenkai");
+    else root.removeAttribute("data-cjk");
     // Expressive colours are computed, not authored in CSS: write them inline,
     // and clear every one on the way out or the paper theme inherits them.
     for (const k of M3_VARS) {
@@ -79,7 +84,7 @@ function useTheme() {
       ?.setAttribute("content", color);
     // Keep the Android system bars in step with the page.
     setChrome(color, mode === "dark");
-  }, [family, mode, nightSkin, palette, font]);
+  }, [family, mode, nightSkin, palette, font, cjk]);
   return mode;
 }
 

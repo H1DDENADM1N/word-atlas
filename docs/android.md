@@ -39,8 +39,8 @@
 | 离线语音：ONNX Runtime + JNI（arm64 / x86_64） | 55 MB |
 | 离线语音：Kokoro-82M 音色 + espeak 音素表 | 353 MB |
 | 真题例句 `atlas/ielts.json` + 音节标注 `atlas/syllables.json` | 0.6 MB |
-| 前端 bundle、字体、图标 | ~1 MB |
-| **APK** | **分享版 1.39 GB / 私用版 1.33 GB** |
+| 前端 bundle、字体、图标（含霞鹜文楷 97 个 woff2 分片，4.3 MB） | ~5.3 MB |
+| **APK** | **分享版 1.40 GB / 私用版 1.34 GB** |
 
 安装需要约 3.5 GB 空闲空间。图片和音频本身已压缩，打进 APK 时按原样存储（不再二次压缩），所以构建很快；`.onnx` 也不压缩，运行时可以直接映射。
 

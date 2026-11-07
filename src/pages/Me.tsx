@@ -328,6 +328,20 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
               ))}
             </div>
           </Field>
+          <Field label="中文字体" hint="内置霞鹜文楷，只换中文字形，英文与数字不受影响。">
+            <div className="segmented">
+              {(
+                [
+                  ["system", "系统默认"],
+                  ["wenkai", "霞鹜文楷"],
+                ] as const
+              ).map(([k, l]) => (
+                <button key={k} className={settings.cjkFont === k ? "is-on" : ""} onClick={() => set({ cjkFont: k })}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </Field>
           <Toggle
             label="隐藏练习"
             hint="底部导航只留今日、图鉴和我的；今日页的打字练习入口也一起收起。"

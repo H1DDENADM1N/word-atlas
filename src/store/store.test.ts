@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { AMBIENCE } from "../lib/ambience";
-import { sanitizeProgress, sanitizeSettings } from "./store";
+import { backupSettings, sanitizeProgress, sanitizeSettings } from "./store";
 
 const card = {
   due: 1,
@@ -120,6 +120,16 @@ test("maps the five legacy themes and drops unknown ones", () => {
   assert.equal(d.themeMode, "dark");
   assert.equal(sanitizeSettings({ theme: "sepia" }).themeFamily, "ink");
   assert.equal(sanitizeSettings({ theme: "sepia" }).m3Variant, "tonalSpot");
+});
+
+test("keeps the Chinese face, and leaves it out of a backup", () => {
+  assert.equal(sanitizeSettings({}).cjkFont, "system");
+  assert.equal(sanitizeSettings({ cjkFont: "wenkai" }).cjkFont, "wenkai");
+  assert.equal(sanitizeSettings({ cjkFont: "kai" }).cjkFont, "system");
+  // The face is a per-device choice like the theme: a copied backup restores
+  // the words, not the typeface.
+  const backed = backupSettings(sanitizeSettings({ cjkFont: "wenkai" }));
+  assert.equal("cjkFont" in backed, false);
 });
 
 test("keeps the three English faces", () => {

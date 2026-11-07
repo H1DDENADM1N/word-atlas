@@ -1,6 +1,6 @@
 {
   "name": "word-atlas",
-  "version": "1.0.12",
+  "version": "1.1.0",
   "type": "module",
   "description": "A beautiful, open IELTS vocabulary atlas: 7,000+ illustrated words with UK/US audio, original examples and FSRS spaced repetition.",
   "scripts": {
@@ -28,6 +28,7 @@
     "@fontsource-variable/source-serif-4": "^5.3.1",
     "@material/material-color-utilities": "^0.4.0",
     "lucide-react": "^0.468.0",
+    "lxgw-wenkai-screen-webfont": "^1.7.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "ts-fsrs": "^5.4.2"

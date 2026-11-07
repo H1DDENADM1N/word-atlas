@@ -3,6 +3,9 @@ import "@fontsource-variable/fraunces/opsz-italic.css";
 import "@fontsource-variable/source-serif-4/opsz.css";
 import "@fontsource-variable/source-serif-4/opsz-italic.css";
 import "@fontsource-variable/atkinson-hyperlegible-next/index.css";
+// The bundled Chinese face, GB subset only: 97 woff2 slices behind
+// `unicode-range`, so a screen fetches just the ones it draws.
+import "lxgw-wenkai-screen-webfont/lxgwwenkaigbscreen.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";

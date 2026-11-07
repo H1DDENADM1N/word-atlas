@@ -132,6 +132,16 @@
   --word-opsz-lg: 120;
 }
 
+/* Chinese typeface. The bundled face is slotted in after the Latin families
+   and before every system CJK family, so Latin letters and digits keep the
+   face the stacks already chose while Chinese falls through to WenKai. */
+:root[data-cjk="wenkai"] {
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "LXGW WenKai Screen", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --serif: "Fraunces Variable", "LXGW WenKai Screen", "Songti SC", "STSong", "Noto Serif SC", Georgia,
+    serif;
+}
+
 /* ---------- base ---------- */
 
 *,

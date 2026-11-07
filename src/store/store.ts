@@ -25,7 +25,11 @@ export type QuizKind = "meaning" | "picture" | "listen" | "spell";
 /** Typeface for English words and example sentences. */
 export type WordFont = "serif" | "sans" | "classic";
 
+/** Typeface for Chinese: the phone's own, or the bundled LXGW WenKai Screen. */
+export type CjkFont = "system" | "wenkai";
+
 export const WORD_FONTS: WordFont[] = ["serif", "sans", "classic"];
+export const CJK_FONTS: CjkFont[] = ["system", "wenkai"];
 /** The three looks the picker offers, coarsest first. */
 export const FAMILIES: ThemeFamily[] = ["ink", "night", "m3e"];
 export const MODES: ThemeMode[] = ["system", "light", "dark"];
@@ -100,6 +104,8 @@ export interface Settings {
   /** "#RRGGBB", or "wallpaper" to follow the phone's wallpaper. */
   m3Accent: string;
   wordFont: WordFont;
+  /** Which Chinese face the interface paints with. */
+  cjkFont: CjkFont;
   sfx: boolean;
   /** Short vibration on presses, flips and verdicts (Android: no permission needed). */
   haptic: boolean;
@@ -128,6 +134,7 @@ export const defaultSettings: Settings = {
   m3Variant: "tonalSpot",
   m3Accent: "wallpaper",
   wordFont: "serif",
+  cjkFont: "system",
   sfx: true,
   haptic: true,
   spell: true,
@@ -325,6 +332,8 @@ export function sanitizeSettings(v: unknown): Settings {
   if (v.m3Accent === "wallpaper" || seed) s.m3Accent = seed || "wallpaper";
   if (WORD_FONTS.includes(v.wordFont as WordFont))
     s.wordFont = v.wordFont as WordFont;
+  if (CJK_FONTS.includes(v.cjkFont as CjkFont))
+    s.cjkFont = v.cjkFont as CjkFont;
   if (typeof v.sfx === "boolean") s.sfx = v.sfx;
   if (typeof v.haptic === "boolean") s.haptic = v.haptic;
   if (typeof v.spell === "boolean") s.spell = v.spell;
@@ -489,12 +498,13 @@ export function toggleBookmark(id: string) {
  * fields. The theme itself does not travel — it is bound to the device — but a
  * backup restored by this same app must still find the old key.
  */
-function backupSettings(s: Settings) {
+export function backupSettings(s: Settings) {
   // Drop the five family fields by destructuring them out, then add the one
   // word an older build (and the website) knows. `void` marks the drop as
-  // deliberate for the compiler's unused-locals check.
-  const { themeFamily, themeMode, nightSkin, m3Variant, m3Accent, ...rest } = s;
-  void [themeFamily, themeMode, nightSkin, m3Variant, m3Accent];
+  // deliberate for the compiler's unused-locals check. The Chinese face goes
+  // the same way: it names a device's taste, not the words being carried over.
+  const { themeFamily, themeMode, nightSkin, m3Variant, m3Accent, cjkFont, ...rest } = s;
+  void [themeFamily, themeMode, nightSkin, m3Variant, m3Accent, cjkFont];
   return { ...rest, theme: legacyTheme(s) };
 }
 
