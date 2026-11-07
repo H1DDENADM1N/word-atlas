@@ -6,6 +6,7 @@
     <td><img src="docs/assets/android-word.jpg" alt="词卡" width="100%"></td>
     <td><img src="docs/assets/android-today.jpg" alt="今日" width="100%"></td>
     <td><img src="docs/assets/android-widgets.jpg" alt="桌面小部件" width="100%"></td>
+    <td><img src="docs/assets/android-themes.jpg" alt="主题" width="100%"></td>
   </tr>
 </table>
 

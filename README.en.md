@@ -6,6 +6,7 @@
     <td><img src="docs/assets/android-word.jpg" alt="Word card" width="100%"></td>
     <td><img src="docs/assets/android-today.jpg" alt="Today" width="100%"></td>
     <td><img src="docs/assets/android-widgets.jpg" alt="Home-screen widgets" width="100%"></td>
+    <td><img src="docs/assets/android-themes.jpg" alt="Themes" width="100%"></td>
   </tr>
 </table>
 
