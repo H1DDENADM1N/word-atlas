@@ -46,6 +46,19 @@
 - **字体资源**来自 `lxgw-wenkai-screen-webfont` 的 GB 简体子集（`lxgwwenkaigbscreen.css`），97 个 `unicode-range` 分片、约 4.3 MB，随包内置；屏幕只请求实际画到的分片。GB 子集之外的生僻字会自然退回系统中文，这是有意的降级。
 - **不随备份迁移**：`backupSettings()` 把 `cjkFont` 与五个主题字段一起剥掉，`webSettings()` 不写，导入端缺省回 `system`。理由与主题相同——它描述的是这台设备的阅读口味。
 
+### 界面缩放与字体大小（1.1.0）
+
+两档互不相干、可叠加的数字设置，都存在 `Settings` 里并由 `App.tsx` 写成 `--ui-scale` / `--text-scale`：
+
+| 字段 | 五档 | 作用 |
+| --- | --- | --- |
+| `uiScale` | 0.9 / 0.95 / 1 / 1.05 / 1.1 | `#root { zoom: var(--ui-scale) }`，整页等比：间距、按钮高度、底部导航一起变 |
+| `textScale` | 0.9 / 0.95 / 1 / 1.1 / 1.2 | 只乘在一组「在读的字」的 `calc()` 上：body、`.lede`、`.muted`、`.senses .zh|.en`、`.ex-en`、`.ex-zh`、`.etym-sum`、`.relations p`、`.tip p`、`.wotd-ex`、`.journey-lede`、`.lookup-meaning` |
+
+`zoom` 是布局级的，所以卡片不会因为字变大而裂开；代价是从视口取的长度会被再乘一次缩放，因此 `--dvh: calc(1dvh / var(--ui-scale))`，所有 `Ndvh` 都写成 `calc(N * var(--dvh))`（23 处）。新增高度时如果直接用 `dvh` 会在 110% 下溢出，这点在改 CSS 时要留意。
+
+两档都命中白名单才收（`UI_SCALES` / `TEXT_SCALES`），脏值回退 1，并且在 `backupSettings()` 里和主题字段一起剥掉。
+
 ---
 
 ## 二、色彩层
@@ -77,13 +90,22 @@
 | `--terra` | `primary` | 主按钮、强调 |
 | `--terra-ink` | `onPrimaryContainer` | 主色容器上的文字 |
 | `--terra-soft` | `primaryContainer` | 主色容器底 |
-| `--ochre` / `--ochre-soft` | `tertiary` / `tertiaryContainer` | 第二强调色 |
-| `--sage` / `--sage-ink` / `--sage-soft` | `secondary` / `onSecondaryContainer` / `secondaryContainer` | 第三强调色 |
+| `--ochre` / `--ochre-soft` | 固定锚点：HCT 色相 72、彩度 55（soft 用 0.7 倍彩度，浅色 tone 92 / 深色 26） | 「已学」与学习进度 |
+| `--sage` / `--sage-ink` / `--sage-soft` | 固定锚点：HCT 色相 145、彩度 40（ink/soft 用 0.75 倍） | 「较熟悉」、答对 |
+| `--bad` / `--bad-soft` | `error` / `errorContainer` | 答错、输入错字 |
 | `--sky` | 派生：种子色相 −150°，chroma 20，浅色 tone 55 / 深色 tone 72 | 冷色对照（图表、点缀） |
 | `--glow` | `primary` @ 26%（深色 14%） | 光晕 |
 | `--mark` | `tertiary` @ 32%（深色 28%） | 高亮笔迹 |
 
 `--sky` 是唯一不来自角色的变量：原来的 skylight 蓝在动态取色下没有对应角色，但它承担「冷色对照」的语义，所以改成从种子色相反色相派生，保住这层意思又不引入冲突色相。
+
+### 为什么「已学 / 较熟悉 / 答错」不跟着壁纸走
+
+这三种颜色是**语义**，不是装饰：用户要靠它们判断对错和进度。借方案色做语义会出事 —— `secondary` 与 `primary` 是同一个色相（只有彩度 32 vs 16 的差别），所以「答对 = secondary」和「答错 = primary」实测只差 **1°** 色相，深色下几乎是同一个绿；「已学 = tertiary」虽然转了 +60°，彩度只有 28，和 secondary 并排也糊成一片。
+
+所以这三个语义色改成固定锚点，只随浅色/深色调明度：答对/较熟悉 ≈ 绿（H145），已学 ≈ 琥珀（H72），答错用 M3 的 `error` 红族（H≈25）。壁纸仍然决定纸面、正文、按钮这些品牌色。`src/lib/m3.test.ts` 里有一条守卫：3 个种子 × 2 模式 × 2 种风格，断言「答对 vs 答错 Δhue ≥ 60°」「答对 vs 已学 Δhue ≥ 25°」且两者彩度 ≥ 24，防止以后又悄悄并色。
+
+非 M3E 家族不受影响：`:root` 里 `--bad: var(--terra)`、`--bad-soft: var(--terra-soft)`，纸墨与夜空仍旧用它们画出来的那张色卡。
 
 ### 为什么用 2025 规范
 

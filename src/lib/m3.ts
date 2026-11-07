@@ -36,6 +36,8 @@ export const M3_VARS = [
   "--sage",
   "--sage-ink",
   "--sage-soft",
+  "--bad",
+  "--bad-soft",
   "--sky",
   "--glow",
   "--mark",
@@ -84,6 +86,29 @@ function wrapHue(hue: number): number {
 }
 
 /**
+ * The three meanings the quiz and the atlas hang on colour — right, wrong and
+ * already-seen — cannot come from the scheme's secondary/tertiary partners:
+ * those two share the seed's hue (secondary differs from primary by chroma
+ * alone) and sit at chroma 16–28, so a green "right" and a green "wrong" were
+ * one degree apart. These anchors are fixed hues, tuned per mode for contrast,
+ * so the meanings survive any wallpaper.
+ */
+const ANCHORS = {
+  right: { hue: 145, chroma: 40 },
+  seen: { hue: 72, chroma: 55 },
+} as const;
+
+function anchor(
+  spec: { hue: number; chroma: number },
+  tone: number,
+  chromaScale = 1,
+): string {
+  return hexOf(
+    Hct.from(spec.hue, spec.chroma * chromaScale, tone).toInt(),
+  );
+}
+
+/**
  * Builds the 22 palette variables for one seed, mode and palette style.
  * Pure and deterministic: the same inputs always return the same object.
  */
@@ -129,11 +154,13 @@ export function buildPalette(
     "--terra": hexOf(primary),
     "--terra-ink": hexOf(argb(MaterialDynamicColors.onPrimaryContainer)),
     "--terra-soft": hexOf(argb(MaterialDynamicColors.primaryContainer)),
-    "--ochre": hexOf(tertiary),
-    "--ochre-soft": hexOf(argb(MaterialDynamicColors.tertiaryContainer)),
-    "--sage": hexOf(argb(MaterialDynamicColors.secondary)),
-    "--sage-ink": hexOf(argb(MaterialDynamicColors.onSecondaryContainer)),
-    "--sage-soft": hexOf(argb(MaterialDynamicColors.secondaryContainer)),
+    "--ochre": anchor(ANCHORS.seen, isDark ? 82 : 42),
+    "--ochre-soft": anchor(ANCHORS.seen, isDark ? 26 : 92, 0.7),
+    "--sage": anchor(ANCHORS.right, isDark ? 80 : 38),
+    "--sage-ink": anchor(ANCHORS.right, isDark ? 92 : 18, 0.75),
+    "--sage-soft": anchor(ANCHORS.right, isDark ? 26 : 92, 0.75),
+    "--bad": hexOf(argb(MaterialDynamicColors.error)),
+    "--bad-soft": hexOf(argb(MaterialDynamicColors.errorContainer)),
     "--sky": hexOf(skyTone.toInt()),
     "--glow": rgba(primary, isDark ? 0.14 : 0.26),
     "--mark": rgba(tertiary, isDark ? 0.28 : 0.32),

@@ -58,6 +58,8 @@ function useTheme() {
   const { family, mode, nightSkin, palette } = useThemeSettings();
   const font = useStore((s) => s.settings.wordFont);
   const cjk = useStore((s) => s.settings.cjkFont);
+  const uiScale = useStore((s) => s.settings.uiScale);
+  const textScale = useStore((s) => s.settings.textScale);
   useEffect(() => {
     const root = document.documentElement;
     // Always explicit: "system" has already been resolved against the phone's
@@ -71,6 +73,10 @@ function useTheme() {
     // stack, so removing it is the whole switch back.
     if (cjk === "wenkai") root.setAttribute("data-cjk", "wenkai");
     else root.removeAttribute("data-cjk");
+    // The two scales are plain numbers the stylesheet multiplies by, so they
+    // travel as custom properties rather than attributes.
+    root.style.setProperty("--ui-scale", String(uiScale));
+    root.style.setProperty("--text-scale", String(textScale));
     // Expressive colours are computed, not authored in CSS: write them inline,
     // and clear every one on the way out or the paper theme inherits them.
     for (const k of M3_VARS) {
@@ -84,7 +90,7 @@ function useTheme() {
       ?.setAttribute("content", color);
     // Keep the Android system bars in step with the page.
     setChrome(color, mode === "dark");
-  }, [family, mode, nightSkin, palette, font, cjk]);
+  }, [family, mode, nightSkin, palette, font, cjk, uiScale, textScale]);
   return mode;
 }
 

@@ -132,6 +132,23 @@ test("keeps the Chinese face, and leaves it out of a backup", () => {
   assert.equal("cjkFont" in backed, false);
 });
 
+test("keeps the two scale steps, and leaves them out of a backup", () => {
+  const d = sanitizeSettings({});
+  assert.equal(d.uiScale, 1);
+  assert.equal(d.textScale, 1);
+  assert.equal(sanitizeSettings({ uiScale: 1.1 }).uiScale, 1.1);
+  assert.equal(sanitizeSettings({ textScale: 1.2 }).textScale, 1.2);
+  // Values off the ladder are junk, not a new step.
+  assert.equal(sanitizeSettings({ uiScale: 1.15 }).uiScale, 1);
+  assert.equal(sanitizeSettings({ textScale: 3 }).textScale, 1);
+  assert.equal(sanitizeSettings({ uiScale: "1.1" }).uiScale, 1);
+  const backed = backupSettings(
+    sanitizeSettings({ uiScale: 1.1, textScale: 1.2 }),
+  );
+  assert.equal("uiScale" in backed, false);
+  assert.equal("textScale" in backed, false);
+});
+
 test("keeps the three English faces", () => {
   assert.equal(sanitizeSettings({ wordFont: "sans" }).wordFont, "sans");
   assert.equal(sanitizeSettings({ wordFont: "classic" }).wordFont, "classic");

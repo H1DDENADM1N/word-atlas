@@ -56,6 +56,18 @@
   --top: 68px;
   --tab: 0px;
   --gutter: 20px;
+  /* Two scales the settings page drives. --ui-scale is applied as zoom on
+     #root, so lengths that come from the viewport have to be divided back
+     through --dvh or a 110% page would overflow by 10%. --text-scale only
+     multiplies the sizes of the prose in calc() below. */
+  --ui-scale: 1;
+  --text-scale: 1;
+  --dvh: calc(1dvh / var(--ui-scale));
+  /* Wrong answers and other "no" states. The expressive family overrides this
+     pair with its own error red; the ink and night families keep painting it
+     with the terracotta they were drawn with. */
+  --bad: var(--terra);
+  --bad-soft: var(--terra-soft);
   color-scheme: light;
 }
 
@@ -165,12 +177,12 @@ html.is-locked {
 }
 body {
   margin: 0;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh));
   background:
     radial-gradient(1200px 560px at 50% -220px, var(--glow), transparent 72%) no-repeat,
     var(--paper);
   color: var(--ink);
-  font: 400 15px/1.6 var(--sans);
+  font: 400 calc(15px * var(--text-scale))/1.6 var(--sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "kern", "palt";
@@ -199,6 +211,10 @@ body::before {
 #root {
   position: relative;
   z-index: 1;
+  /* The whole-interface scale. zoom is layout-level in Chromium, so cards,
+     buttons, gaps and the fixed tab bar all grow together instead of the
+     text spilling out of boxes that stayed put. */
+  zoom: var(--ui-scale);
 }
 img {
   max-width: 100%;
@@ -346,14 +362,14 @@ code {
 }
 .lede {
   color: var(--ink-2);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale));
   margin-top: 12px;
   max-width: 56ch;
   text-wrap: pretty;
 }
 .muted {
   color: var(--ink-3);
-  font-size: 13.5px;
+  font-size: calc(13.5px * var(--text-scale));
   line-height: 1.65;
 }
 .warn-text {
@@ -655,12 +671,14 @@ code {
 }
 .segmented-wide button {
   flex: 1;
+  /* 五档的「90% / 95% / 100% / 105% / 110%」在 110% 界面缩放下会差几个像素，
+     统一收到 8px 内边距，让这种长行在任何缩放下都不横滚 */
+  padding: 0 8px;
 }
 /* Four labels ("最近学过 / 错词本 / 收藏 / 学习路线") no longer fit on a 363px
    phone with 14px of padding each side; tightening them keeps all four whole. */
 @media (max-width: 430px) {
   .segmented-wide button {
-    padding: 0 9px;
     font-size: 13px;
   }
 }
@@ -668,7 +686,7 @@ code {
 /* ---------- layout ---------- */
 
 .app {
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh));
   display: flex;
   flex-direction: column;
 }
@@ -719,6 +737,7 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
   color: var(--ink);
 }
 .mark {
@@ -732,12 +751,19 @@ code {
 .logo-text b {
   font: 700 21px/1 "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif;
   letter-spacing: 0.06em;
+  white-space: nowrap;
+  flex: none;
 }
 .logo-text small {
   font: italic 500 14px/1 var(--serif);
   color: var(--ink-3);
   letter-spacing: 0.01em;
   font-variation-settings: "opsz" 24;
+  /* 界面缩放拉到 110% 时先挤掉这行副标题，而不是把「词光」挤成两行 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .topnav {
   display: none;
@@ -765,6 +791,7 @@ code {
 }
 .topbar-tools {
   margin-left: auto;
+  flex: none;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -900,7 +927,7 @@ code {
 }
 
 .boot {
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh));
   display: grid;
   place-content: center;
   justify-items: center;
@@ -1276,13 +1303,13 @@ code {
   color: var(--terra);
 }
 .senses .zh {
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale));
   font-weight: 600;
   line-height: 1.45;
 }
 .senses .en {
   grid-column: 2;
-  font: italic 400 15px/1.45 var(--word-face);
+  font: italic 400 calc(15px * var(--text-scale))/1.45 var(--word-face);
   color: var(--ink-3);
   font-variation-settings: "opsz" var(--word-opsz);
 }
@@ -1301,7 +1328,7 @@ code {
   margin-bottom: 7px;
 }
 .etym-sum {
-  font: 400 15px/1.7 var(--serif);
+  font: 400 calc(15px * var(--text-scale))/1.7 var(--serif);
   color: var(--ink-2);
   text-wrap: pretty;
 }
@@ -1321,7 +1348,7 @@ code {
   gap: 18px;
 }
 .ex-en {
-  font: 400 19px/1.5 var(--word-face);
+  font: 400 calc(19px * var(--text-scale))/1.5 var(--word-face);
   font-variation-settings: "opsz" var(--word-opsz);
   color: var(--ink);
   text-wrap: pretty;
@@ -1341,7 +1368,7 @@ code {
 .ex-zh {
   margin-top: 4px;
   color: var(--ink-3);
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--text-scale));
 }
 /* A translation can start behind a blur, so the English gets read first.
    Tapping lifts it; the veil lives in the card's state and returns on reopen. */
@@ -1453,7 +1480,7 @@ code {
   position: fixed;
   width: 340px;
   max-width: calc(100vw - 24px);
-  max-height: calc(100dvh - 24px);
+  max-height: calc(100 * var(--dvh) - 24px);
   overflow-y: auto;
   padding: 20px;
   border: 1px solid var(--line-strong);
@@ -1511,7 +1538,7 @@ code {
 }
 .lookup-meaning {
   margin: 14px 0 0;
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--text-scale));
   line-height: 1.6;
   color: var(--ink-2);
 }
@@ -1550,7 +1577,7 @@ code {
     bottom: 0;
     width: 100%;
     max-width: 100%;
-    max-height: 80dvh;
+    max-height: calc(80 * var(--dvh));
     border-radius: var(--shape-4xl) var(--shape-4xl) 0 0;
     padding: 26px var(--gutter) calc(22px + env(safe-area-inset-bottom));
     animation: sheet-up 0.3s var(--ease) both;
@@ -1603,7 +1630,7 @@ code {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 14px;
-  font: 400 16px/1.45 var(--serif);
+  font: 400 calc(16px * var(--text-scale))/1.45 var(--serif);
 }
 /* 近义按义项分行：只把词分开，不标义项名。词卡义项不全，落不进去的词
    统一放到最后一行，不丢，也不假装属于某个义项。 */
@@ -1638,7 +1665,7 @@ code {
   margin-top: 3px;
 }
 .tip p {
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--text-scale));
   line-height: 1.6;
 }
 .memory-note {
@@ -1697,7 +1724,7 @@ code {
 .sheet-frame {
   position: relative;
   width: 100%;
-  max-height: 94dvh;
+  max-height: calc(94 * var(--dvh));
   border-radius: var(--shape-3xl) var(--shape-3xl) 0 0;
   overflow: hidden;
   /* The paper lives here, on the box that carries the corners. `border-radius`
@@ -1716,7 +1743,7 @@ code {
 .sheet {
   position: relative;
   width: 100%;
-  max-height: 94dvh;
+  max-height: calc(94 * var(--dvh));
   overflow-y: auto;
   overscroll-behavior: contain;
   border-radius: inherit;
@@ -1774,11 +1801,11 @@ code {
   .sheet-frame {
     border-radius: var(--shape-4xl);
     max-width: 640px;
-    max-height: calc(100dvh - 64px);
+    max-height: calc(100 * var(--dvh) - 64px);
     animation: sheet-pop 0.38s var(--ease);
   }
   .sheet {
-    max-height: calc(100dvh - 64px);
+    max-height: calc(100 * var(--dvh) - 64px);
     padding: 36px;
   }
   .sheet-wide {
@@ -2134,7 +2161,7 @@ code {
 .journey-lede {
   margin-top: 10px;
   color: rgba(255, 255, 255, 0.82);
-  font-size: 15.5px;
+  font-size: calc(15.5px * var(--text-scale));
 }
 .teaser {
   display: flex;
@@ -2165,6 +2192,9 @@ code {
 .teaser > span {
   margin-left: 22px;
   font-size: 13px;
+  /* 字号放大到 120% 时这行不该断成「今日新 / 词」 */
+  white-space: nowrap;
+  flex: none;
   color: rgba(255, 255, 255, 0.75);
 }
 .journey-actions {
@@ -2256,7 +2286,7 @@ code {
 }
 .wotd-ex {
   margin-top: 8px;
-  font: italic 400 16px/1.5 var(--serif);
+  font: italic 400 calc(16px * var(--text-scale))/1.5 var(--serif);
   color: var(--ink-2);
 }
 @media (max-width: 519px) {
@@ -2924,7 +2954,7 @@ code {
 /* ---------- learn ---------- */
 
 .learn {
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh));
   display: flex;
   flex-direction: column;
 }
@@ -3321,9 +3351,9 @@ code {
   background: var(--sage-soft);
 }
 .slot.is-bad {
-  border-color: var(--terra);
-  background: var(--terra-soft);
-  color: var(--terra-ink);
+  border-color: var(--bad);
+  background: var(--bad-soft);
+  color: var(--ink);
 }
 .spell-input {
   position: absolute;
@@ -3364,7 +3394,7 @@ code {
   background: color-mix(in oklab, var(--sage-soft) 70%, var(--card));
 }
 .feedback.is-wrong .feedback-inner {
-  background: color-mix(in oklab, var(--terra-soft) 70%, var(--card));
+  background: color-mix(in oklab, var(--bad-soft) 70%, var(--card));
 }
 .feedback-art {
   width: 56px;
@@ -3479,12 +3509,12 @@ code {
   /* The session shell is pinned to the screen — but not the summary, which is a
      scrolling page with the "完成" button at its end. */
   .learn:not(.summary) {
-    height: 100dvh;
+    height: calc(100 * var(--dvh));
     min-height: 0;
     overflow: hidden;
   }
   .summary {
-    min-height: 100dvh;
+    min-height: calc(100 * var(--dvh));
     overflow: visible;
   }
   .learn-top {
@@ -3522,14 +3552,14 @@ code {
     gap: 10px;
   }
   .prompt-picture .illo {
-    width: min(100%, 300px, 26dvh);
+    width: min(100%, 300px, calc(26 * var(--dvh)));
   }
   .listen-orb {
-    width: min(148px, 19dvh);
-    height: min(148px, 19dvh);
+    width: min(148px, calc(19 * var(--dvh)));
+    height: min(148px, calc(19 * var(--dvh)));
   }
   .prompt-spell {
-    grid-template-columns: min(104px, 15dvh) 1fr;
+    grid-template-columns: min(104px, calc(15 * var(--dvh))) 1fr;
     gap: 14px;
   }
   .spell-zh {
@@ -3599,7 +3629,7 @@ code {
   /* The intro is a page of its own; it scrolls, but the plate is capped so the
      headword, the senses and the button are not two screens apart. */
   .intro .entry-art .illo {
-    width: min(100%, 440px, 34dvh);
+    width: min(100%, 440px, calc(34 * var(--dvh)));
     margin-inline: auto;
   }
   .learn-actions {
@@ -3711,7 +3741,7 @@ code {
   text-overflow: ellipsis;
 }
 .summary-words li.is-wrong .illo {
-  box-shadow: 0 0 0 2.5px var(--terra);
+  box-shadow: 0 0 0 2.5px var(--bad);
 }
 .summary-note {
   margin: 24px auto 0;
@@ -3834,7 +3864,7 @@ code {
   gap: 14px;
 }
 .typing-cue .illo {
-  width: min(200px, 26dvh);
+  width: min(200px, calc(26 * var(--dvh)));
   border-radius: var(--shape-2xl);
   box-shadow: var(--shadow);
 }
@@ -3868,8 +3898,8 @@ code {
   color: var(--ink);
 }
 .typing-text .is-bad {
-  color: var(--terra);
-  background: var(--terra-soft);
+  color: var(--bad);
+  background: var(--bad-soft);
 }
 .typing-text .is-caret {
   box-shadow: -2px 0 0 var(--terra);
@@ -3905,7 +3935,7 @@ code {
     z-index: 45;
     display: flex;
     flex-direction: column;
-    height: 100dvh;
+    height: calc(100 * var(--dvh));
     max-width: none;
     margin: 0;
     padding: calc(8px + env(safe-area-inset-top)) var(--gutter) calc(8px + env(safe-area-inset-bottom));
@@ -4467,7 +4497,7 @@ code {
 }
 .onboard-card {
   width: 100%;
-  max-height: 100dvh;
+  max-height: calc(100 * var(--dvh));
   overflow-y: auto;
   background: var(--paper);
   border-radius: var(--shape-3xl) var(--shape-3xl) 0 0;
@@ -4542,7 +4572,7 @@ code {
   .onboard-card {
     max-width: 560px;
     border-radius: var(--shape-4xl);
-    max-height: calc(100dvh - 48px);
+    max-height: calc(100 * var(--dvh) - 48px);
   }
   .onboard-body {
     padding: 28px 36px 32px;
@@ -5036,7 +5066,7 @@ a:hover .mark-needle,
 }
 @media (max-width: 759px) {
   .galaxy-full {
-    height: calc(100dvh - var(--top) - var(--tab) - 150px);
+    height: calc(100 * var(--dvh) - var(--top) - var(--tab) - 150px);
     min-height: 420px;
     border-radius: var(--shape-2xl);
     margin: 0 calc(-1 * var(--gutter) + 6px);

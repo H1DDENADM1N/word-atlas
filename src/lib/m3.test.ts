@@ -83,6 +83,35 @@ test("paints with the 2025 spec rather than the library's 2021 default", () => {
   );
 });
 
+test("keeps right, wrong and seen apart on every seed", () => {
+  const of = (hex: string) => Hct.fromInt(parseInt(hex.slice(1, 7), 16) | 0xff000000);
+  const gap = (a: Hct, b: Hct) => {
+    const d = Math.abs(a.hue - b.hue) % 360;
+    return Math.min(d, 360 - d);
+  };
+  for (const seed of ["#C4573A", "#5B8C5A", "#2F6B9F"]) {
+    for (const isDark of [false, true]) {
+      for (const variant of ["tonalSpot", "vibrant"] as const) {
+        const p = buildPalette(seed, isDark, variant);
+        const right = of(p["--sage"]);
+        const wrong = of(p["--bad"]);
+        const seen = of(p["--ochre"]);
+        const where = `${seed}/${isDark}/${variant}`;
+        // The quiz verdicts are the pair that has to be unmistakable: the
+        // scheme's secondary and primary shared a hue, one degree apart.
+        assert.ok(gap(right, wrong) >= 60, `right/wrong ${gap(right, wrong)} ${where}`);
+        // Two kinds of "progress" on the atlas may sit closer, but not so
+        // close that the legend reads as one colour.
+        assert.ok(gap(right, seen) >= 25, `right/seen ${gap(right, seen)} ${where}`);
+        for (const [name, c] of [["right", right], ["seen", seen]] as const) {
+          assert.ok(c.chroma >= 24, `${name} chroma ${c.chroma.toFixed(0)} ${where}`);
+        }
+        assert.notEqual(p["--bad"], p["--terra"]);
+      }
+    }
+  }
+});
+
 test("rejects malformed seeds instead of throwing", () => {
   assert.equal(normalizeSeed("#c4573a"), "#C4573A");
   assert.equal(normalizeSeed("#GGGGGG"), "");

@@ -30,6 +30,13 @@ export type CjkFont = "system" | "wenkai";
 
 export const WORD_FONTS: WordFont[] = ["serif", "sans", "classic"];
 export const CJK_FONTS: CjkFont[] = ["system", "wenkai"];
+
+/**
+ * Five stops each. The middle stop is 1, so a stale or missing value falls
+ * back to the size the app has always had.
+ */
+export const UI_SCALES = [0.9, 0.95, 1, 1.05, 1.1];
+export const TEXT_SCALES = [0.9, 0.95, 1, 1.1, 1.2];
 /** The three looks the picker offers, coarsest first. */
 export const FAMILIES: ThemeFamily[] = ["ink", "night", "m3e"];
 export const MODES: ThemeMode[] = ["system", "light", "dark"];
@@ -106,6 +113,10 @@ export interface Settings {
   wordFont: WordFont;
   /** Which Chinese face the interface paints with. */
   cjkFont: CjkFont;
+  /** Whole-page scale: spacing, buttons and text together. One of UI_SCALES. */
+  uiScale: number;
+  /** Reading text only: definitions, examples and the prose around them. */
+  textScale: number;
   sfx: boolean;
   /** Short vibration on presses, flips and verdicts (Android: no permission needed). */
   haptic: boolean;
@@ -135,6 +146,8 @@ export const defaultSettings: Settings = {
   m3Accent: "wallpaper",
   wordFont: "serif",
   cjkFont: "system",
+  uiScale: 1,
+  textScale: 1,
   sfx: true,
   haptic: true,
   spell: true,
@@ -334,6 +347,9 @@ export function sanitizeSettings(v: unknown): Settings {
     s.wordFont = v.wordFont as WordFont;
   if (CJK_FONTS.includes(v.cjkFont as CjkFont))
     s.cjkFont = v.cjkFont as CjkFont;
+  if (UI_SCALES.includes(v.uiScale as number)) s.uiScale = v.uiScale as number;
+  if (TEXT_SCALES.includes(v.textScale as number))
+    s.textScale = v.textScale as number;
   if (typeof v.sfx === "boolean") s.sfx = v.sfx;
   if (typeof v.haptic === "boolean") s.haptic = v.haptic;
   if (typeof v.spell === "boolean") s.spell = v.spell;
@@ -503,8 +519,29 @@ export function backupSettings(s: Settings) {
   // word an older build (and the website) knows. `void` marks the drop as
   // deliberate for the compiler's unused-locals check. The Chinese face goes
   // the same way: it names a device's taste, not the words being carried over.
-  const { themeFamily, themeMode, nightSkin, m3Variant, m3Accent, cjkFont, ...rest } = s;
-  void [themeFamily, themeMode, nightSkin, m3Variant, m3Accent, cjkFont];
+  // The two scale stops are the same kind of thing — how large this screen
+  // shows the words, not the words.
+  const {
+    themeFamily,
+    themeMode,
+    nightSkin,
+    m3Variant,
+    m3Accent,
+    cjkFont,
+    uiScale,
+    textScale,
+    ...rest
+  } = s;
+  void [
+    themeFamily,
+    themeMode,
+    nightSkin,
+    m3Variant,
+    m3Accent,
+    cjkFont,
+    uiScale,
+    textScale,
+  ];
   return { ...rest, theme: legacyTheme(s) };
 }
 

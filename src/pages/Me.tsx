@@ -18,8 +18,11 @@ import {
   type M3Variant,
   type ThemeFamily,
 } from "../lib/theme-model";
-import { dayKey, exportBackup, exportWebBackup, FAMILIES as FAMILY_KEYS, MODES as MODE_KEYS, NIGHT_SKINS, importAnyBackup, resetProgress, store, useStore, type Settings } from "../store/store";
+import { dayKey, exportBackup, exportWebBackup, FAMILIES as FAMILY_KEYS, MODES as MODE_KEYS, NIGHT_SKINS, importAnyBackup, resetProgress, store, TEXT_SCALES, UI_SCALES, useStore, type Settings } from "../store/store";
 import { toast } from "../ui/Toast";
+
+/** Five stops, short words: they sit in one row on a 375px phone. */
+const TEXT_SIZE_LABEL = ["小", "较小", "标准", "大", "特大"];
 import { streakOf } from "./Today";
 
 /** A three-colour preview of each palette: page, surface, accent. */
@@ -338,6 +341,32 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
               ).map(([k, l]) => (
                 <button key={k} className={settings.cjkFont === k ? "is-on" : ""} onClick={() => set({ cjkFont: k })}>
                   {l}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="界面缩放" hint="整页等比放大或缩小，间距和按钮一起变。">
+            <div className="segmented segmented-wide">
+              {UI_SCALES.map((v) => (
+                <button
+                  key={v}
+                  className={settings.uiScale === v ? "is-on" : ""}
+                  onClick={() => set({ uiScale: v })}
+                >
+                  {Math.round(v * 100)}%
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="字体大小" hint="只放大正文、释义和例句；标题与按钮不受影响。">
+            <div className="segmented segmented-wide">
+              {TEXT_SCALES.map((v, i) => (
+                <button
+                  key={v}
+                  className={settings.textScale === v ? "is-on" : ""}
+                  onClick={() => set({ textScale: v })}
+                >
+                  {TEXT_SIZE_LABEL[i]}
                 </button>
               ))}
             </div>
