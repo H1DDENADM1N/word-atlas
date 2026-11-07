@@ -544,7 +544,7 @@ git commit -m "feat(theme): paint the computed palette onto the document root"
 - Consumes: `VARIANTS` / `VARIANT_LABEL` / `PALETTES` from `../lib/theme-model`；`buildPalette` from `../lib/m3`；`store.settings(patch)`
 - Produces: 无（纯 UI）
 
-- [ ] **Step 1: 删旧表、加家族表**
+- [x] **Step 1: 删旧表、加家族表**
 
 删除 `SWATCH`（:14-21）与 `THEME_LABEL`（:23-29），换成：
 
@@ -556,7 +556,7 @@ const FAMILIES: [ThemeFamily, string, string][] = [
 ];
 ```
 
-- [ ] **Step 2: 写三组控件**
+- [x] **Step 2: 写三组控件**
 
 `:209-225` 的那个 `<Field label="主题">` 换成：
 
@@ -564,7 +564,7 @@ const FAMILIES: [ThemeFamily, string, string][] = [
 2. 深浅 Field：`themeFamily === "night"` 时渲染 `[["aurora","极光"],["starlight","星光"]]` 两个按钮，否则渲染 `[["system","跟随系统"],["light","浅色"],["dark","深色"]]` 三个按钮（**不是灰掉，是换一组**）
 3. 仅 `themeFamily === "m3e"` 时：强调色 Field（「跟随壁纸」按钮 + `PALETTES.map` 的 8 个色点，`onClick={() => set({ m3Accent: hex })}`）与调色板风格 Field（`VARIANTS.map`）
 
-- [ ] **Step 3: Variant chip 用实时算色**
+- [x] **Step 3: Variant chip 用实时算色**
 
 每个 Variant chip 复用 `.theme-chip` 的两层 `<i />` 结构，三色预览这样算：
 
@@ -575,23 +575,23 @@ const p = useMemo(() => buildPalette(seed, mode === "dark", variant), [seed, mod
 
 `seed` 取「当前 m3Accent（非 wallpaper 时）→ `wallpaperSeed()` → `FALLBACK_SEED`」。9 个 chip 各算一次，`useMemo` 放到 `.map` 内层的子组件里（新建 `ThemeChip` 组件），否则违反 hooks 规则。
 
-- [ ] **Step 4: 样式**
+- [x] **Step 4: 样式**
 
 `.theme-picker` 已有网格；家族按钮的 chip 用静态三色（纸墨 `#f6f1e7/#fffdf8/#cb922c`、夜空 `#05060f/#171d35/#4fe8b8`、M3E 用当前种子实算）。色点用 28px 圆形，选中态加 `outline: 2px solid var(--ink)`。
 
-- [ ] **Step 5: 类型检查 + 构建**
+- [x] **Step 5: 类型检查 + 构建**
 
 Run: `npx tsc -b && npm run build`
 Expected: 均通过。
 
-- [ ] **Step 6: 目视验收（dev server）**
+- [x] **Step 6: 目视验收（dev server）**
 
 Run: `npm run dev`，开 `/me` 页：
 - 切三个家族，页面配色立即变
 - 切回纸墨，`documentElement.style` 里不留任何 M3 变量（DevTools 里检查）
 - M3E 下点不同 Variant，chip 预览与页面同时变
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/pages/Me.tsx src/styles/app.css
@@ -610,7 +610,7 @@ git commit -m "feat(theme): pick family, depth, accent and palette style from Me
 - Consumes: JS 侧 `native.wallpaperSeed()`（Task 5）
 - Produces: `WordAtlasAndroid.wallpaperColor(): String` —— `"#RRGGBB"` 或 `""`
 
-- [ ] **Step 1: 在 `Bridge` 里加方法**
+- [x] **Step 1: 在 `Bridge` 里加方法**
 
 ```java
 /** The phone's wallpaper accent as "#RRGGBB"; "" when this ROM will not tell us. */
@@ -644,19 +644,19 @@ public String wallpaperColor() {
 
 > 注意 `system_accent1_500` 是 `android.R.color` 资源名，只在 `S+` 存在；`getColor(int, Theme)` 也要求 `M+`，但已由版本判断保护。`WallpaperManager.getWallpaperColors` 要求 `O_MR1+`（27）。
 
-- [ ] **Step 2: 构建 APK**
+- [x] **Step 2: 构建 APK**
 
 Run: `npm run build:android && npm run apk`
 Expected: `scripts/android/build_apk.py` 编译通过，产出 APK 路径打印出来。
 
-- [ ] **Step 3: 真机/模拟器验证**
+- [x] **Step 3: 真机/模拟器验证**
 
 装到 API 31+ 与 API 30 各一台（或 30 用 `adb shell setprop` 无法模拟，直接看回退）：
 - M3E + 跟随壁纸 → 强调色接近壁纸主色
 - 桌面模拟器无壁纸 → 落到 terra `#C4573A`，页面正常
 - 检查无权限申请弹窗
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add android/app/src/main/java/tech/wordatlas/app/MainActivity.java docs/android.md
@@ -676,16 +676,16 @@ git commit -m "feat(android): expose the wallpaper accent to the web layer"
 - Consumes: 无
 - Produces: 打印到 stdout 的 CSS 片段 `--ease: linear(...);  --spring: linear(...);`，由人粘贴进 `app.css`（脚本不写文件，避免构建期副作用）
 
-- [ ] **Step 1: 写生成脚本**
+- [x] **Step 1: 写生成脚本**
 
 参数在脚本头部集中声明：`--ease` = damping 0.8 / stiffness 380，`--spring` = damping 0.72 / stiffness 320，mass 1，采样 40 点、总时长 0.5s。阻尼振荡解析解 `x(t) = 1 - e^(-ζωt)(cos(ω_d t) + (ζω/ω_d) sin(ω_d t))`，`ω = sqrt(k/m)`，`ω_d = ω sqrt(1-ζ²)`；归一化到 `[0,1]` 后输出 `linear(0, 0.123, ...)` 保留 3 位小数。
 
-- [ ] **Step 2: 生成并核对**
+- [x] **Step 2: 生成并核对**
 
 Run: `node scripts/gen-motion.mjs`
 Expected: 输出两行，首值 `0`，末值 `1`，单调递增（允许末端 ±0.002 过冲后回落）。若出现 NaN，检查 `1-ζ²` 是否为正。
 
-- [ ] **Step 3: 粘进 `app.css` 的 M3E 段**
+- [x] **Step 3: 粘进 `app.css` 的 M3E 段**
 
 Task 1 建的 `:root[data-family="m3e"]` 块内追加两条曲线，并加回退块：
 
@@ -698,12 +698,12 @@ Task 1 建的 `:root[data-family="m3e"]` 块内追加两条曲线，并加回退
 }
 ```
 
-- [ ] **Step 4: 构建 + 目视**
+- [x] **Step 4: 构建 + 目视**
 
 Run: `npm run build`，然后 dev 环境切到 M3E，点按钮/开 Sheet 看回弹是否比纸墨更「活」。
 Expected: 纸墨与夜空动效完全不变；M3E 有轻微过冲。
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/gen-motion.mjs src/styles/app.css package.json
@@ -724,17 +724,17 @@ git commit -m "feat(theme): swap in spring easing for the expressive family"
 - Consumes: 全部前序任务的产出
 - Produces: 无
 
-- [ ] **Step 1: 写 `docs/theme.md`**
+- [x] **Step 1: 写 `docs/theme.md`**
 
 四节：三家族与五字段的数据模型、色彩层（种子三级回退 + 角色映射表 + 为什么用 2025 spec）、形状层（11 档表 + 白名单 + `check:shape`）、动效层（参数、`gen:motion` 复现方式、`@supports` 回退）。明确写一句「本项目的 Expressive 形状与曲线是对规范的解读，不是官方数值」。
 
-- [ ] **Step 2: 改三处既有文档**
+- [x] **Step 2: 改三处既有文档**
 
 - `README.md:45` 主题行补「Material Expressive（跟随壁纸取色 / 9 种调色板风格）」
 - `docs/android.md:123` 状态栏行补「M3E 下取算出的 surface」
 - `docs/android-widgets.md:295` 补一句「桌面小部件不跟随 Material Expressive，仍走 values/values-night 两态」
 
-- [ ] **Step 3: 全量验证**
+- [x] **Step 3: 全量验证**
 
 ```bash
 npm run check:shape && npx tsc -b && npm test && npm run build && npm run build:android
@@ -742,7 +742,7 @@ npm run check:shape && npx tsc -b && npm test && npm run build && npm run build:
 
 Expected: 五条全绿；记录 `dist-android/assets/app.js` gzip 尺寸，与 177,145 B 的基线对比写进 commit message。
 
-- [ ] **Step 4: 真机走一遍 Review Focus 五条**
+- [x] **Step 4: 真机走一遍 Review Focus 五条**
 
 1. 模拟器（无壁纸）下 M3E 取到 terra，页面不黑不透明
 2. 家族 m3e → ink 来回切 5 次，`documentElement.style` 为空
@@ -750,7 +750,7 @@ Expected: 五条全绿；记录 `dist-android/assets/app.js` gzip 尺寸，与 1
 4. 拿一份 2025 年的旧备份（只有 `theme: "aurora"`）导入，落到 night + aurora
 5. 应用在前台时在系统设置里切深浅，M3E 跟随模式下整块配色跟着变
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add README.md docs/android.md docs/android-widgets.md docs/theme.md
