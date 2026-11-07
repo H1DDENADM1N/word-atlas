@@ -76,9 +76,9 @@ function targets(w: number, h: number, count: number) {
   g.textBaseline = "middle";
   g.fillText("词光", cx, cy + R + zh * 0.78);
   const en = Math.max(18, zh * 0.24);
-  g.font = `700 ${en}px "Fraunces Variable", Georgia, serif`;
+  g.font = `700 ${en}px "Songti SC", "Noto Serif SC", serif`;
   g.letterSpacing = `${en * 0.34}px`;
-  g.fillText("WORD ATLAS", cx, cy + R + zh * 1.52);
+  g.fillText("雅思词汇图鉴", cx, cy + R + zh * 1.52);
   const data = g.getImageData(0, 0, w, h).data;
   // Take every lit pixel, then a random subset: no visible sampling grid.
   const all: [number, number][] = [];
@@ -237,7 +237,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className={`splash is-${phase} ${reduce ? "is-reduced" : ""}`} onClick={() => open()} role="dialog" aria-label="欢迎打开雅思大门，点击进入">
+    <div className={`splash is-${phase} ${reduce ? "is-reduced" : ""}`} onClick={() => open()} role="dialog" aria-label="词光，开始学习">
       <div className="door door-l" />
       <div className="door door-r" />
       <div className="splash-light" />
@@ -245,14 +245,14 @@ export function Splash({ onDone }: { onDone: () => void }) {
       {reduce && (
         <div className="splash-static">
           <b>词光</b>
-          <small>WORD ATLAS</small>
+          <small>雅思词汇图鉴</small>
         </div>
       )}
       <div className="splash-copy">
-        <p className="splash-tag">欢迎打开雅思大门</p>
+        <p className="splash-tag">一词一画，学在语境里</p>
         <p className="splash-hint">
           <span className="splash-key" />
-          点击开启 · 按任意键
+          开始学习
         </p>
       </div>
       <button

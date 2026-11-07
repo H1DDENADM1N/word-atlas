@@ -21,7 +21,7 @@ const SWATCH: Record<Theme, [string, string, string]> = {
 };
 
 const THEME_LABEL: [Theme, string][] = [
-  ["system", "系统"],
+  ["system", "跟随系统"],
   ["light", "浅色"],
   ["dark", "深色"],
   ["aurora", "极光"],
@@ -74,11 +74,11 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
     toast(where === "shell" ? "网页版备份已保存到下载目录" : "网页版备份已下载", "ok");
   };
   const restore = async (f: File) => {
-    if (f.size > 30 * 1024 * 1024) return toast("文件太大，不像是学习备份。", "warn");
+    if (f.size > 30 * 1024 * 1024) return toast("文件超过 30 MiB，无法导入。请选择词光导出的备份文件。", "warn");
     const r = importAnyBackup(await f.text());
     if (!r.ok) return toast(r.error, "warn");
     const days = r.days ? `、${r.days} 天记录` : "";
-    toast(`${r.web ? "网页版备份" : "备份"}已恢复：${r.cards} 个词${days}`, "ok");
+    toast(`已恢复 ${r.cards} 个词的学习记录${days}`, "ok");
   };
   const maxF = Math.max(1, ...stats.forecast);
   const streak = streakOf(progress.days);
@@ -87,7 +87,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
     <div className="page me">
       <header className="page-head">
         <p className="eyebrow">我的</p>
-        <h1 className="display">你的星空</h1>
+        <h1 className="display">我的学习</h1>
       </header>
 
       <a
@@ -116,14 +116,14 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           </dd>
         </div>
         <div>
-          <dt>已点亮</dt>
+          <dt>已学</dt>
           <dd>
             {stats.learned.toLocaleString()}
             <small>词</small>
           </dd>
         </div>
         <div>
-          <dt>长期记住</dt>
+          <dt>较熟悉</dt>
           <dd>
             {stats.mastered.toLocaleString()}
             <small>词</small>
@@ -158,11 +158,11 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
             <i className="h4" />
             <span>多</span>
           </div>
-          <p className="muted">一格是一天，颜色越深，那天答得越多。「长期记住」指记忆稳定度超过 21 天。</p>
+          <p className="muted">每格代表一天，颜色越深，作答越多。“较熟悉”按复习记录估算，仍需定期复习。</p>
         </section>
 
         <section className="panel">
-          <h3 className="eyebrow">未来 7 天的复习量</h3>
+          <h3 className="eyebrow">未来 7 天待复习</h3>
           <ol className="forecast">
             {stats.forecast.map((n, i) => (
               <li key={i} className={i === 0 ? "is-today" : ""}>
@@ -178,7 +178,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           <h3 className="eyebrow">学习设置</h3>
 
           <Group label="学习节奏" />
-          <Field label="每日新词" hint="复习不设上限，算法只安排快要遗忘的词。">
+          <Field label="每日新词" hint="每天可设 1–200 个新词，复习另计。">
             <div className="segmented">
               {[5, 10, 15, 20, 30].map((n) => (
                 <button key={n} className={settings.dailyNew === n ? "is-on" : ""} onClick={() => set({ dailyNew: n })}>
@@ -187,7 +187,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
               ))}
             </div>
           </Field>
-          <Field label="从哪个难度开始" hint="跳过已经熟悉的低级别词。">
+          <Field label="学习起点" hint="只影响之后安排的新词，已学词的复习和当前这一轮保持不变。">
             <div className="segmented">
               {atlas.cefr.map((l, i) => (
                 <button key={l} className={settings.startLevel === i ? "is-on" : ""} onClick={() => set({ startLevel: i })}>
@@ -196,7 +196,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
               ))}
             </div>
           </Field>
-          <Field label="目标记忆率" hint="越高复习越频繁。90% 是大多数人的甜点。">
+          <Field label="复习目标" hint="希望下次复习时仍记得的比例。数值越高，复习通常越频繁；可先用默认的 90%。">
             <div className="segmented">
               {[0.85, 0.9, 0.95].map((n) => (
                 <button key={n} className={settings.retention === n ? "is-on" : ""} onClick={() => set({ retention: n })}>
@@ -246,13 +246,13 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           />
 
           <Group label="声音" />
-          <Field label="发音">
+          <Field label="默认发音">
             <div className="segmented">
               <button className={settings.accent === "uk" ? "is-on" : ""} onClick={() => set({ accent: "uk" })}>
-                英式
+                英音
               </button>
               <button className={settings.accent === "us" ? "is-on" : ""} onClick={() => set({ accent: "us" })}>
-                美式
+                美音
               </button>
             </div>
           </Field>
@@ -274,16 +274,16 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
 
           <Group label="习惯" />
           <Toggle label="例句中文先模糊" hint="点一下模糊的中文就显示，离开词卡后恢复模糊。" on={settings.blurZh} set={(v) => set({ blurZh: v })} />
-          <Toggle label="开屏动画（每天一次）" on={settings.splash} set={(v) => set({ splash: v })} />
+          <Toggle label="每日开屏动画" on={settings.splash} set={(v) => set({ splash: v })} />
           <Toggle label="复习时加入拼写题" on={settings.spell} set={(v) => set({ spell: v })} />
           {privateAvailable && (
-            <Field label="词库" hint="私人词库只在本机开发服务器中可用，不会被打包发布。">
+            <Field label="词库" hint="本地词库仅供当前开发环境使用。">
               <div className="segmented">
                 <button className={settings.dataset === "open" ? "is-on" : ""} onClick={() => set({ dataset: "open" })}>
-                  开放图鉴
+                  公开词库
                 </button>
                 <button className={settings.dataset === "private" ? "is-on" : ""} onClick={() => set({ dataset: "private" })}>
-                  私人 8000
+                  本地词库
                 </button>
               </div>
             </Field>
@@ -291,9 +291,9 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
         </section>
 
         <section className="panel">
-          <h3 className="eyebrow">数据</h3>
-          <p className="muted">进度只存在这台设备的浏览器里：没有账号，没有服务器。换设备时，导出备份再导入即可。</p>
-          {saveError && <p className="warn-text">浏览器拒绝保存（可能是隐私模式或空间已满）。请尽快导出备份。</p>}
+          <h3 className="eyebrow">学习数据</h3>
+          <p className="muted">进度保存在当前浏览器，不会自动同步。换设备或清除浏览器数据前，请先导出备份。</p>
+          {saveError && <p className="warn-text">进度未能保存。请先导出备份，再检查浏览器存储空间和隐私设置。</p>}
           <div className="data-actions">
             <button className="btn btn-ghost" onClick={download}>
               <Download size={18} /> 导出备份
@@ -305,13 +305,13 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
             <button
               className="btn btn-ghost btn-danger"
               onClick={() => {
-                if (confirm("确定清空这个词库的全部学习记录？此操作无法撤销，建议先导出备份。")) {
+                if (confirm("清空当前词库的学习记录？清空后无法撤销。建议先导出备份。")) {
                   resetProgress();
                   toast("学习记录已清空");
                 }
               }}
             >
-              <RotateCcw size={18} /> 清空记录
+              <RotateCcw size={18} /> 清空学习记录
             </button>
           </div>
 
@@ -379,7 +379,7 @@ function Heatmap({ days }: { days: Record<string, { r: number }> }) {
   }
   const lvl = (v: number) => (v === 0 ? 0 : v < 10 ? 1 : v < 25 ? 2 : v < 50 ? 3 : 4);
   return (
-    <div className="heatmap" role="img" aria-label="学习热力图">
+    <div className="heatmap" role="img" aria-label="过去 20 周的每日作答记录">
       {cells.map((c) => (
         <span key={c.k} className={`h${c.future ? "x" : lvl(c.v)}`} title={`${c.k} · ${c.v} 题`} />
       ))}

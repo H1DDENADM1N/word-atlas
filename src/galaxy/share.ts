@@ -36,7 +36,7 @@ export async function shareGalaxy(source: HTMLCanvasElement, lit: number, total:
     g.fillText(`已点亮 ${lit.toLocaleString()} 颗星`, pad, 1196);
     g.font = `400 28px ${SANS}`;
     g.fillStyle = "rgba(243,236,223,.6)";
-    g.fillText(`共 ${total.toLocaleString()} 个雅思词 · 每学会一个，就点亮一颗`, pad, 1248);
+    g.fillText(`共 ${total.toLocaleString()} 个词 · 完成首次作答，点亮一颗星`, pad, 1248);
     g.fillStyle = "rgba(243,236,223,.16)";
     g.fillRect(pad, H - 66, W - pad * 2, 1);
     g.fillStyle = "#f3ecdf";

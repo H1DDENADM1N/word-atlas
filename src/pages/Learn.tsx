@@ -69,7 +69,7 @@ function Runner({ session }: { session: ActiveSession }) {
   return (
     <div className="learn">
       <header className="learn-top">
-        <button className="icon-btn" onClick={exit} aria-label="暂停并返回">
+        <button className="icon-btn" onClick={exit} aria-label="暂停学习，返回今日">
           <X size={22} />
         </button>
         <div className="learn-progress" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={session.index}>
@@ -128,12 +128,12 @@ function Intro({ step }: { step: Step }) {
   return (
     <div className="intro">
       <p className="stage-label">
-        <span className="dot dot-new" /> 初次见面
+        <span className="dot dot-new" /> 认识新词
       </p>
       <EntryView entry={entry} mode="intro" />
       <footer className="learn-actions">
         <button className="btn btn-primary btn-xl" onClick={next} autoFocus>
-          认识了 <ArrowRight size={20} />
+          继续 <ArrowRight size={20} />
         </button>
         <span className="hint-keys">
           <kbd>Enter</kbd> 继续
@@ -144,9 +144,9 @@ function Intro({ step }: { step: Step }) {
 }
 
 const KIND_LABEL: Record<QuizKind, string> = {
-  meaning: "它是什么意思？",
+  meaning: "选择词义",
   picture: "看图，补全这句话",
-  listen: "听，是哪个词？",
+  listen: "听发音，选单词",
   spell: "拼出这个词",
 };
 
@@ -238,7 +238,7 @@ function Quiz({ step, session }: { step: Step & { kind: QuizKind }; session: Act
     <div className={`quiz quiz-${step.kind} ${pending ? (pending.correct ? "is-right" : "is-wrong") : ""}`}>
       <p className="stage-label">
         <span className={`dot ${step.retry ? "dot-retry" : "dot-review"}`} />
-        {step.retry ? "再见一面 · " : ""}
+        {step.retry ? "错词再练 · " : ""}
         {step.kind === "picture" && !sentence ? "选出对应的单词" : KIND_LABEL[step.kind]}
       </p>
 
@@ -277,7 +277,7 @@ function Quiz({ step, session }: { step: Step & { kind: QuizKind }; session: Act
               <span />
             </button>
             <button className="link" onClick={() => play(atlas.audio(entry, settings.accent), entry.w, settings.accent, 0.7)}>
-              慢速再听
+              慢速播放
             </button>
           </div>
         )}
@@ -336,7 +336,7 @@ function SpellPrompt({ entry, refw, hints }: { entry: Entry; refw: WordRef; hint
             <LookupText text={sentence.after} />
           </p>
         )}
-        <Speak url={atlas.audio(entry, accent)} text={entry.w} accent={accent} size="sm" label="听发音" />
+        <Speak url={atlas.audio(entry, accent)} text={entry.w} accent={accent} size="sm" label="播放发音" />
       </div>
     </div>
   );
@@ -391,16 +391,16 @@ function SpellInput({ entry, pending, hints, onHint, onSubmit }: { entry: Entry;
         autoComplete="off"
         spellCheck={false}
         enterKeyHint="done"
-        aria-label={`拼写，${target.length} 个字符`}
+        aria-label={`输入拼写，共 ${target.length} 个字符`}
         readOnly={!!pending}
       />
       {!pending && (
         <div className="spell-actions">
           <button type="button" className="btn btn-ghost" onClick={onHint} disabled={hints >= target.length - 1}>
-            <Lightbulb size={17} /> 提示字母
+            <Lightbulb size={17} /> 显示字母提示
           </button>
           <button type="submit" className="btn btn-primary" disabled={!value.trim()}>
-            确认 <kbd>Enter</kbd>
+            检查答案 <kbd>Enter</kbd>
           </button>
         </div>
       )}
@@ -430,8 +430,8 @@ function Feedback({ entry, refw, correct, onNext }: { entry: Entry; refw: WordRe
       <div className="feedback-inner">
         <Illustration src={atlas.img(entry, "thumb")} word={entry.w} topic={refw.topic} className="feedback-art" />
         <div className="feedback-text">
-          <p className="feedback-verdict">{correct ? "答对了" : "没关系，记住它"}</p>
-          <button type="button" className="feedback-word" onClick={() => openWord(entry.id)} aria-label={`打开 ${entry.w} 的词卡`}>
+          <p className="feedback-verdict">{correct ? "答对了" : "这次没答对，看看词义再试"}</p>
+          <button type="button" className="feedback-word" onClick={() => openWord(entry.id)} aria-label={`查看 ${entry.w} 的词卡`}>
             <b lang="en">{entry.w}</b>
             <span className="ipa">{entry.uk || entry.us}</span>
             <ArrowUpRight size={15} strokeWidth={2.2} className="feedback-go" aria-hidden="true" />
@@ -485,14 +485,14 @@ function Summary({ session }: { session: ActiveSession }) {
       <div className="summary-card">
         <div className="summary-sky">
           <Galaxy mode="mini" highlight={words.map((w) => w.id)} ignite />
-          <p>今天点亮了 {words.length} 颗星</p>
+          <p>本轮学练 {words.length} 个词</p>
         </div>
-        <p className="eyebrow">这一程结束了</p>
-        <h1 className="display">{stats.accuracy >= 90 ? "漂亮的一程。" : stats.accuracy >= 60 ? "稳稳向前。" : "错过的，会再相遇。"}</h1>
+        <p className="eyebrow">学习记录</p>
+        <h1 className="display">本轮完成</h1>
         <div className="summary-stats">
           <Ring value={stats.accuracy / 100} size={128} tone={stats.accuracy >= 60 ? "sage" : "terra"}>
             <b>{stats.accuracy}%</b>
-            <small>首次正确</small>
+            <small>首次正确率</small>
           </Ring>
           <dl>
             <div>
@@ -521,7 +521,7 @@ function Summary({ session }: { session: ActiveSession }) {
             </li>
           ))}
         </ul>
-        <p className="summary-note">FSRS 已为每个词排好下次相遇的时间。答错的词，会更早回来。</p>
+        <p className="summary-note">已根据作答情况安排下次复习。答错的词会更早复习。</p>
         <div className="summary-actions">
           {wrong.length > 0 && (
             <button className="btn btn-ghost" onClick={again}>
@@ -529,10 +529,10 @@ function Summary({ session }: { session: ActiveSession }) {
             </button>
           )}
           <button className="btn btn-ghost" onClick={() => shareSession(atlas, session)}>
-            <Share2 size={18} /> 分享成绩卡
+            <Share2 size={18} /> 分享学习卡
           </button>
           <button className="btn btn-primary btn-xl" onClick={done} ref={(b) => b?.focus({ preventScroll: true })}>
-            完成 <ArrowRight size={20} />
+            返回今日 <ArrowRight size={20} />
           </button>
         </div>
       </div>

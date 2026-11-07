@@ -449,7 +449,7 @@ export function Galaxy({
         }}
         onWheel={onWheel}
         role="img"
-        aria-label={`词汇星图：${layout.n} 颗星，已点亮 ${lit} 颗。可拖动旋转、滚动缩放，点击星星打开词条。`}
+        aria-label={`词汇星图：${layout.n} 颗星，已点亮 ${lit} 颗。可拖动旋转、滚动缩放，选择星星查看词卡。`}
         tabIndex={0}
         onKeyDown={(e) => {
           const eng = engine.current;
@@ -507,7 +507,7 @@ export function Galaxy({
           </li>
           <li>
             <i className="lg-mastered" />
-            已掌握
+            较熟悉
           </li>
         </ul>
       </div>
@@ -540,7 +540,7 @@ export function Galaxy({
               if (store.get().settings.sfx) void cue("fly");
             }
           }}
-          aria-label="飞到一颗已点亮的星"
+          aria-label="随机查看已学单词"
         >
           <Crosshair size={17} />
         </button>
@@ -548,7 +548,7 @@ export function Galaxy({
           <Share2 size={17} />
         </button>
       </div>
-      <p className="galaxy-hint">拖动旋转 · 滚动缩放 · 点击星星打开词条</p>
+      <p className="galaxy-hint">拖动旋转 · 缩放星图 · 选择星星查看词卡</p>
     </div>
   );
 }

@@ -16,8 +16,8 @@ type Mode = "word" | "sentence" | "dictation";
 type Source = "recent" | "mistakes" | "saved" | "path";
 
 const MODES: [Mode, string, string, typeof Type][] = [
-  ["word", "单词", "看图写出单词", Type],
-  ["sentence", "例句", "照着抄写，练出手感", Keyboard],
+  ["word", "单词打字", "看图写出单词", Type],
+  ["sentence", "例句打字", "照着例句练习拼写", Keyboard],
   ["dictation", "听写", "只听声音，写下整句", Headphones],
 ];
 const SOURCES: [Source, string][] = [
@@ -56,9 +56,9 @@ export function Practice() {
   return (
     <div className="page practice">
       <header className="page-head">
-        <p className="eyebrow">练习 · Typing Studio</p>
+        <p className="eyebrow">练习</p>
         <h1 className="display">让手，也记住它们。</h1>
-        <p className="lede">打字只练拼写和手感，不会改动记忆进度。</p>
+        <p className="lede">练习成绩单独记录，不计入单词复习进度。</p>
       </header>
       <div className="practice-grid">
         <section className="panel">
@@ -72,7 +72,7 @@ export function Practice() {
               </button>
             ))}
           </div>
-          <h3 className="eyebrow">词来自</h3>
+          <h3 className="eyebrow">选词范围</h3>
           <div className="segmented segmented-wide">
             {SOURCES.map(([k, label]) => (
               <button key={k} className={source === k ? "is-on" : ""} onClick={() => setSource(k)} aria-pressed={source === k}>
@@ -83,12 +83,12 @@ export function Practice() {
           <p className="muted">
             {pool.length
               ? source === "path"
-                ? "从学习路线的前 400 个词里随机抽 10 个。"
-                : `可练 ${pool.length} 个词，每轮随机 10 个。`
-              : "这里还没有词，先去学几个，或换个来源。"}
+                ? "从学习路线前 400 个词中随机选 10 个。"
+                : `可练 ${pool.length} 个词，每轮最多 10 个。`
+              : "这里还没有词。先学新词，或换个选词范围。"}
           </p>
           <button className="btn btn-primary btn-xl" onClick={start} disabled={!pool.length}>
-            开始一轮
+            开始练习
           </button>
         </section>
         <section className="panel practice-side">
@@ -98,7 +98,7 @@ export function Practice() {
               <dt>最佳速度</dt>
               <dd>
                 {best}
-                <small>WPM</small>
+                <small>词/分钟</small>
               </dd>
             </div>
             <div>
@@ -106,7 +106,7 @@ export function Practice() {
               <dd>{progress.typing.length}</dd>
             </div>
           </dl>
-          <p className="muted">WPM 按标准每 5 个字符计 1 词，只统计正确输入。</p>
+          <p className="muted">速度按每 5 个正确字符折算 1 词。</p>
         </section>
       </div>
     </div>
@@ -173,15 +173,15 @@ function TypingRound({ mode, entries, onExit, onAgain }: { mode: Mode; entries: 
         <section className="panel typing-done">
           <p className="eyebrow">本轮完成</p>
           <h1 className="display">
-            {m.wpm} <small>WPM</small>
+            {m.wpm} <small>词/分钟</small>
           </h1>
-          <p className="lede">准确率 {m.accuracy}% · {entries.length} 项</p>
+          <p className="lede">输入正确率 {m.accuracy}% · 完成 {entries.length} 项</p>
           <div className="summary-actions">
             <button className="btn btn-ghost" onClick={onExit}>
-              返回
+              返回练习
             </button>
             <button className="btn btn-primary btn-xl" onClick={onAgain} autoFocus>
-              <RotateCcw size={18} /> 再来一轮
+              <RotateCcw size={18} /> 再练一轮
             </button>
           </div>
         </section>
@@ -199,7 +199,7 @@ function TypingRound({ mode, entries, onExit, onAgain }: { mode: Mode; entries: 
           <span style={{ width: `${(i / entries.length) * 100}%` }} />
         </div>
         <span className="typing-meter">
-          <b>{m.wpm}</b> WPM · <b>{m.accuracy}%</b>
+          <b>{m.wpm}</b> 词/分钟 · <b>{m.accuracy}%</b>
         </span>
       </header>
       <section

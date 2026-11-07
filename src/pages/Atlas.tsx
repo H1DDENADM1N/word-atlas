@@ -19,9 +19,19 @@ const STATUS: [Status, string][] = [
   ["all", "全部"],
   ["new", "未学"],
   ["learning", "学习中"],
-  ["mastered", "已掌握"],
+  ["mastered", "较熟悉"],
   ["saved", "收藏"],
 ];
+
+/** Level names as the atlas chips show them. */
+const LEVEL_NAME: Record<string, string> = {
+  A1: "入门",
+  A2: "基础",
+  B1: "进阶",
+  B2: "中高级",
+  C1: "高级",
+  C2: "熟练",
+};
 
 type View = "grid" | "list" | "galaxy";
 function readView(): View {
@@ -141,9 +151,9 @@ export function AtlasPage({
         <div>
           <p className="eyebrow">图鉴 · {atlas.count.toLocaleString()} 词</p>
           <h1 className="display">
-            每个词，
+            看图学词，
             <br className="br-sm" />
-            都有一幅画。
+            在语境中理解。
           </h1>
           <p className="lede">
             {atlas.examples.toLocaleString()} 条原创例句 · 英美发音 · 按难度和 {atlas.topics.length} 个雅思话题整理
@@ -178,7 +188,7 @@ export function AtlasPage({
                 className={`chip-btn ${!level ? "is-on" : ""}`}
                 onClick={() => setFilter({ level: undefined })}
               >
-                所有难度
+                全部难度
               </button>
               {atlas.cefr.map((l) => (
                 <button
@@ -188,16 +198,16 @@ export function AtlasPage({
                     setFilter({ level: level === l ? undefined : l })
                   }
                 >
-                  {l}
+                  {LEVEL_NAME[l] ? `${LEVEL_NAME[l]} ${l}` : l}
                 </button>
               ))}
             </div>
-            <div className="chips chips-scroll" role="group" aria-label="主题">
+            <div className="chips chips-scroll" role="group" aria-label="话题">
               <button
                 className={`chip-btn ${!topic ? "is-on" : ""}`}
                 onClick={() => setFilter({ topic: undefined })}
               >
-                所有主题
+                全部话题
               </button>
               {atlas.topics.map(([k, name]) => (
                 <button
@@ -230,7 +240,7 @@ export function AtlasPage({
           )}
           <span className="result-count">
             {view === "galaxy"
-              ? "搜索一个词，星图会带你飞过去"
+              ? "搜索单词，在星图中定位"
               : `${list.length.toLocaleString()} 个结果`}
           </span>
           <div
@@ -279,7 +289,7 @@ export function AtlasPage({
       ) : list.length === 0 ? (
         <div className="empty">
           <img src={`${import.meta.env.BASE_URL}brand/empty.webp`} alt="" />
-          <p>这片星域还没有词。换个筛选条件试试。</p>
+          <p>没有找到符合条件的词，试试其他关键词或筛选条件。</p>
         </div>
       ) : view === "grid" ? (
         <VirtualGrid items={list} cards={cards} query={q} />
@@ -402,7 +412,7 @@ function VirtualGrid({
               topic={w.topic}
             />
             <span className="tile-no">
-              № {String(w.order + 1).padStart(4, "0")}
+              词汇 {String(w.order + 1).padStart(4, "0")}
             </span>
             <span className="tile-text">
               <span className="tile-word" lang="en">

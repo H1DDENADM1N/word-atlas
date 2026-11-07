@@ -329,7 +329,7 @@ const ENGLISH: Record<string, string> = {
   environment: "Environment",
   health: "Health",
   society: "Society",
-  government: "Law & Govt",
+  government: "Law & Government",
   economy: "Economy",
   media: "Media",
   arts: "The Arts",

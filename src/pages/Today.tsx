@@ -15,7 +15,7 @@ import { Ring } from "../ui/Ring";
 const BRAND = `${import.meta.env.BASE_URL}brand`;
 
 function greeting(h: number) {
-  if (h < 5) return "夜深了";
+  if (h < 5) return "晚上好";
   if (h < 11) return "早上好";
   if (h < 14) return "中午好";
   if (h < 18) return "下午好";
@@ -80,7 +80,7 @@ export function Today() {
         <p className="eyebrow">
           {now.getMonth() + 1}月{now.getDate()}日 · 星期{"日一二三四五六"[now.getDay()]}
         </p>
-        <h1 className="display">{greeting(now.getHours())}，探索者。</h1>
+        <h1 className="display">{greeting(now.getHours())}</h1>
       </header>
 
       <section className={`journey ${total === 0 && !active ? "is-clear" : ""}`}>
@@ -88,15 +88,15 @@ export function Today() {
         <div className="journey-body">
           {active ? (
             <>
-              <p className="eyebrow eyebrow-light">旅程进行中</p>
+              <p className="eyebrow eyebrow-light">本轮未完成</p>
               <h2>
                 还剩 <b>{active.steps.length - active.index}</b> 步
               </h2>
-              <p className="journey-lede">进度已保存，随时接着走。</p>
+              <p className="journey-lede">接着上次的位置继续学习。</p>
             </>
           ) : total > 0 ? (
             <>
-              <p className="eyebrow eyebrow-light">今日旅程</p>
+              <p className="eyebrow eyebrow-light">今日学习</p>
               <h2>
                 {plan.due.length > 0 && (
                   <>
@@ -110,31 +110,31 @@ export function Today() {
                   </>
                 )}
               </h2>
-              <p className="journey-lede">约 {plan.minutes} 分钟。先温故，再知新。</p>
+              <p className="journey-lede">预计 {plan.minutes} 分钟，先复习，再学新词。</p>
             </>
           ) : (
             <>
               <p className="eyebrow eyebrow-light">今日已完成</p>
-              <h2>今天的星，都亮了。</h2>
-              <p className="journey-lede">记忆需要一点留白。想多走一段，也可以。</p>
+              <h2>今天的学习已完成</h2>
+              <p className="journey-lede">可以休息，也可以再学几个新词。</p>
             </>
           )}
           {teaser.length > 0 && (
-            <div className="teaser" aria-label="今天将遇见的新词">
+            <div className="teaser" aria-label="今日新词">
               {teaser.map((w, i) => (
                 <Illustration key={w.id} src={atlas.img(w, "thumb")} word={w.word} topic={w.topic} className={`teaser-${i}`} />
               ))}
-              <span>今天会遇见它们</span>
+              <span>今日新词</span>
             </div>
           )}
           <div className="journey-actions">
             {active || total > 0 ? (
               <button className="btn btn-primary btn-xl" onClick={() => start()}>
-                {active ? "继续旅程" : "开始今天的旅程"} <ArrowRight size={20} />
+                {active ? "继续学习" : "开始学习"} <ArrowRight size={20} />
               </button>
             ) : (
               <button className="btn btn-primary btn-xl" onClick={() => start({ extra: 5 })}>
-                再认识 5 个新词 <Sparkles size={18} />
+                再学 5 个新词 <Sparkles size={18} />
               </button>
             )}
             {!active && plan.due.length > 0 && plan.fresh.length > 0 && (
@@ -144,7 +144,7 @@ export function Today() {
             )}
             {!active && total === 0 && !settings.hidePractice && (
               <button className="btn btn-glass" onClick={() => go({ page: "practice" })}>
-                <Keyboard size={18} /> 打字练习
+                <Keyboard size={18} /> 打字与听写
               </button>
             )}
           </div>
@@ -177,11 +177,11 @@ export function Today() {
           </div>
           <dl className="mini-stats">
             <div>
-              <dt>已点亮</dt>
+              <dt>已学</dt>
               <dd>{learned.toLocaleString()}</dd>
             </div>
             <div>
-              <dt>已掌握</dt>
+              <dt>较熟悉</dt>
               <dd>{mastered.toLocaleString()}</dd>
             </div>
             <div>
@@ -218,7 +218,7 @@ function GalaxyPanel({ learned, total }: { learned: number; total: number }) {
         <h3>
           已点亮 <b>{learned.toLocaleString()}</b> 颗星
         </h3>
-        <p>{learned ? `还有 ${(total - learned).toLocaleString()} 颗在等你。金色是今天新点亮的。` : `${total.toLocaleString()} 个词是 ${total.toLocaleString()} 颗星。学会一个，就点亮一颗。`}</p>
+        <p>{learned ? `还有 ${(total - learned).toLocaleString()} 个词未学。金色标出今天新学的词。` : `每颗星代表一个词。完成首次答题后，对应的星会点亮。`}</p>
         <span className="btn btn-glass">
           进入星图 <ArrowRight size={18} />
         </span>
@@ -277,13 +277,13 @@ function LevelPath() {
     }
     return out;
   }, [atlas, cards]);
-  const NAMES = ["入门", "基础", "进阶", "中高", "高级", "精通"];
+  const NAMES = ["入门", "基础", "进阶", "中高级", "高级", "熟练"];
   return (
     <section className="panel path-panel">
       <div className="panel-head">
-        <h3 className="eyebrow">学习路线 · 从 A1 到 C2</h3>
+        <h3 className="eyebrow">学习路线 · 入门到熟练</h3>
         <span className="legend">
-          <i className="lg-seen" /> 已学 <i className="lg-done" /> 已掌握
+          <i className="lg-seen" /> 已学 <i className="lg-done" /> 较熟悉
         </span>
       </div>
       <ol className="route">
@@ -321,7 +321,7 @@ function Topics() {
   return (
     <section className="topics-panel">
       <div className="panel-head">
-        <h3 className="eyebrow">按雅思话题探索</h3>
+        <h3 className="eyebrow">按雅思话题查词</h3>
         <button className="link" onClick={() => go({ page: "atlas" })}>
           打开图鉴
         </button>

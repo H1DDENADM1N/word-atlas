@@ -93,7 +93,7 @@ export function Palette({ open, onClose }: { open: boolean; onClose: () => void 
           <input
             ref={input}
             value={q}
-            placeholder="搜索英文或中文，例如 serendipity / 环境"
+            placeholder="搜索单词或中文释义"
             aria-label="搜索单词"
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => {
@@ -165,7 +165,7 @@ export function Palette({ open, onClose }: { open: boolean; onClose: () => void 
                   ))}
                 </li>
               )}
-          {term && !results.length && <li className="palette-empty">没有找到「{q}」</li>}
+          {term && !results.length && <li className="palette-empty">没有找到“{q}”。换个拼写，或试试中文释义。</li>}
         </ul>
 
         <div className="palette-keys">

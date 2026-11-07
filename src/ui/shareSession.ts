@@ -53,14 +53,14 @@ export async function shareSession(atlas: Atlas, s: ActiveSession) {
     const d = new Date();
     ctx.fillStyle = "#8A8C96";
     ctx.font = `500 28px ${SANS}`;
-    ctx.fillText(`${d.getMonth() + 1}月${d.getDate()}日 · 今天点亮了 ${ids.length} 颗星`, pad, top - 24);
+    ctx.fillText(`${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 · 本轮学习 ${ids.length} 个词`, pad, top - 24);
     ctx.fillStyle = "#1E2640";
     ctx.font = `600 64px ${SERIF}`;
-    ctx.fillText(`学了 ${ids.length} 个词，首次正确 ${st.accuracy}%`, pad, top + 52, W - pad * 2);
+    ctx.fillText(`首次正确率 ${st.accuracy}%`, pad, top + 52, W - pad * 2);
     const wrong = Object.values(s.graded).filter((g) => g === Rating.Again).length;
     ctx.font = `400 30px ${SANS}`;
     ctx.fillStyle = "#5A6075";
-    ctx.fillText(`新词 ${s.newIds.length} · 复习 ${s.reviewIds.length} · 需要再见面 ${wrong}`, pad, top + 112);
+    ctx.fillText(`新词 ${s.newIds.length} 个 · 复习 ${s.reviewIds.length} 个 · 错词 ${wrong} 个`, pad, top + 112);
     ctx.fillStyle = "rgba(30,38,64,.14)";
     ctx.fillRect(pad, H - 116, W - pad * 2, 2);
     ctx.fillStyle = "#1E2640";
@@ -68,7 +68,7 @@ export async function shareSession(atlas: Atlas, s: ActiveSession) {
     ctx.fillText("词光 · Word Atlas", pad, H - 58);
     ctx.font = `400 26px ${SANS}`;
     ctx.fillStyle = "#8A8C96";
-    const tag = "一词一画，点亮雅思";
+    const tag = "一词一画，学在语境里";
     ctx.fillText(tag, W - pad - ctx.measureText(tag).width, H - 60);
     const blob = await new Promise<Blob | null>((r) => c.toBlob(r, "image/png"));
     if (!blob) throw new Error();
@@ -77,11 +77,11 @@ export async function shareSession(atlas: Atlas, s: ActiveSession) {
       await navigator.share({ files: [file] }).catch(() => null);
       return;
     }
-    const where = await saveBlob(blob, file.name, { title: "今天点亮的星 · 词光 Word Atlas" });
+    const where = await saveBlob(blob, file.name, { title: "学习卡 · 词光 Word Atlas" });
     // The shell announces the save itself and then opens the share sheet.
-    if (where === "browser") toast("成绩卡已保存", "ok");
+    if (where === "browser") toast("学习卡已保存", "ok");
   } catch (error) {
     console.error("session card failed:", error);
-    toast("成绩卡生成失败", "warn");
+    toast("学习卡生成失败，请重试", "warn");
   }
 }

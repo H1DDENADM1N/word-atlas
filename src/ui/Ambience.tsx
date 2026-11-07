@@ -180,15 +180,14 @@ export function AmbiencePicker() {
     return () => cancelAnimationFrame(raf);
   }, [open]);
   const on = ambience !== "off";
-  const current = AMBIENCE.find((a) => a.id === ambience);
   return (
     <div className="amb" ref={box}>
       <button
         className={`icon-btn amb-btn ${on ? "is-on" : ""}`}
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        aria-label={on ? `环境声：${current?.label ?? ""}` : "环境声：安静"}
-        title={on ? `环境声：${current?.label ?? ""}` : "环境声"}
+        aria-label="环境声"
+        title="环境声"
       >
         <AudioLines size={19} />
         {on && (
@@ -206,7 +205,7 @@ export function AmbiencePicker() {
           aria-label="环境声"
           style={pos ? { top: pos.top, left: pos.left, width: pos.width } : undefined}
         >
-          <p className="eyebrow">环境声 · 专注陪伴</p>
+          <p className="eyebrow">环境声</p>
           <div className="amb-scroll">
             <ul className="amb-grid">
               {AMBIENCE.map(({ id, label }) => {
@@ -248,7 +247,7 @@ export function AmbiencePicker() {
               disabled={!on}
             />
           </label>
-          <p className="amb-note">读单词时会自动压低环境声。</p>
+          <p className="amb-note">播放发音时，环境声会自动降低。</p>
         </div>
       )}
     </div>

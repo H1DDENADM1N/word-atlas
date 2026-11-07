@@ -129,6 +129,6 @@ export async function shareWord(atlas: Atlas, e: Entry) {
     // Canvas export is the fragile step (a tainted canvas throws here), and
     // logcat is the only console a device gives us.
     console.error("share card failed:", error);
-    toast("卡片生成失败，请稍后再试", "warn");
+    toast("词汇卡生成失败，请重试", "warn");
   }
 }

@@ -50,17 +50,18 @@ export function TopicConstellations({
             已点亮 <b>{lit}</b> / {items.length} 座
           </h2>
         </div>
-        <p className="cpanel-lede">一个话题里有学习记录的词达到 80%，星座就会在星图上连起来。点亮不代表已经掌握。</p>
+        <p className="cpanel-lede">本话题中有学习记录的词达到 80%，即可点亮星座。点亮不代表已经掌握。</p>
       </header>
       <ul className="cpanel-list">
         {items.map((t) => {
           const on = selected === t.index;
+          const state = t.lit ? "已点亮" : t.learned ? `再学 ${t.toGo} 个词即可点亮` : "未开始";
           return (
             <li key={t.key} className={`ccard ${t.lit ? "is-lit" : ""} ${on ? "is-on" : ""} ${t.learned ? "" : "is-new"}`} style={{ "--tc": TOPIC_COLORS[t.index % TOPIC_COLORS.length] } as React.CSSProperties}>
               <button
                 className="ccard-main"
                 aria-pressed={on}
-                aria-label={`${t.name}，${t.learned} / ${t.total} 词，${t.lit ? "已点亮" : t.learned ? "点亮中" : "未开始"}。在星图中查看`}
+                aria-label={`${t.name}，${t.learned} / ${t.total} 词，${state}。在星图中查看`}
                 onClick={() => onPick(on ? null : t.index)}
               >
                 <Figure t={t} />
@@ -80,7 +81,7 @@ export function TopicConstellations({
                   </span>
                   <span className="ccard-state">
                     {t.lit && <Check size={12} strokeWidth={2.6} />}
-                    {t.lit ? "已点亮" : t.learned ? `再学 ${t.toGo} 个` : "未开始"}
+                    {t.lit ? "已点亮" : t.learned ? `再学 ${t.toGo} 个词` : "未开始"}
                   </span>
                 </span>
               </button>
