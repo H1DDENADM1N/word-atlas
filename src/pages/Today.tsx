@@ -329,7 +329,10 @@ function Topics() {
       <ul className="topic-tiles">
         {atlas.topics.map(([key, name], i) => (
           <li key={key}>
-            <button onClick={() => go({ page: "atlas", topic: key })}>
+            {/* A topic opens as a list and scrolls its chip into view: the
+                nineteen topics read better as headwords than as a wall of
+                pictures, and the atlas tab strip is wider than the phone. */}
+            <button onClick={() => go({ page: "atlas", topic: key, view: "list" })}>
               <img src={`${BRAND}/topic-${key}.webp`} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
               <span>
                 <b>{name}</b>

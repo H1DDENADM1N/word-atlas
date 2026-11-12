@@ -43,6 +43,32 @@ function readView(): View {
   }
 }
 
+/**
+ * The view a visit opens in. A link that names one wins — 今日's topic tiles
+ * hand over `list`, where a topic reads as a column of headwords instead of a
+ * wall of pictures — and everything else opens in whatever the reader chose
+ * last time.
+ */
+function initialView(route: Extract<Route, { page: "atlas" }>): View {
+  if (route.view === "grid" || route.view === "list" || route.view === "galaxy") return route.view;
+  return readView();
+}
+
+/** Only a tap on the view switch becomes the default for the next visit. */
+function rememberView(v: View) {
+  try {
+    localStorage.setItem("word-atlas:view", v);
+  } catch {
+    /* optional */
+  }
+}
+
+/** Smooth slide, unless the reader asked the system to keep things still. */
+function slideTo(row: HTMLElement, left: number) {
+  const still = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  row.scrollTo({ left, behavior: still ? "auto" : "smooth" });
+}
+
 export function AtlasPage({
   route,
 }: {
@@ -53,11 +79,7 @@ export function AtlasPage({
   const bookmarks = useStore((s) => s.progress.bookmarks);
   const [q, setQ] = useState(route.q ?? "");
   const [status, setStatus] = useState<Status>("all");
-  const [view, setViewState] = useState<View>(() =>
-    route.view === "galaxy" || route.view === "list" || route.view === "grid"
-      ? route.view
-      : readView(),
-  );
+  const [view, setViewState] = useState<View>(() => initialView(route));
   // Follow the URL when a link switches views while this page is already open.
   useEffect(() => {
     if (route.view === "grid" || route.view === "list" || route.view === "galaxy") setViewState(route.view);
@@ -87,6 +109,7 @@ export function AtlasPage({
   }, [atlas, route.q, route.waSource]);
   const setView = (v: View) => {
     setViewState(v);
+    rememberView(v);
     go(
       {
         page: "atlas",
@@ -100,14 +123,6 @@ export function AtlasPage({
   };
   const topic = route.topic;
   const level = route.level;
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("word-atlas:view", view);
-    } catch {
-      /* optional */
-    }
-  }, [view]);
 
   const list = useMemo(() => {
     const saved = new Set(bookmarks);
@@ -128,6 +143,36 @@ export function AtlasPage({
 
   const setFilter = (patch: Partial<Extract<Route, { page: "atlas" }>>) =>
     go({ page: "atlas", topic, level, view: route.view, ...patch }, null, true);
+
+  const topicRow = useRef<HTMLDivElement>(null);
+  // Nineteen chips never fit on a phone, and 今日's tiles link straight to any
+  // of them. Slide the row until the active chip sits in the middle; when the
+  // reader can already see it, leave the row alone so a tap does not shift the
+  // chips under the finger. Measure on the next frame — the page transition
+  // mounts this page before the row has taken its final width.
+  useEffect(() => {
+    const row = topicRow.current;
+    if (!row) return;
+    const raf = requestAnimationFrame(() => {
+      const chip = topic
+        ? Array.from(row.querySelectorAll<HTMLElement>("[data-topic]")).find((el) => el.dataset.topic === topic)
+        : undefined;
+      // 全部话题 is the first chip, so "nothing selected" means the row starts at 0.
+      if (!chip) {
+        if (row.scrollLeft > 0) slideTo(row, 0);
+        return;
+      }
+      const box = row.getBoundingClientRect();
+      const chipBox = chip.getBoundingClientRect();
+      // A chip at the very edge counts as hidden: centre it rather than leave
+      // it half behind the mask.
+      if (chipBox.left >= box.left + 12 && chipBox.right <= box.right - 12) return;
+      const far = Math.max(0, row.scrollWidth - row.clientWidth);
+      const left = row.scrollLeft + chipBox.left - box.left - (row.clientWidth - chipBox.width) / 2;
+      slideTo(row, Math.max(0, Math.min(left, far)));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [topic, view]);
 
   // Nineteen constellations. The geometry comes from the layout (it depends on
   // where the stars are), the progress from the card store — so a word learned
@@ -187,6 +232,7 @@ export function AtlasPage({
               <button
                 className={`chip-btn ${!level ? "is-on" : ""}`}
                 onClick={() => setFilter({ level: undefined })}
+                aria-pressed={!level}
               >
                 全部难度
               </button>
@@ -197,15 +243,17 @@ export function AtlasPage({
                   onClick={() =>
                     setFilter({ level: level === l ? undefined : l })
                   }
+                  aria-pressed={level === l}
                 >
                   {LEVEL_NAME[l] ? `${LEVEL_NAME[l]} ${l}` : l}
                 </button>
               ))}
             </div>
-            <div className="chips chips-scroll" role="group" aria-label="话题">
+            <div className="chips chips-scroll" role="group" aria-label="话题" ref={topicRow}>
               <button
                 className={`chip-btn ${!topic ? "is-on" : ""}`}
                 onClick={() => setFilter({ topic: undefined })}
+                aria-pressed={!topic}
               >
                 全部话题
               </button>
@@ -213,9 +261,11 @@ export function AtlasPage({
                 <button
                   key={k}
                   className={`chip-btn ${topic === k ? "is-on" : ""}`}
+                  data-topic={k}
                   onClick={() =>
                     setFilter({ topic: topic === k ? undefined : k })
                   }
+                  aria-pressed={topic === k}
                 >
                   {name}
                 </button>
