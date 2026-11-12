@@ -5,10 +5,12 @@ import type { CardState } from "../store/srs";
 import type { Progress, Settings } from "../store/store";
 import { hashSeed } from "./text";
 import {
+  WIDGET_HOURS,
   WIDGET_SLOT_MS,
   breakWord,
   buildSnapshot,
   pickWordOfDay,
+  planHours,
   planOf,
   sentenceFromEntry,
   toughCards,
@@ -28,8 +30,16 @@ const atlasWith = (words: WordRef[]): Atlas => ({
   byId: new Map(words.map((w) => [w.id, w])),
   topics: [["nature", "自然"]],
 }) as unknown as Atlas;
-const progressWith = (cards: Record<string, CardState>, mistakes: string[] = []): Progress =>
-  ({ cards, mistakes, days: {} }) as unknown as Progress;
+const progressWith = (
+  cards: Record<string, CardState>,
+  mistakes: string[] = [],
+  days: Record<string, { n: number }> = {},
+): Progress => ({ cards, mistakes, days }) as unknown as Progress;
+/** `dayKey()` without importing the store module into a Node test. */
+const localDay = (t: number) => {
+  const d = new Date(t);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 const settings = { dailyNew: 3, startLevel: 0 } as unknown as Settings;
 
 test("hashSeed is FNV-1a 32-bit, matching WidgetData.fnv() in Java", () => {
@@ -177,4 +187,50 @@ test("buildSnapshot has the exact one-way payload shape", () => {
   assert.ok(Array.isArray(snap.tough.cards));
   assert.equal("sentence" in snap, false);
   assert.equal(Object.keys(snap.plan).join(","), "remaining,due,fresh,minutes");
+});
+
+test("hourly projections let the launcher show cards that come due while the app is closed", () => {
+  const now = new Date(2026, 10, 4, 10, 30).getTime();
+  const first = new Date(now);
+  first.setMinutes(0, 0, 0);
+  const boundary = (i: number) => {
+    const d = new Date(first);
+    d.setHours(d.getHours() + i);
+    return d.getTime();
+  };
+  const atlas = atlasWith(Array.from({ length: 8 }, (_, i) => ref(`w${i}`)));
+  const p = progressWith({
+    w0: card({ due: 0 }),
+    w1: card({ due: boundary(2) }),
+  });
+
+  const hours = planHours(atlas, p, settings, now);
+  assert.equal(hours.length, WIDGET_HOURS);
+  hours.forEach((h, i) => assert.equal(h.at, boundary(i), "one row per local hour boundary"));
+  assert.equal(hours[0].due, 1);
+  assert.equal(hours[1].due, 1);
+  assert.equal(hours[2].due, 2, "w1 becomes reviewable at the second boundary");
+  assert.equal(hours[0].remaining, hours[0].due + hours[0].fresh);
+  assert.ok(hours[2].remaining > hours[0].remaining, "the strip's numbers move on their own");
+  assert.ok(hours.every((h, i) => i === 0 || h.due >= hours[i - 1].due), "review pile never shrinks");
+});
+
+test("buildSnapshot publishes the current plan plus a full day of hourly rows", () => {
+  // 23:30 local: the second row already belongs to the next calendar day.
+  const now = new Date(2026, 10, 4, 23, 30).getTime();
+  const atlas = atlasWith(Array.from({ length: 8 }, (_, i) => ref(`w${i}`)));
+  const p = progressWith({ w0: card({ due: 0 }) }, [], { [localDay(now)]: { n: 2 } });
+  const snap = buildSnapshot({
+    atlas, progress: p, settings, sentence: null,
+    date: localDay(now), theme: "dark", now,
+  });
+
+  assert.equal(snap.hours.length, WIDGET_HOURS);
+  assert.deepEqual(
+    [snap.hours[0].remaining, snap.hours[0].due, snap.hours[0].fresh, snap.hours[0].minutes],
+    [snap.plan.remaining, snap.plan.due, snap.plan.fresh, snap.plan.minutes],
+    "the first row is the plan the app shows right now",
+  );
+  assert.equal(snap.hours[0].fresh, 1, "two of three new words already used today");
+  assert.equal(snap.hours[1].fresh, 3, "tomorrow's allowance is whole again");
 });

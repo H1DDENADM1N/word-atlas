@@ -20,10 +20,12 @@ import android.widget.RemoteViews;
 /**
  * Shared rendering for the three home-screen widgets.
  *
- * <p>Everything is RemoteViews: no service, no background polling, no network.
- * Updates arrive either from the system's 30-minute periodic broadcast, from
- * date/time broadcasts, or from the explicit refresh the web layer sends after
- * publishing a new snapshot.
+ * <p>Everything is RemoteViews: no network, no foreground service. Updates
+ * arrive from the system's 30-minute periodic broadcast, from date/time
+ * broadcasts, from the explicit refresh the web layer sends after publishing a
+ * new snapshot, and from {@link WidgetKeepAlive}'s hourly pull. The 4x1 strip
+ * resolves its four figures against the snapshot's hourly plan table on every
+ * render, so the numbers follow cards coming due even with the app closed.
  *
  * <p>Light/dark is not decided here. Every colour a widget draws comes from a
  * {@code @color/widget_*} resource with a values-night twin, so the launcher
@@ -208,10 +210,11 @@ public abstract class WidgetBase extends AppWidgetProvider {
     }
 
     private void renderPlan(Context ctx, RemoteViews v, int id, WidgetData.Snapshot s) {
-        String main = !s.valid ? "今日进度" : s.remaining > 0 ? "还剩 " + s.remaining + " 步" : "今天已点亮";
+        WidgetData.Plan plan = WidgetData.planAt(s, System.currentTimeMillis());
+        String main = !s.valid ? "今日进度" : plan.remaining > 0 ? "还剩 " + plan.remaining + " 步" : "今天已点亮";
         String sub = !s.valid
                 ? "待复习 — · 新词 —\n约 — 分钟"
-                : "待复习 " + s.due + " · 新词 " + s.fresh + "\n约 " + s.minutes + " 分钟";
+                : "待复习 " + plan.due + " · 新词 " + plan.fresh + "\n约 " + plan.minutes + " 分钟";
         v.setTextViewText(R.id.widget_plan_main, main);
         v.setTextViewText(R.id.widget_plan_sub, sub);
 

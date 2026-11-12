@@ -47,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -82,6 +83,9 @@ public class MainActivity extends Activity {
     /** Installed package version, handed to the page by {@link Bridge#version()}. */
     private String versionName = "";
 
+    /** The live shell, if any; WidgetKeepAlive asks it to re-publish on the hour. */
+    private static volatile WeakReference<MainActivity> live;
+
     /** Pending `<input type="file">` request from the page. */
     private ValueCallback<Uri[]> filePicker;
     private static final int REQ_PICK_FILE = 0x51;
@@ -92,6 +96,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        live = new WeakReference<>(this);
 
         // Test hook: launching with `--ez wa.debug true` exposes the page to
         // Chrome DevTools over adb, which is how speech and playback get
@@ -915,6 +920,29 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Pull a fresh widget snapshot from the live WebView. Called by
+     * {@link WidgetKeepAlive} on every hour boundary; returns false when there
+     * is no page (process reclaimed, or the task was swiped away), in which
+     * case the widgets refresh from the hourly table in the last snapshot.
+     *
+     * <p>The reference is weak and cleared on destroy: a service that outlives
+     * the Activity must never be the thing that keeps it alive.
+     */
+    static boolean pullWidgetSnapshot() {
+        MainActivity activity = live == null ? null : live.get();
+        if (activity == null || activity.web == null) return false;
+        final WebView view = activity.web;
+        view.post(() -> {
+            try {
+                view.evaluateJavascript("window.__waWidgetPull&&window.__waWidgetPull()", null);
+            } catch (RuntimeException e) {
+                Log.i(TAG, "hourly pull skipped: " + e.getMessage());
+            }
+        });
+        return true;
+    }
+
     /* ------------------------------------------------------------------ */
     /* Lifecycle                                                           */
     /* ------------------------------------------------------------------ */
@@ -1011,6 +1039,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (live != null && live.get() == this) live = null;
         if (voice != null) {
             voice.release();
             voice = null;

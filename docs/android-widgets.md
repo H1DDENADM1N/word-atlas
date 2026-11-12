@@ -1,7 +1,7 @@
 # 词光安卓桌面小部件设计（定稿）
 
-> **状态**：方案定稿 → 代码落地 → **已打出两个 APK**（2026-11-04）· **验证**：TypeScript / 单测 / Web 产物 / 资源编译 / Java 编译 / dex / 签名 / 零权限 / 组件注册全部通过；**真机安装与桌面显示已通过实测（拖拽缩放、深浅色切换、刷新与跳转）**
-> **适用版本**：word-atlas-android v1.0.10（versionCode 11，包名 `tech.wordatlas.app`）
+> **状态**：方案定稿 → 代码落地 → **已打出两个 APK**（2026-11-04）· 2026-11-12 追加「每小时整点自动拉取」（v1.1.1 / versionCode 15，见 §6.1）· **验证**：TypeScript / 单测 / Web 产物 / 资源编译 / Java 编译 / dex / 签名 / 零权限 / 组件注册全部通过；**真机安装与桌面显示已通过实测（拖拽缩放、深浅色切换、刷新与跳转）**
+> **适用版本**：word-atlas-android v1.0.10 起（versionCode 11，包名 `tech.wordatlas.app`）；整点刷新为 v1.1.1 起
 > **说明**：正文是设计定稿；实施中的技术取舍与偏差集中记在 §13，文件清单与验证结果见 §14。
 
 ---
@@ -214,9 +214,15 @@ assets (插画 / 话题图) --------------------------------------> RemoteViews 
     "topic": "nature",
     "date": "2026-11-04"
   },
-  "plan": { "remaining": 12, "due": 8, "fresh": 4, "minutes": 9 }
+  "plan": { "remaining": 12, "due": 8, "fresh": 4, "minutes": 9 },
+  "hours": [
+    { "at": 1793757600000, "remaining": 12, "due": 8, "fresh": 4, "minutes": 9 },
+    { "at": 1793761200000, "remaining": 13, "due": 9, "fresh": 4, "minutes": 9 }
+  ]
 }
 ```
+
+`hours` 是 v1.1.1 加的：**当前本地整点 + 之后 24 个整点**，共 25 行，每行是那一刻的四项进度投影，`at` 为整点的 epoch 毫秒。它让原生不必碰 FSRS 也能在 App 关闭时显示随时间到期的卡片；旧快照没有这个字段时回退到 `plan`。字段放在顶层而不是 `plan` 里，是为了让 `plan` 的四项结构保持不变。约 1.5 KB，不进卡面。
 
 实施时把 `queue` 换成了 `cards[]`：每个元素直接带上 `word / zh / topic`，启动器进程无需再查词库就能显示文本与选背景；游标由原生按本地时间算，所以快照里不再存 `cursor` 与单个 `card`。`card.topic` 用于插画缺失时降级到 `topic-<topic>.webp`，`sentence.date` 用于原生判断是否跨日。数组现在是**整个顽固词池**（上限 300，193 条约 20KB），不再是 12 条。已删字段：`streak / week / doneToday / goal / dailyNew / manualOffset / audio / cefr / thumbIds / toughIds / sentenceCandidates / sentenceOffset`。
 
@@ -230,7 +236,8 @@ assets (插画 / 话题图) --------------------------------------> RemoteViews 
 - **时间片游标**：`index = (floor((now − dayStart) / 2h) + drift + offset) % cards.length`，其中 `drift = daysBetween(seedDate, today) × 12`。由原生用本地时间算，**App 进程不在前台也能轮播**；即使多天没打开 App，`drift` 也会让窗口按天前移，不会每天重播同一批。不用每次刷新真随机（会抖动、重复、跨进程不一致）。
 - **跨日限制**：重新排序与换窗口需要 Web 侧的 `progress`，因此 App 未打开时只能沿用旧序列继续轮播（靠 `drift` 保证仍在往前走），下次打开 App 才按最新进度重排；今日一句不受此限制（见 §13）。
 - **今日一句**：沿用应用内 Today 页「今日一词」的确定性抽词（`Today.tsx:230-236`，`hashSeed(dayKey())`），取该词 `Entry.ex[1]`（雅思语境），按日换句。
-- **进度四项**：`dueIds()` 取 `cards` 中 `due <= now`；`todayPlan()` 的 `fresh = max(0, dailyNew − 今日新词)`；`remaining = due + fresh`，`minutes` 由既有的估算逻辑给出。
+- **进度四项**：`dueIds()` 取 `cards` 中 `due <= now`；`todayPlan()` 的 `fresh = max(0, dailyNew − 今日新词)`；`remaining = due + fresh`，`minutes` 由既有的估算逻辑给出。会话进行中时 `remaining` 改用会话剩余步数，与 Today 页一致。
+- **整点计划表（v1.1.1）**：`due <= now` 意味着卡片会**在 App 没打开时陆续到期**，而过去只有主动评分才会推送新快照，桌面上的「待复习」就会一直停在旧值。`planHours()` 因此把 `planOf()` 在未来 25 个本地整点各算一遍（跨日的 `fresh` 按新一天的额度重置，进行中的会话仍用剩余步数），写成 `hours`。`todayPlan()` / `newToday()` 增加可选的 `now` / `date` 参数供投影使用，默认调用行为不变。**算法仍在 Web 侧，原生只按当前时间查表**。
 
 ### 5.4 素材路径与授权
 
@@ -246,11 +253,29 @@ assets (插画 / 话题图) --------------------------------------> RemoteViews 
 | --- | --- |
 | 2×2 顽固词 | 2 小时时间片推进；跨日游标归零、手动偏移按日期失效，同时 `drift` 前移 12 位进入下一批词 |
 | 4×2/5×2 今日一句 | 按日一次，`DATE_CHANGED` / `TIME_SET` / `TIMEZONE_CHANGED` |
-| 4×1 进度条 | App 内评分 / 跨日 / 设置变更 → Bridge 发显式广播即时刷新 |
+| 4×1 进度条 | App 内评分 / 跨日 / 设置变更 → Bridge 发显式广播即时刷新；**外加每个整点由 `WidgetKeepAlive` 拉取一次**（§6.1） |
 
 被动兜底统一 `updatePeriodMillis="1800000"`（系统下限 30 分钟），并接收 `DATE_CHANGED` / `TIME_SET` / `TIMEZONE_CHANGED` / `MY_PACKAGE_REPLACED`，以及 App 内显式发出的包内 `WIDGET_REFRESH` 广播。**不注册 `BOOT_COMPLETED`**：它要 `RECEIVE_BOOT_COMPLETED` 权限，而重启后启动器重新绑定小部件时本身会下发 `APPWIDGET_UPDATE`，无需为此破坏零权限。不引入精确闹钟、前台服务或网络。
 
 换词时背景图同步更换，注意回收源 Bitmap、不缓存满 12 张。
+
+### 6.1 整点自动拉取（v1.1.1）
+
+```
+WidgetKeepAlive (普通 Service)
+   ├─ 主线程 Handler 对齐下一个本地整点
+   ├─ TIME_SET / DATE_CHANGED / TIMEZONE_CHANGED / SCREEN_ON → 重新对齐并补刷
+   └─ 整点 tick ─┬─ MainActivity.pullWidgetSnapshot() → WebView 里
+                 │   window.__waWidgetPull() → 重新 buildSnapshot → publish()
+                 └─ 无条件发 WIDGET_REFRESH → 三张卡重渲染
+                        └─ 4×1 从 snapshot.hours 取「at <= now」的最后一行
+```
+
+- **两条腿，缺一不可**：WebView 还活着就重新发布一份新快照（并顺带刷新三张卡），`__waWidgetPull` 是 `installWidgetPublisher()` 暴露的钩子；WebView 不在（进程被回收、划掉任务卡）就直接按上一份快照的整点表渲染。两种情况下四个数字都会更新。
+- **对齐而非轮询**：`WidgetKeepAlive` 用 `Calendar` 取下一个本地整点的延迟，`Handler.postDelayed` 一次；Doze 下可能延迟，但亮屏、时钟跳变以及系统每 30 分钟一次的 `APPWIDGET_UPDATE`（会再次 `startService`）都会重新对齐。上次拉取的整点存在 `word-atlas-widget` 的 `hourly:last`，`START_STICKY` 重启后能补刷错过的整点。
+- **零新增权限**：仍是普通非前台 Service，没有 `SCHEDULE_EXACT_ALARM`、没有通知、没有网络、没有后台 UI。`MainActivity` 只持有 `WeakReference`，服务不会把 Activity 拖住。
+- **降级**：旧快照没有 `hours` 时用 `plan`；快照比整点表还老一天以上时也回退到 `plan`，不把过期的投影一直停在桌面上。
+- **实机验证**：`adb logcat -s WordAtlasWidget` 可看到整点的 `hourly pull HH:mm · webView=alive/gone`；`adb shell am start` 打开一次 App 后划掉，等下一整点看「待复习」是否随到期卡片增加。
 
 ---
 
@@ -274,6 +299,7 @@ assets (插画 / 话题图) --------------------------------------> RemoteViews 
   - Android 16 / ColorOS 16 实测：加 Service 前划掉卡片 → `stopped=true`、PendingIntent 5→0、四个点击目标全部失灵；加 Service 后划掉卡片 → `stopped=false`、PendingIntent 保持 5 条、进程仍在（`am kill` 都杀不动）。
   - 结果：进度条「继续旅程」→ 学习页；今日一句 → `monitor` 词卡；顽固词 → `decision` 词卡；顽固词刷新 → `abroad → interest → burger`，全程不打开 App。**四个目标完全区分**。
   - **零权限、零通知**：实测普通 Service 就够，不需要前台服务，因此没有 `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_DATA_SYNC` 权限，也没有常驻通知。仍保持 manifest 无任何 `<uses-permission>`。不加 `excludeFromRecents`：App 正常出现在最近任务里，用户照样能划掉，只是划掉不再破坏小部件。
+  - **v1.1.1 起这个 Service 还兼做整点调度**：既然它已经为了 PendingIntent 而常驻，每小时拉一次快照比再引入一个 `AlarmManager` + 静态 receiver 更轻，且不需要精确闹钟权限。细节见 §6.1。
   - 顽固词刷新另加 `FLAG_INCLUDE_STOPPED_PACKAGES | FLAG_RECEIVER_FOREGROUND`：某些 OEM 会丢掉「需要冷启动接收进程」的后台广播，这两个 flag 让 `WIDGET_NEXT` 在进程已被回收时也能送达。
   - 注意：这是 OEM 行为而非 AOSP 保证；`MainActivity.isLauncherFallback()` 仍作为真正 force-stop（设置 → 强行停止）时的安全网。
 - **兜底（安全网）**：`MainActivity.isLauncherFallback()` 认兜底形状 —— `action=MAIN` + `CATEGORY_LAUNCHER` + **intent 带 `pkg`** + **没有 `FLAG_ACTIVITY_RESET_TASK_IF_NEEDED`**（图标点击相反）。命中时 `fallbackRoute()` 用 `AppWidgetManager.getAppWidgetIds()` 查用户装了几种卡：

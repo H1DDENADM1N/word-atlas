@@ -137,11 +137,11 @@ APK 不进仓库（`.gitignore` 已排除）。两种方式：
 
 | 产物 | 单词发音 | 用途 |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.1.0.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
-| `word-atlas-android-v1.1.0_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
+| `word-atlas-android-v1.1.1.apk` | ElevenLabs 原版 + 76 个词的 Commons 真人录音 | 分享 / 公开分发 |
+| `word-atlas-android-v1.1.1_O.apk` | OALDPEX 真人（牛津大学出版社） | 仅自用，不得公开分发 |
 
 ```bash
-adb install -r word-atlas-android-v1.1.0.apk
+adb install -r word-atlas-android-v1.1.1.apk
 ```
 
 两个包同一包名，不能同时安装；切换时覆盖安装即可，学习记录保留。
@@ -150,10 +150,11 @@ adb install -r word-atlas-android-v1.1.0.apk
 
 ## 版本
 
-当前 **v1.1.0**（versionCode 14）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
+当前 **v1.1.1**（versionCode 15）。每个版本的改动与校验值见 [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases)。
 
 | 版本 | 一句话 |
 | :--- | :--- |
+| **v1.1.1** | **进度条小部件每小时整点自动更新**：Web 层发布快照时附带未来 25 个本地整点的「还剩 N 步 / 待复习 N / 新词 N / 约 N 分钟」投影（FSRS 仍在 Web 侧算，原生只查表）；`WidgetKeepAlive` 在每个整点重新拉取快照并刷新三张卡，App 没打开时卡片陆续到期，桌面数字也会自己往前走。时钟跳变、亮屏、系统 30 分钟周期更新都会重新对齐，跨进程重启能补刷。依旧零权限、零通知、零联网：普通 Service + 主线程定时器，没有精确闹钟和前台服务 |
 | **v1.1.0** | **Material Expressive 2025 主题家族**：首屏「我的 → 主题家族」改成三级家族（纸墨 / 夜空 / Material Expressive），夜空下再选极光或星光，M3E 下再选深浅（跟随系统 / 浅色 / 深色）、强调色（默认跟随壁纸采样色，另备 8 色精选板）与 9 种调色板风格（默认色调对比）；配色由 `@material/material-color-utilities` 的 **2025 规范**在运行时算出 22 个 CSS 变量，读不到壁纸就退回品牌陶土色，跟随系统仍由原生 `uiMode` 双向推送；M3E 家族自带 11 档圆角阶梯与更活的弹簧缓动（纸墨、夜空观感不变，仅 ±1–2 px）。**中文可选霞鹜文楷**：内置屏幕阅读版 GB 子集，默认系统字体，只换中文字形，英文与数字不受影响；主题、中文字体与两个缩放档都不随备份迁移。M3E 的「已学 / 较熟悉」与「答对 / 答错」改用固定的琥珀、绿与 M3 错误红，不再和壁纸主色撞色 |
 | **v1.0.12** | **词卡近义补上《牛津英语同义词学习词典》的同词性词**：按义项中文释义匹配分 ≥0.3 筛组，2,175 张卡新增 7,774 个词，近义总数 20,745 → 28,518，大小写不敏感去重、不设硬上限；**近义按义项分行**：多义项词卡的近义按义项分行，只显示英文词、不标义项名，词卡没列出的统一放到最后一行，每义项最多 8 个；**查词小窗兜底**：词光词库查不到的词也能看到英/美音标与中文释义，341,575 个英文单词语来自 ECDICT 精简表（26 个首字母分片、约 26 MB），发音仍走内置 Kokoro，保留「这个词不在词光词库里」，不显示插画与「查看词卡」；查词提示挪到发音按钮同一行的右端，`glutinous` 近义里混入的中文残留也清掉了；**界面文案对齐网页版**：从线上站点取回最新文案，在 12 个文件里改了 118 处 label／短句（如图鉴标题、星图「随机查看已学单词」提示），不新增界面元素、不改词卡内容 |
 | **v1.0.11** | **整套界面音效换成 ElevenLabs 生成的星空玻璃钟琴音色**：查明上游母带链的 `afade` 把 9 个 cue 截成 10 ms 静音，重生成 11 段（提示词限定中频有音高单音，修掉 `start.mp3` 几乎无声与高频沙沙声）并按环境声底噪统一标定增益，17 段全部清晰可闻；**轻触判定移到抬手时**（10 px 位移 / 600 ms 长按 / 130 ms 冷却），滑动不再误算点击、反馈不再过密；新增**界面震动**（在「界面音效」下面），只认按钮 / 改配置 / 翻卡 / 判题；补齐拼写题逐字打字反馈、`key.mp3` 换成老式打字机 clack；新增「隐藏练习」开关，底部导航只留三栏并等宽占满整行，今日页打字练习入口同步收起，零权限 |
@@ -203,9 +204,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.1.0.apk      （分享版，原版发音）
-# → word-atlas-android-v1.1.0_O.apk    （私用版，OALDPEX 真人发音）
-adb install -r word-atlas-android-v1.1.0.apk
+# → word-atlas-android-v1.1.1.apk      （分享版，原版发音）
+# → word-atlas-android-v1.1.1_O.apk    （私用版，OALDPEX 真人发音）
+adb install -r word-atlas-android-v1.1.1.apk
 ```
 
 两个包共用同一份 Web bundle、内联数据、`base.apk` 与 `classes.dex`，只在打包阶段换单词音源；`--skip-web` 可以复用上一次的 `dist-android`。

@@ -22,6 +22,13 @@ import {
 let sentenceCache: { date: string; value: WidgetSentence } | null = null;
 let dotsCache: Record<string, string> | null = null;
 
+declare global {
+  interface Window {
+    /** Called by WidgetKeepAlive on every hour boundary to re-publish. */
+    __waWidgetPull?: () => void;
+  }
+}
+
 /** OALDPEX dotted headwords, inlined into the APK; empty on the web build. */
 function syllableDots(): Record<string, string> {
   if (dotsCache) return dotsCache;
@@ -127,6 +134,7 @@ export function installWidgetPublisher(atlas: Atlas): () => void {
         date,
         theme: resolveTheme(legacyTheme(settings)),
         dots: syllableDots(),
+        now: Date.now(),
       });
       shell?.publishWidgetSnapshot?.(JSON.stringify(snapshot));
     } catch {
@@ -138,6 +146,14 @@ export function installWidgetPublisher(atlas: Atlas): () => void {
     window.clearTimeout(timer);
     timer = window.setTimeout(() => void publish(), 400);
   };
+
+  // WidgetKeepAlive ticks on the hour. It cannot read the WebView's storage
+  // itself, so it asks this hook to rebuild the snapshot from the live store;
+  // the resulting publish() also re-renders all three cards. When no WebView
+  // is alive the native side still refreshes from the hourly table in the last
+  // snapshot, so the numbers keep moving in either case.
+  const pull = () => { void publish(); };
+  window.__waWidgetPull = pull;
 
   const onVisible = () => {
     if (document.visibilityState !== "visible") return;
@@ -164,6 +180,7 @@ export function installWidgetPublisher(atlas: Atlas): () => void {
   schedule();
   return () => {
     disposed = true;
+    if (window.__waWidgetPull === pull) delete window.__waWidgetPull;
     window.clearTimeout(timer);
     window.clearInterval(interval);
     unsubscribe();

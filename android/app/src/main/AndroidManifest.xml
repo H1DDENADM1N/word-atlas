@@ -50,7 +50,9 @@
 
         <!--
           Only while widgets are on the home screen: keeps the launcher's
-          widget PendingIntents alive when the task is swiped out of recents.
+          widget PendingIntents alive when the task is swiped out of recents,
+          and pulls an hourly refresh on every local hour boundary. Still a
+          plain Service: no permission, no alarm, no notification.
           See WidgetKeepAlive.java.
         -->
         <service

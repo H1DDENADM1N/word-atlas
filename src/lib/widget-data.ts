@@ -12,6 +12,24 @@ import { isMastered } from "../store/srs";
 import { todayPlan } from "../store/session";
 
 export const WIDGET_SLOT_MS = 2 * 60 * 60 * 1000;
+/** The progress strip is refreshed on every local hour boundary. */
+export const WIDGET_HOUR_MS = 60 * 60 * 1000;
+/** Current hour plus the next 24 boundaries: a full day of offline updates. */
+export const WIDGET_HOURS = 25;
+
+/**
+ * One projection of the four progress figures for a single hour boundary.
+ * The launcher cannot run FSRS, so the page computes these up front and the
+ * native side only ever looks up the row matching the current time.
+ */
+export interface WidgetHour {
+  /** Epoch ms of the (local) hour boundary this row belongs to. */
+  at: number;
+  remaining: number;
+  due: number;
+  fresh: number;
+  minutes: number;
+}
 
 export interface WidgetCard {
   id: string;
@@ -38,6 +56,8 @@ export interface WidgetSnapshot {
   tough: { cards: WidgetCard[]; seedDate: string; slotMs: number };
   sentence?: WidgetSentence;
   plan: { remaining: number; due: number; fresh: number; minutes: number };
+  /** Hourly projections of `plan`, used when the app itself is not running. */
+  hours: WidgetHour[];
 }
 
 export function topicOf(atlas: Atlas, ref: WordRef): string {
@@ -149,11 +169,17 @@ export function sentenceFromEntry(ref: WordRef, entry: Entry, atlas: Atlas, date
   };
 }
 
-export function planOf(atlas: Atlas, p: Progress, s: Settings): WidgetSnapshot["plan"] {
+export function planOf(
+  atlas: Atlas,
+  p: Progress,
+  s: Settings,
+  now = Date.now(),
+  date = dayKey(),
+): WidgetSnapshot["plan"] {
   // Same numbers as the Today page: "复习 N · 新词 M · 约 N 分钟" comes from
   // todayPlan(), and while a session is open "还剩 N 步" is the session's
   // remaining steps, not a fresh plan (which would not decrease as you answer).
-  const plan = todayPlan(atlas, p, s);
+  const plan = todayPlan(atlas, p, s, now, date);
   const active = p.session && !p.session.finished ? p.session : null;
   return {
     remaining: active ? Math.max(0, active.steps.length - active.index) : plan.due.length + plan.fresh.length,
@@ -161,6 +187,37 @@ export function planOf(atlas: Atlas, p: Progress, s: Settings): WidgetSnapshot["
     fresh: plan.fresh.length,
     minutes: plan.minutes,
   };
+}
+
+/**
+ * Project the four progress figures onto the next 25 hour boundaries.
+ *
+ * `dueIds()` counts cards with `due <= now`, so the review pile grows on its
+ * own while the app is closed — that is exactly what the hourly widget refresh
+ * is meant to show. The projections are computed here, in the only layer that
+ * owns FSRS state; Java merely picks the row for the current hour. Future days
+ * get a full daily-new allowance (`p.days[date]` has no entry yet), and an
+ * open session keeps its own remaining step count.
+ */
+export function planHours(atlas: Atlas, p: Progress, s: Settings, now: number): WidgetHour[] {
+  const start = new Date(now);
+  start.setMinutes(0, 0, 0);
+  const hours: WidgetHour[] = [];
+  for (let i = 0; i < WIDGET_HOURS; i++) {
+    // Advance the wall clock rather than adding 3_600_000 ms: on a DST switch
+    // the local hour boundary is not an hour away in epoch milliseconds.
+    const boundary = new Date(start);
+    boundary.setHours(boundary.getHours() + i);
+    const at = boundary.getTime();
+    // The first row describes the moment of publishing, not the hour boundary
+    // that may already be a few minutes in the past.
+    const stamp = i === 0 ? now : at;
+    hours.push({
+      at,
+      ...planOf(atlas, p, s, stamp, dayKey(new Date(stamp))),
+    });
+  }
+  return hours;
 }
 
 export function buildSnapshot(args: {
@@ -171,7 +228,10 @@ export function buildSnapshot(args: {
   date: string;
   theme: "dark" | "light";
   dots?: Record<string, string>;
+  /** Injectable clock for tests; defaults to now. */
+  now?: number;
 }): WidgetSnapshot {
+  const now = args.now ?? Date.now();
   return {
     v: 1,
     date: args.date,
@@ -182,6 +242,7 @@ export function buildSnapshot(args: {
       slotMs: WIDGET_SLOT_MS,
     },
     ...(args.sentence ? { sentence: args.sentence } : {}),
-    plan: planOf(args.atlas, args.progress, args.settings),
+    plan: planOf(args.atlas, args.progress, args.settings, now, args.date),
+    hours: planHours(args.atlas, args.progress, args.settings, now),
   };
 }

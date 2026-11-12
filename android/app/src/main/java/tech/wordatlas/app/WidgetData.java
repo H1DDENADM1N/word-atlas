@@ -64,6 +64,23 @@ final class WidgetData {
         int enLen;
     }
 
+    /** One hour-boundary projection of the 4x1 strip's four figures. */
+    static final class Hour {
+        long at;
+        int remaining = -1;
+        int due;
+        int fresh;
+        int minutes;
+    }
+
+    /** The four figures the progress strip draws at one instant. */
+    static final class Plan {
+        int remaining = -1;
+        int due;
+        int fresh;
+        int minutes;
+    }
+
     static final class Snapshot {
         boolean valid;
         String date = "";
@@ -79,6 +96,8 @@ final class WidgetData {
         int due = 0;
         int fresh = 0;
         int minutes = 0;
+        /** Published by the page; empty on a snapshot from an older build. */
+        final List<Hour> hours = new ArrayList<>();
     }
 
     /** Local calendar day, matching the page's {@code dayKey()}. */
@@ -132,11 +151,54 @@ final class WidgetData {
                 s.fresh = plan.optInt("fresh", 0);
                 s.minutes = plan.optInt("minutes", 0);
             }
+            // The page owns FSRS state; it projects the plan onto the next 25
+            // hour boundaries so a closed app can still show cards coming due.
+            JSONArray hours = o.optJSONArray("hours");
+            if (hours != null) {
+                for (int i = 0; i < hours.length(); i++) {
+                    JSONObject h = hours.optJSONObject(i);
+                    if (h == null) continue;
+                    long at = h.optLong("at", 0);
+                    if (at <= 0) continue;
+                    Hour hour = new Hour();
+                    hour.at = at;
+                    hour.remaining = h.optInt("remaining", -1);
+                    hour.due = h.optInt("due", 0);
+                    hour.fresh = h.optInt("fresh", 0);
+                    hour.minutes = h.optInt("minutes", 0);
+                    s.hours.add(hour);
+                }
+            }
         } catch (JSONException e) {
             Log.w(TAG, "ignoring malformed widget snapshot", e);
             s.valid = false;
         }
         return s;
+    }
+
+    /**
+     * Resolve the 4x1 figures for {@code now}: the last hourly projection at or
+     * before this instant, or the published plan when there is no table at all.
+     * This is a lookup only — no FSRS arithmetic is duplicated in Java. Once a
+     * snapshot has fallen a whole day behind its table, prefer the plan that
+     * was published with it over a projection that can no longer be trusted.
+     */
+    static Plan planAt(Snapshot s, long now) {
+        Plan p = new Plan();
+        p.remaining = s.remaining;
+        p.due = s.due;
+        p.fresh = s.fresh;
+        p.minutes = s.minutes;
+        Hour pick = null;
+        for (Hour h : s.hours) {
+            if (h.at <= now && (pick == null || h.at > pick.at)) pick = h;
+        }
+        if (pick == null || now - pick.at > 25L * 60 * 60 * 1000) return p;
+        p.remaining = pick.remaining;
+        p.due = pick.due;
+        p.fresh = pick.fresh;
+        p.minutes = pick.minutes;
+        return p;
     }
 
     private static SharedPreferences widgetPrefs(Context ctx) {

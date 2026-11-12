@@ -133,11 +133,11 @@ The APKs are not in the repository (`.gitignore` excludes them). Two ways in:
 
 | Artifact | Word audio | Use |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.0.12.apk` | Original ElevenLabs + Commons human takes for 76 words | Share / public distribution |
-| `word-atlas-android-v1.0.12_O.apk` | OALDPEX human (Oxford University Press) | Personal use only, never redistribute |
+| `word-atlas-android-v1.1.1.apk` | Original ElevenLabs + Commons human takes for 76 words | Share / public distribution |
+| `word-atlas-android-v1.1.1_O.apk` | OALDPEX human (Oxford University Press) | Personal use only, never redistribute |
 
 ```bash
-adb install -r word-atlas-android-v1.0.12.apk
+adb install -r word-atlas-android-v1.1.1.apk
 ```
 
 Both packages share one package name and cannot be installed side by side; installing over keeps your study records.
@@ -146,10 +146,12 @@ Requires **Android 7.0 (API 24)** or newer; arm64 devices are the best experienc
 
 ## Versions
 
-Current **v1.0.12** (versionCode 13). Per-release changes and checksums are in [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current **v1.1.1** (versionCode 15). Per-release changes and checksums are in [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
+| **v1.1.1** | **The progress widget refreshes on every hour boundary**: the page publishes 25 hourly projections of the four figures (FSRS stays in the web layer; native only looks up the row for the current hour), and `WidgetKeepAlive` pulls a fresh snapshot on the hour and re-renders all three cards — the numbers keep pace with cards coming due even when the app is closed. Still zero permissions, no notification, no exact alarm, no foreground service |
+| **v1.1.0** | **Material Expressive 2025 theme family**: three families, mode / accent / palette controls, 22 CSS variables computed at runtime from the 2025 spec with a wallpaper-seeded accent; an optional bundled Chinese WenKai screen face, plus interface and text scaling |
 | **v1.0.12** | **Word cards pick up thesaurus synonyms from the Oxford Learner's Thesaurus**, filtered to same-POS groups by a Chinese-gloss match ≥0.3 — 2,175 cards gain 7,774 synonyms (total 20,745 → 28,518), case-insensitive dedup with no hard cap; **synonyms split by sense** — polysemous cards list them per sense, English only, with an unplaced bucket at the end (≤8 per sense); **lookup fallback** shows UK/US IPA and Chinese for words outside the atlas (341,575 headwords from a trimmed ECDICT, 26 letter-shards, ~26 MB), still voiced by Kokoro; and **UI copy is aligned with the web edition** — 118 label/copy swaps across 12 files (e.g. the atlas headline and the galaxy "review a learned word" hint) pulled from the live site, with no new UI elements and no word-card content changed |
 | **v1.0.11** | **The whole UI kit is rebuilt with ElevenLabs glass-bell cues**: the upstream mastering `afade` had truncated 9 cues to 10 ms of silence, so 11 cues were regenerated with prompts pinned to a pitched mid-range tone (fixing a nearly-silent `start.mp3` and the hissy high-frequency takes) and level-calibrated against the ambience bed — all 17 are now audible. **Tap detection moved to release** (10 px travel / 600 ms hold / 130 ms cooldown), so swipes no longer fire feedback. A new **UI vibration** switch sits right under "UI sounds", firing only on buttons, settings changes, flips and verdicts. Spell typing now gets the key cue plus a throttled buzz, and `key.mp3` is a vintage typewriter clack. A new **Hide practice** switch keeps only three bottom tabs that resize to fill the row, and folds Today's typing-practice entry. Still zero permissions, via the system haptic channel |
 | **v1.0.10** | Three home-screen widgets land (stubborn-words carousel, sentence of the day, progress bar — zero permission, fully offline), and **lookup history** is back: a "recently looked up" palette plus a standalone page, capped at 20, undated, never backed up; **lookup from other apps** — long-press a word anywhere to pick 词光 as the translator, or share text to it, and the result joins the same history |
@@ -198,9 +200,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.0.12.apk      (share build, original audio)
-# → word-atlas-android-v1.0.12_O.apk    (private build, OALDPEX human audio)
-adb install -r word-atlas-android-v1.0.12.apk
+# → word-atlas-android-v1.1.1.apk      (share build, original audio)
+# → word-atlas-android-v1.1.1_O.apk    (private build, OALDPEX human audio)
+adb install -r word-atlas-android-v1.1.1.apk
 ```
 
 Both packages share one Web bundle, one set of inlined data, one `base.apk` and one `classes.dex`; only the word audio is swapped at packaging time. `--skip-web` reuses the previous `dist-android`.

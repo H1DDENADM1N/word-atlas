@@ -11,8 +11,8 @@ export function dueIds(p: Progress, now = Date.now()) {
     .map(([id]) => id);
 }
 
-export function newToday(p: Progress) {
-  return p.days[dayKey()]?.n ?? 0;
+export function newToday(p: Progress, date = dayKey()) {
+  return p.days[date]?.n ?? 0;
 }
 
 /** Next unseen words along the learning path, starting at the learner's level. */
@@ -30,9 +30,14 @@ export function nextNew(atlas: Atlas, p: Progress, settings: Settings, count: nu
   return out;
 }
 
-export function todayPlan(atlas: Atlas, p: Progress, s: Settings) {
-  const due = dueIds(p).filter((id) => atlas.byId.has(id));
-  const newLeft = Math.max(0, s.dailyNew - newToday(p));
+/**
+ * `now` / `date` default to the present, so every existing caller keeps the
+ * Today page's numbers. The widget publisher passes a future hour boundary to
+ * project what the plan will look like as cards come due while the app is closed.
+ */
+export function todayPlan(atlas: Atlas, p: Progress, s: Settings, now = Date.now(), date = dayKey()) {
+  const due = dueIds(p, now).filter((id) => atlas.byId.has(id));
+  const newLeft = Math.max(0, s.dailyNew - newToday(p, date));
   const fresh = nextNew(atlas, p, s, newLeft);
   return { due, fresh, minutes: Math.max(1, Math.round(due.length * 0.25 + fresh.length * 0.9)) };
 }
