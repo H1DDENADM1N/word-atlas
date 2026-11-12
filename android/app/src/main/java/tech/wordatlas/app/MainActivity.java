@@ -767,6 +767,21 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void setSurface(final String color) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (splash != null) return;
+                    try {
+                        paintNativeSurface(Color.parseColor(color));
+                    } catch (IllegalArgumentException e) {
+                        /* the page sent something that is not a colour */
+                    }
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void setChrome(final String color, final boolean dark) {
             runOnUiThread(new Runnable() {
                 @Override

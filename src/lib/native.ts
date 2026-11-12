@@ -16,6 +16,8 @@ interface Shell {
   prepare(text: string, lang: string, rate: number): void;
   stopSpeak(): void;
   setChrome(color: string, dark: boolean): void;
+  /** Paint the native surfaces behind the page (window, root view, WebView). */
+  setSurface?(color: string): void;
   setBackEnabled(enabled: boolean): void;
   /** "light" | "dark" — the phone's own setting, not the app theme. */
   systemTheme?(): string;
@@ -246,6 +248,18 @@ export function installSystemTheme() {
 /** Tint the status and navigation bars to match the page theme. */
 export function setChrome(color: string, dark: boolean) {
   shell?.setChrome(color, dark);
+}
+
+/**
+ * Colour the native surfaces that sit behind the page.
+ *
+ * They are invisible while the page paints; they only decide what a gap shows
+ * — and the keyboard opens one every time it animates. Matching them to what
+ * the page shows in that spot (the paper, or the palette's dim while search is
+ * up) is what keeps the band from flashing.
+ */
+export function setSurface(color: string) {
+  shell?.setSurface?.(color);
 }
 
 export function openExternal(url: string) {

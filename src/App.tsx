@@ -23,7 +23,7 @@ import {
   useLocation,
   type Route,
 } from "./lib/router";
-import { setChrome } from "./lib/native";
+import { setChrome, setSurface } from "./lib/native";
 import { PALETTE_EVENT } from "./lib/palette";
 import { M3_VARS } from "./lib/m3";
 import { chromeColor, useThemeSettings } from "./lib/theme";
@@ -54,6 +54,21 @@ const NAV: { page: Route["page"]; label: string; icon: typeof Compass }[] = [
   { page: "practice", label: "练习", icon: Keyboard },
   { page: "me", label: "我的", icon: User },
 ];
+
+/**
+ * The palette's scrim (`rgba(14, 18, 30, 0.6)`) over a paper colour, flattened
+ * to one hex. The native surfaces behind the page take this while search is
+ * up, so the gap the keyboard opens is the same tone as the dimmed page.
+ */
+function scrimmed(hex: string) {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return hex;
+  const n = Number.parseInt(hex.slice(1), 16);
+  const over = (c: number, s: number) => Math.round(c * 0.4 + s * 0.6);
+  const r = over((n >> 16) & 255, 14);
+  const g = over((n >> 8) & 255, 18);
+  const b = over(n & 255, 30);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
 
 function useTheme() {
   const { family, mode, nightSkin, palette } = useThemeSettings();
@@ -164,7 +179,7 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   const nav = hidePractice
     ? NAV.filter((item) => item.page !== "practice")
     : NAV;
-  const { family, mode } = useThemeSettings();
+  const { family, mode, nightSkin, palette: m3 } = useThemeSettings();
   const [palette, setPalette] = useState(false);
   const [splash, setSplash] = useState(shouldShowSplash);
   // The page keeps the "search is up" layout for a beat after the palette
@@ -179,6 +194,14 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
     const t = window.setTimeout(() => setSearchShell(false), 240);
     return () => window.clearTimeout(t);
   }, [palette]);
+  // The keyboard opens a gap between the page and itself, and the native
+  // surfaces behind the page are what show through it. While search is up
+  // those surfaces have to be the palette's dim, not the paper: the page under
+  // the scrim is dark, and a paper-coloured gap read as a bright band.
+  const paper = chromeColor(family, mode, nightSkin, m3);
+  useEffect(() => {
+    setSurface(searchShell ? scrimmed(paper) : paper);
+  }, [searchShell, paper]);
   // The document canvas keeps painting the full WebView surface even when the
   // keyboard shrinks the viewport. That strip — the area the IME is about to
   // cover — is what flashed as a solid band of paper colour, so the canvas is
