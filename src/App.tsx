@@ -41,6 +41,7 @@ import { EntryView } from "./ui/EntryView";
 import { AmbienceController, AmbiencePicker } from "./ui/Ambience";
 import { Logo } from "./ui/Logo";
 import { Palette } from "./ui/Palette";
+import { PullToSearch } from "./ui/PullToSearch";
 import { Sheet } from "./ui/Sheet";
 import { shouldShowSplash, Splash } from "./ui/Splash";
 import { Starfield } from "./ui/Starfield";
@@ -208,6 +209,15 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   }, [route.page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dark = mode === "dark";
+  // The pull belongs to the three root tabs. A word card, the palette, the
+  // onboarding sheet and the splash all sit above the page and want the drag
+  // for themselves.
+  const pullSearch =
+    !word &&
+    !palette &&
+    !splash &&
+    onboarded &&
+    (route.page === "today" || route.page === "atlas" || route.page === "me");
 
   return (
     <div className={`app ${focus ? "is-focus" : ""}`}>
@@ -233,47 +243,50 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
               </a>
             ))}
           </nav>
-          <div className="topbar-tools">
+          <div className="topbar-end">
             <button
               className="search-pill"
               onClick={() => setPalette(true)}
               aria-label="搜索单词"
+              aria-haspopup="dialog"
             >
               <Search size={17} />
               <span>搜索单词</span>
               <kbd>⌘K</kbd>
             </button>
-            <AmbiencePicker />
-            <button
-              className="icon-btn"
-              onClick={() =>
-                // The night family ignores the mode, so its switch leaves the
-                // family instead of writing a field nothing reads.
-                family === "night"
-                  ? store.settings({
-                      themeFamily: "ink",
-                      themeMode: dark ? "light" : "dark",
-                    })
-                  : store.settings({ themeMode: dark ? "light" : "dark" })
-              }
-              aria-label={
-                family === "night"
-                  ? "退出夜空，切换到纸墨"
-                  : dark
-                    ? "切换到浅色"
-                    : "切换到深色"
-              }
-            >
-              {dark ? <Sun size={19} /> : <Moon size={19} />}
-            </button>
-            <a
-              className="icon-btn hide-sm"
-              href="#/about"
-              aria-label="关于与开源"
-              title="关于与开源"
-            >
-              <Github size={19} />
-            </a>
+            <div className="topbar-tools">
+              <AmbiencePicker />
+              <button
+                className="icon-btn"
+                onClick={() =>
+                  // The night family ignores the mode, so its switch leaves the
+                  // family instead of writing a field nothing reads.
+                  family === "night"
+                    ? store.settings({
+                        themeFamily: "ink",
+                        themeMode: dark ? "light" : "dark",
+                      })
+                    : store.settings({ themeMode: dark ? "light" : "dark" })
+                }
+                aria-label={
+                  family === "night"
+                    ? "退出夜空，切换到纸墨"
+                    : dark
+                      ? "切换到浅色"
+                      : "切换到深色"
+                }
+              >
+                {dark ? <Sun size={19} /> : <Moon size={19} />}
+              </button>
+              <a
+                className="icon-btn hide-sm"
+                href="#/about"
+                aria-label="关于与开源"
+                title="关于与开源"
+              >
+                <Github size={19} />
+              </a>
+            </div>
           </div>
         </header>
       )}
@@ -287,6 +300,8 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
         {route.page === "history" && <HistoryPage />}
         {route.page === "about" && <About />}
       </main>
+
+      <PullToSearch enabled={pullSearch} onOpen={() => setPalette(true)} />
 
       {!focus && (
         <footer className="footer">

@@ -813,26 +813,35 @@ code {
   font-weight: 600;
   background: var(--paper-2);
 }
-.topbar-tools {
+.topbar-end {
   margin-left: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.topbar-tools {
   flex: none;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 .search-pill {
-  display: none;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   height: 38px;
-  padding: 0 8px 0 14px;
+  padding: 0 8px 0 13px;
+  /* The field, not a button with an icon: on a phone it takes whatever width
+     the wordmark gave up, so "search" is the first thing the header offers. */
+  flex: 1 1 auto;
+  min-width: 0;
   border-radius: var(--shape-full);
   border: 1px solid var(--line-strong);
   background: var(--card);
   color: var(--ink-3);
   font-size: 14px;
-  margin-right: 6px;
-  min-width: 220px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .search-pill:hover {
@@ -843,27 +852,71 @@ code {
   flex: 1;
   text-align: left;
 }
-.search-pill::before {
-  content: none;
-}
 @media (max-width: 759px) {
-  .search-pill {
-    display: inline-flex;
-    min-width: 0;
-    width: 40px;
-    padding: 0;
-    justify-content: center;
-    border: 0;
-    background: none;
-    margin: 0;
+  .topbar {
+    gap: 10px;
   }
-  .search-pill span,
+  .topbar-logo {
+    margin-right: 0;
+  }
+  /* The wordmark hands its width to the search field; the compass mark alone
+     stays behind as the way home. */
+  .topbar .logo-text {
+    display: none;
+  }
+  .search-pill {
+    padding: 0 12px;
+  }
   .search-pill kbd {
     display: none;
   }
   .hide-sm {
     display: none;
   }
+}
+
+/* ---------- pull down to search ---------- */
+
+/* A hint pill that slides out from under the header while the page is pulled.
+   Both values are written by the gesture itself, so the pill follows the
+   finger without a React render on every touchmove. */
+.pull-hint {
+  position: fixed;
+  top: var(--top);
+  left: 50%;
+  z-index: 29;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--shape-full);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink-3);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: var(--pull-p, 0);
+  transform: translate(-50%, calc(var(--pull, 0) * 1px - 100%))
+    scale(calc(0.92 + 0.08 * var(--pull-p, 0)));
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+  will-change: transform, opacity;
+}
+.pull-hint[data-armed] {
+  color: var(--terra-ink);
+  border-color: color-mix(in oklab, var(--terra) 45%, transparent);
+}
+.pull-hint-armed {
+  display: none;
+}
+.pull-hint[data-armed] .pull-hint-idle {
+  display: none;
+}
+.pull-hint[data-armed] .pull-hint-armed {
+  display: inline;
 }
 
 .tabbar {
@@ -935,8 +988,12 @@ code {
   .topnav {
     display: flex;
   }
+  .topbar-end {
+    flex: none;
+  }
   .search-pill {
-    display: inline-flex;
+    flex: none;
+    min-width: 220px;
   }
   .tabbar {
     display: none;
@@ -1739,6 +1796,9 @@ code {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: fade 0.25s var(--ease);
+  /* Follows a downward drag on the panel, so the page behind eases back into
+     view as the card is pulled away. Written by Sheet.tsx, 0 when idle. */
+  opacity: calc(1 - var(--drag, 0));
 }
 @keyframes fade {
   from {
@@ -1762,6 +1822,10 @@ code {
   background: var(--paper);
   box-shadow: var(--shadow-lg);
   animation: sheet-up 0.42s var(--ease);
+  /* Only a cancelled pull uses it: the panel eases back to rest after the
+     finger lifts short of the threshold. The drag itself runs with
+     `transition: none` so the card stays glued to the finger. */
+  transition: transform 0.24s var(--ease), opacity 0.18s var(--ease);
   will-change: transform;
 }
 .sheet {
@@ -1789,6 +1853,14 @@ code {
   margin-left: -20px;
   border-radius: var(--shape-xs);
   background: var(--line-strong);
+}
+/* Pulling the card down from its top edge: the entrance animation would fight
+   the finger (an animated transform outranks an inline one), so it is dropped
+   for the duration of the drag. */
+.sheet-frame.is-dragging {
+  animation: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .sheet-close {
   position: absolute;
