@@ -179,6 +179,15 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
     const t = window.setTimeout(() => setSearchShell(false), 240);
     return () => window.clearTimeout(t);
   }, [palette]);
+  // The document canvas keeps painting the full WebView surface even when the
+  // keyboard shrinks the viewport. That strip — the area the IME is about to
+  // cover — is what flashed as a solid band of paper colour, so the canvas is
+  // told to paint the palette's own dim instead. A class on <html> is the only
+  // level that reaches it: the overlay stops at the layout viewport.
+  useEffect(() => {
+    document.documentElement.classList.toggle("is-search", searchShell);
+    return () => document.documentElement.classList.remove("is-search");
+  }, [searchShell]);
   const focus = route.page === "learn";
   // The history page is reached from "我的", so keep that tab looking current.
   const activePage = route.page === "history" ? "me" : route.page;

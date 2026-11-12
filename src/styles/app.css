@@ -966,6 +966,13 @@ code {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
+/* The canvas paints the whole WebView surface, including the strip below a
+   layout viewport that the keyboard has just shrunk — the strip the palette's
+   fixed overlay cannot reach. Painting it as "dim over paper" makes it blend
+   into the scrim instead of flashing a band of bare paper. */
+html.is-search {
+  background: color-mix(in srgb, #0e121e 60%, var(--paper));
+}
 
 .footer {
   max-width: 1200px;
@@ -1944,10 +1951,14 @@ code {
      as a flicker. A slightly denser dim reads the same over a page and costs
      a single flat fill; the desktop keeps its blur, where there is no IME. */
   background: rgba(14, 18, 30, 0.6);
+  /* The panel's distance from the top is a token, not a viewport unit: with
+     the keyboard up the layout viewport shrinks, and `9vh` used to shrink with
+     it — the search box popped up a dozen pixels the moment the IME appeared. */
+  --palette-top: max(12px, 9vh);
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: max(12px, 9vh) 12px 12px;
+  padding: var(--palette-top) 12px 12px;
   animation: fade 0.14s var(--ease);
 }
 @media (min-width: 760px) {
@@ -1957,12 +1968,24 @@ code {
     -webkit-backdrop-filter: blur(4px);
   }
 }
+@media (max-width: 759px) {
+  .palette-root {
+    /* The scrim has to outrun the layout viewport. When the keyboard resizes
+       it, `inset: 0` ends where the new viewport ends, and the strip below —
+       the area the IME is about to cover — keeps painting raw page background:
+       a solid ivory (or near-black) band, slightly taller than the keyboard,
+       on both the way up and the way down. Twice the viewport always covers
+       it, and the part that hangs past the screen is simply clipped. */
+    height: 200%;
+  }
+}
 .palette {
   width: 100%;
   max-width: 640px;
   /* Fit whatever height is left once the keyboard is up: the list takes the
-     remainder and scrolls, instead of the panel running under the IME. */
-  max-height: 100%;
+     remainder and scrolls, instead of the panel running under the IME. The
+     root is twice the viewport tall, so this cannot lean on its percentage. */
+  max-height: calc(100 * var(--dvh) - var(--palette-top) - 16px);
   display: flex;
   flex-direction: column;
   background: var(--paper);
@@ -2137,7 +2160,10 @@ code {
 }
 @media (max-width: 640px) {
   .palette-root {
-    padding: max(8px, 4vh) 8px 8px;
+    /* A plain 34 px, not 4vh: the IME shrinks the layout viewport, and a
+       viewport-relative offset moved the search box up with it. */
+    --palette-top: 34px;
+    padding: var(--palette-top) 8px 8px;
   }
   .palette-input {
     height: 58px;
