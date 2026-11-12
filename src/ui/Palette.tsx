@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { WordRef } from "../atlas/types";
 import { useAtlas } from "../atlas/context";
 import { focusField } from "../lib/keyboard";
-import { registerOverlay } from "../lib/native";
+import { registerOverlay, isShell, shell } from "../lib/native";
 import { go, openWord } from "../lib/router";
 import { clearRecent, dailyPicks, pushRecent, resolveRecent, subscribeRecent } from "../lib/recent";
 import { isChinese, matchSense, searchAtlas } from "../lib/search";
@@ -12,6 +12,8 @@ import { toast } from "./Toast";
 
 /** The panel previews six; the standalone page holds the full twenty. */
 const PREVIEW = 6;
+/** Matches `palette-in` in the stylesheet: the IME waits for the panel to land. */
+const ENTER_MS = 180;
 
 export function Palette({ open, onClose }: { open: boolean; onClose: () => void }) {
   const atlas = useAtlas();
@@ -47,8 +49,19 @@ export function Palette({ open, onClose }: { open: boolean; onClose: () => void 
     setSel(0);
     refresh();
     // WebView only raises the IME on a real focus change; focusField handles it.
-    const raf = requestAnimationFrame(() => focusField(input.current));
-    return () => cancelAnimationFrame(raf);
+    //
+    // In the APK the shell can raise the keyboard whenever it likes, so the
+    // field waits for the panel to land first: the keyboard resizes the
+    // WebView, which re-lays out the page and every blurred surface on it, and
+    // doing that halfway through the entrance is what made search feel jumpy.
+    // A browser has no such bridge and has to focus inside the tap gesture or
+    // no keyboard appears at all, so the web build keeps the next-frame focus.
+    const raf = isShell ? 0 : requestAnimationFrame(() => focusField(input.current));
+    const timer = isShell ? window.setTimeout(() => focusField(input.current), ENTER_MS) : 0;
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
   }, [open, refresh]);
 
   // Claim the hardware back key before the router sees it.
@@ -58,6 +71,14 @@ export function Palette({ open, onClose }: { open: boolean; onClose: () => void 
       closeRef.current();
       return true;
     });
+  }, [open]);
+
+  // Put the keyboard down with the panel instead of waiting for the field to
+  // lose focus on unmount: Android keeps the IME up for a beat after that,
+  // while the tab bar behind the palette is waiting to come back.
+  useEffect(() => {
+    if (!open) return;
+    return () => shell?.hideKeyboard?.();
   }, [open]);
 
   // Clearing on the history page, or a write in another tab, updates the panel.

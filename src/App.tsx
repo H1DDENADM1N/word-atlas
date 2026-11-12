@@ -167,6 +167,18 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
   const { family, mode } = useThemeSettings();
   const [palette, setPalette] = useState(false);
   const [splash, setSplash] = useState(shouldShowSplash);
+  // The page keeps the "search is up" layout for a beat after the palette
+  // closes: the keyboard is still sliding away, and a tab bar that reappeared
+  // above it would ride the IME back down the screen.
+  const [searchShell, setSearchShell] = useState(false);
+  useEffect(() => {
+    if (palette) {
+      setSearchShell(true);
+      return;
+    }
+    const t = window.setTimeout(() => setSearchShell(false), 240);
+    return () => window.clearTimeout(t);
+  }, [palette]);
   const focus = route.page === "learn";
   // The history page is reached from "我的", so keep that tab looking current.
   const activePage = route.page === "history" ? "me" : route.page;
@@ -220,7 +232,9 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
     (route.page === "today" || route.page === "atlas" || route.page === "me");
 
   return (
-    <div className={`app ${focus ? "is-focus" : ""}`}>
+    <div
+      className={`app${focus ? " is-focus" : ""}${searchShell ? " is-search" : ""}`}
+    >
       <Starfield />
       {!focus && (
         <header className="topbar">
@@ -316,7 +330,9 @@ function Shell({ privateAvailable }: { privateAvailable: boolean }) {
         </footer>
       )}
 
-      {!focus && (
+      {/* The bar is the one surface that would ride the keyboard up the screen;
+          while the modal is open it steps aside instead. */}
+      {!focus && !searchShell && (
         <nav className="tabbar" aria-label="主导航">
           {nav.map(({ page, label, icon: Icon }) => (
             <a
