@@ -18,7 +18,7 @@ import {
   type M3Variant,
   type ThemeFamily,
 } from "../lib/theme-model";
-import { dayKey, exportBackup, exportWebBackup, FAMILIES as FAMILY_KEYS, MODES as MODE_KEYS, NIGHT_SKINS, importAnyBackup, resetProgress, store, TEXT_SCALES, UI_SCALES, useStore, type Settings } from "../store/store";
+import { dayKey, EX_RATE_STEP, exportBackup, exportWebBackup, FAMILIES as FAMILY_KEYS, MAX_EX_RATE, MIN_EX_RATE, MODES as MODE_KEYS, NIGHT_SKINS, importAnyBackup, resetProgress, store, TEXT_SCALES, UI_SCALES, useStore, type Settings } from "../store/store";
 import { toast } from "../ui/Toast";
 
 /** Five stops, short words: they sit in one row on a 375px phone. */
@@ -85,6 +85,11 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
   }, [progress]);
 
   const set = (patch: Partial<Settings>) => store.settings(patch);
+  /** Keep the speed on the 0.1 grid, so 0.3 − 0.1 cannot drift to 0.1999… */
+  const setRate = (key: "exRateDaily" | "exRateIelts" | "exRateExam", v: number) =>
+    set({
+      [key]: Math.min(MAX_EX_RATE, Math.max(MIN_EX_RATE, Math.round(v * 10) / 10)),
+    } as Partial<Settings>);
   const download = async () => {
     const blob = new Blob([exportBackup()], { type: "application/json" });
     const where = await saveBlob(blob, `word-atlas-backup-${dayKey()}.json`);
@@ -392,6 +397,23 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
           <Toggle label="自动播放发音" on={settings.autoplay} set={(v) => set({ autoplay: v })} />
           <Toggle sub label="自动朗读日常例句" on={settings.autoplayEx} set={(v) => set({ autoplayEx: v })} />
           <Toggle sub label="自动朗读雅思语境例句" on={settings.autoplayEx2} set={(v) => set({ autoplayEx2: v })} />
+          <RateField
+            label="日常例句速度"
+            hint="三种例句各调各的：只改这一种的快慢，单词发音和另外两种都不受影响。"
+            value={settings.exRateDaily}
+            set={(v) => setRate("exRateDaily", v)}
+          />
+          <RateField
+            label="雅思语境例句速度"
+            value={settings.exRateIelts}
+            set={(v) => setRate("exRateIelts", v)}
+          />
+          <RateField
+            label="真题例句速度"
+            hint="词卡下方「真题例句」那一块，换句后仍按这个速度朗读。"
+            value={settings.exRateExam}
+            set={(v) => setRate("exRateExam", v)}
+          />
           <Toggle label="界面音效" on={settings.sfx} set={(v) => set({ sfx: v })} />
           <Toggle
             label="界面震动"
@@ -495,6 +517,50 @@ function Toggle({ label, hint, sub, on, set }: { label: string; hint?: string; s
       <input type="checkbox" role="switch" checked={on} onChange={(e) => set(e.target.checked)} />
       <span className="switch" aria-hidden="true" />
     </label>
+  );
+}
+
+/**
+ * One example speed: the slider for the long drag, a −/+ pair that walks the
+ * 0.1 grid exactly, and the readout saying where it landed.
+ */
+function RateField({ label, hint, value, set }: { label: string; hint?: string; value: number; set: (v: number) => void }) {
+  return (
+    <Field label={label} hint={hint} stack>
+      <div className="rate-row">
+        <button
+          type="button"
+          className="rate-step"
+          onClick={() => set(value - EX_RATE_STEP)}
+          disabled={value <= MIN_EX_RATE}
+          aria-label={`${label}放慢一档`}
+        >
+          −
+        </button>
+        <input
+          type="range"
+          min={MIN_EX_RATE}
+          max={MAX_EX_RATE}
+          step={EX_RATE_STEP}
+          value={value}
+          onChange={(e) => set(Number(e.target.value))}
+          aria-label={label}
+          aria-valuetext={`${value.toFixed(1)} 倍速`}
+        />
+        <button
+          type="button"
+          className="rate-step"
+          onClick={() => set(value + EX_RATE_STEP)}
+          disabled={value >= MAX_EX_RATE}
+          aria-label={`${label}加快一档`}
+        >
+          +
+        </button>
+        <output className="rate-value" aria-live="off">
+          {value.toFixed(1)}×
+        </output>
+      </div>
+    </Field>
   );
 }
 

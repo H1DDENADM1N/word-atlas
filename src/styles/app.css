@@ -4206,6 +4206,46 @@ code {
   color: var(--ink-3);
   font-size: 12.5px;
 }
+/* 例句朗读速度：两头的 −/+ 让 0.1 一档走得准，滑块负责长距离拖动，
+   末尾的倍数实时回读，拖到哪就是哪。 */
+.rate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.rate-row input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--terra);
+}
+.rate-step {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--ink-2);
+  font: 600 18px/1 var(--sans);
+  transition: transform 0.15s var(--spring), opacity 0.2s;
+}
+.rate-step:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.rate-step:disabled {
+  opacity: 0.35;
+}
+.rate-value {
+  flex: none;
+  min-width: 48px;
+  text-align: right;
+  font: 600 15px/1 var(--sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
 .toggle {
   cursor: pointer;
   position: relative;

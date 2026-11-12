@@ -150,6 +150,7 @@ function ExZh({ text, veil }: { text: string; veil: boolean }) {
 function ExamExamples({ entry, veil }: { entry: Entry; veil: boolean }) {
   const list = useIelts(entry.id);
   const accent = useStore((s) => s.settings.accent);
+  const examRate = useStore((s) => s.settings.exRateExam);
   const [i, setI] = useState(0);
   if (!list.length) return null;
   const at = i % list.length;
@@ -166,7 +167,7 @@ function ExamExamples({ entry, veil }: { entry: Entry; veil: boolean }) {
         <li>
           <p className="ex-en" lang="en">
             <LookupText text={x.en} word={entry.w} />
-            <Speak url={null} text={x.en} accent={accent} size="sm" className="ex-speak" />
+            <Speak url={null} text={x.en} accent={accent} rate={examRate} size="sm" className="ex-speak" />
           </p>
           {x.zh && <ExZh text={x.zh} veil={veil} />}
         </li>
@@ -190,6 +191,8 @@ export function EntryView({ entry, mode = "detail", eager = true }: { entry: Ent
   const card = useStore((s) => s.progress.cards[entry.id]);
   const saved = useStore((s) => s.progress.bookmarks.includes(entry.id));
   const accent = useStore((s) => s.settings.accent);
+  const dailyRate = useStore((s) => s.settings.exRateDaily);
+  const ieltsRate = useStore((s) => s.settings.exRateIelts);
   const veil = useStore((s) => s.settings.blurZh);
   const syl = useSyllables(entry.id);
   const [showSyl, setShowSyl] = useState(false);
@@ -296,7 +299,7 @@ export function EntryView({ entry, mode = "detail", eager = true }: { entry: Ent
                   {entry.ex.length > 1 && <span className={`ex-tag ${i ? "is-ielts" : ""}`}>{i ? "雅思语境" : "日常"}</span>}
                   <p className="ex-en" lang="en">
                     <LookupText text={x.en} word={entry.w} />
-                    <Speak url={exUrls[i] ?? null} text={x.en} accent={i === 1 && exUrls[1] ? "us" : accent} size="sm" className="ex-speak" />
+                    <Speak url={exUrls[i] ?? null} text={x.en} accent={i === 1 && exUrls[1] ? "us" : accent} rate={i === 1 ? ieltsRate : dailyRate} size="sm" className="ex-speak" />
                   </p>
                   <ExZh text={x.zh} veil={veil} />
                 </li>

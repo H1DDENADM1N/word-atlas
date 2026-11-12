@@ -153,9 +153,9 @@ export function webProgress(p: Progress) {
 }
 
 /** The `settings` half: this app's choices, restated in the site's vocabulary.
- *  Android-only settings (`autoplayEx*`, `blurZh`, `haptic`) are deliberately
- *  left out: the site has no such switches, and its validator only checks the
- *  keys it knows. A local backup keeps them via `sanitizeSettings`. */
+ *  Android-only settings (`autoplayEx*`, `exRate*`, `blurZh`, `haptic`) are
+ *  deliberately left out: the site has no such switches, and its validator only
+ *  checks the keys it knows. A local backup keeps them via `sanitizeSettings`. */
 export function webSettings(s: Settings) {
   return {
     accent: s.accent,

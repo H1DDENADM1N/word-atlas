@@ -69,6 +69,36 @@ test("隐藏练习 survives a backup and defaults to off", () => {
   assert.equal(sanitizeSettings({ hidePractice: "yes" }).hidePractice, false);
 });
 
+test("三种例句的速度各存各的，都在 0.1 格上，且不进备份", () => {
+  const d = sanitizeSettings({});
+  assert.equal(d.exRateDaily, 1);
+  assert.equal(d.exRateIelts, 1);
+  assert.equal(d.exRateExam, 1);
+  // One slider cannot drag the others along.
+  const s = sanitizeSettings({ exRateDaily: 0.6, exRateExam: 2.4 });
+  assert.equal(s.exRateDaily, 0.6);
+  assert.equal(s.exRateIelts, 1);
+  assert.equal(s.exRateExam, 2.4);
+  // A hand-edited file cannot leave a readout between two stops…
+  assert.equal(sanitizeSettings({ exRateIelts: 0.64 }).exRateIelts, 0.6);
+  // …and, like every other number here, an out-of-range or non-numeric value
+  // keeps the default rather than pinning to a boundary.
+  assert.equal(sanitizeSettings({ exRateDaily: 9 }).exRateDaily, 1);
+  assert.equal(sanitizeSettings({ exRateExam: 0 }).exRateExam, 1);
+  assert.equal(sanitizeSettings({ exRateExam: "fast" }).exRateExam, 1);
+  // A build that had one speed for every example wrote `exRate`; that single
+  // value seeds the three before they are their own settings.
+  const old = sanitizeSettings({ exRate: 0.7 });
+  assert.deepEqual([old.exRateDaily, old.exRateIelts, old.exRateExam], [0.7, 0.7, 0.7]);
+  assert.equal(sanitizeSettings({ exRate: 0.7, exRateExam: 1.3 }).exRateExam, 1.3);
+  // How fast this phone reads is a device taste, not the learning record.
+  const backed = backupSettings(sanitizeSettings({ exRateDaily: 0.6, exRateIelts: 1.2, exRateExam: 2 }));
+  assert.equal("exRateDaily" in backed, false);
+  assert.equal("exRateIelts" in backed, false);
+  assert.equal("exRateExam" in backed, false);
+  assert.equal("exRate" in backed, false);
+});
+
 test("drops malformed quiz steps and clamps the index instead of crashing", () => {
   const p = sanitizeProgress(
     {

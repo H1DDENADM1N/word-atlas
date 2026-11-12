@@ -37,6 +37,15 @@ export const CJK_FONTS: CjkFont[] = ["system", "wenkai"];
  */
 export const UI_SCALES = [0.9, 0.95, 1, 1.05, 1.1];
 export const TEXT_SCALES = [0.9, 0.95, 1, 1.1, 1.2];
+/**
+ * Example-reading speeds, in tenths: 0.1× (very slow) to 3.0× (very fast),
+ * with 1.0× — the recorded pace — as the default. Each kind of example keeps
+ * its own, because a daily sentence and a long exam sentence are not read at
+ * the same comfortable speed.
+ */
+export const MIN_EX_RATE = 0.1;
+export const MAX_EX_RATE = 3;
+export const EX_RATE_STEP = 0.1;
 /** The three looks the picker offers, coarsest first. */
 export const FAMILIES: ThemeFamily[] = ["ink", "night", "m3e"];
 export const MODES: ThemeMode[] = ["system", "light", "dark"];
@@ -96,6 +105,12 @@ export interface Settings {
   autoplayEx: boolean;
   /** Read the IELTS-context example after the word, when it is spoken. */
   autoplayEx2: boolean;
+  /** How fast the everyday example (`ex[0]`) is read, 0.1–3.0. */
+  exRateDaily: number;
+  /** The same, for the IELTS-context example (`ex[1]`). */
+  exRateIelts: number;
+  /** The same, for the real exam sentences on the card. */
+  exRateExam: number;
   /** Hide example translations behind a blur until they are tapped. */
   blurZh: boolean;
   dailyNew: number;
@@ -136,6 +151,9 @@ export const defaultSettings: Settings = {
   autoplay: true,
   autoplayEx: false,
   autoplayEx2: false,
+  exRateDaily: 1,
+  exRateIelts: 1,
+  exRateExam: 1,
   blurZh: false,
   dailyNew: 10,
   retention: 0.9,
@@ -330,6 +348,20 @@ export function sanitizeSettings(v: unknown): Settings {
   if (typeof v.autoplay === "boolean") s.autoplay = v.autoplay;
   if (typeof v.autoplayEx === "boolean") s.autoplayEx = v.autoplayEx;
   if (typeof v.autoplayEx2 === "boolean") s.autoplayEx2 = v.autoplayEx2;
+  // Kept on the 0.1 grid the sliders move in, so a hand-edited file cannot
+  // leave a readout showing 1.04×. A build that had one speed for every
+  // example wrote `exRate`; that value seeds all three before they are their
+  // own settings.
+  const rate = (key: "exRate" | "exRateDaily" | "exRateIelts" | "exRateExam") => {
+    const raw = v[key];
+    return num(raw, MIN_EX_RATE, MAX_EX_RATE)
+      ? Math.round((raw as number) * 10) / 10
+      : undefined;
+  };
+  const shared = rate("exRate");
+  s.exRateDaily = rate("exRateDaily") ?? shared ?? s.exRateDaily;
+  s.exRateIelts = rate("exRateIelts") ?? shared ?? s.exRateIelts;
+  s.exRateExam = rate("exRateExam") ?? shared ?? s.exRateExam;
   if (typeof v.blurZh === "boolean") s.blurZh = v.blurZh;
   if (num(v.dailyNew, 0, 100)) s.dailyNew = Math.round(v.dailyNew as number);
   if (num(v.retention, 0.7, 0.97)) s.retention = v.retention as number;
@@ -519,8 +551,8 @@ export function backupSettings(s: Settings) {
   // word an older build (and the website) knows. `void` marks the drop as
   // deliberate for the compiler's unused-locals check. The Chinese face goes
   // the same way: it names a device's taste, not the words being carried over.
-  // The two scale stops are the same kind of thing — how large this screen
-  // shows the words, not the words.
+  // The two scale stops and the three example speeds are the same kind of
+  // thing — how this phone shows and speaks, not the words.
   const {
     themeFamily,
     themeMode,
@@ -530,6 +562,9 @@ export function backupSettings(s: Settings) {
     cjkFont,
     uiScale,
     textScale,
+    exRateDaily,
+    exRateIelts,
+    exRateExam,
     ...rest
   } = s;
   void [
@@ -541,6 +576,9 @@ export function backupSettings(s: Settings) {
     cjkFont,
     uiScale,
     textScale,
+    exRateDaily,
+    exRateIelts,
+    exRateExam,
   ];
   return { ...rest, theme: legacyTheme(s) };
 }
@@ -633,6 +671,9 @@ export function importAnyBackup(text: string): ImportReport {
         ? {
             autoplayEx: state.settings.autoplayEx,
             autoplayEx2: state.settings.autoplayEx2,
+            exRateDaily: state.settings.exRateDaily,
+            exRateIelts: state.settings.exRateIelts,
+            exRateExam: state.settings.exRateExam,
             blurZh: state.settings.blurZh,
             haptic: state.settings.haptic,
             hidePractice: state.settings.hidePractice,

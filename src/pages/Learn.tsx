@@ -105,8 +105,10 @@ function Intro({ step }: { step: Step }) {
       word: settings.autoplay,
       daily: settings.autoplayEx,
       ielts: settings.autoplayEx2,
+      dailyRate: settings.exRateDaily,
+      ieltsRate: settings.exRateIelts,
     });
-  }, [entry, atlas, settings.autoplay, settings.accent, settings.autoplayEx, settings.autoplayEx2]);
+  }, [entry, atlas, settings.autoplay, settings.accent, settings.autoplayEx, settings.autoplayEx2, settings.exRateDaily, settings.exRateIelts]);
   const next = useCallback(() => {
     stopAudio();
     if (store.get().settings.sfx) void cue("flip");
@@ -184,6 +186,8 @@ function Quiz({ step, session }: { step: Step & { kind: QuizKind }; session: Act
           word: true,
           daily: settings.autoplayEx,
           ielts: settings.autoplayEx2,
+          dailyRate: settings.exRateDaily,
+          ieltsRate: settings.exRateIelts,
         });
     },
     [pending, elapsed, settings, atlas, step, hints, entry, ref],
@@ -416,6 +420,7 @@ function SpellInput({ entry, pending, hints, onHint, onSubmit }: { entry: Entry;
 function Feedback({ entry, refw, correct, onNext }: { entry: Entry; refw: WordRef; correct: boolean; onNext: () => void }) {
   const atlas = useAtlas();
   const accent = useStore((s) => s.settings.accent);
+  const dailyRate = useStore((s) => s.settings.exRateDaily);
   const btn = useRef<HTMLButtonElement>(null);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -438,7 +443,7 @@ function Feedback({ entry, refw, correct, onNext }: { entry: Entry; refw: WordRe
           </button>
           <div className="feedback-tools">
             <Speak url={atlas.audio(refw, accent)} text={entry.w} accent={accent} size="sm" label="播放发音" />
-            {ex && <Speak url={atlas.audio(entry, "ex")} text={ex.en} accent={accent} size="sm" label="播放例句" />}
+            {ex && <Speak url={atlas.audio(entry, "ex")} text={ex.en} accent={accent} rate={dailyRate} size="sm" label="播放例句" />}
           </div>
           <p className="feedback-zh">
             {entry.senses
