@@ -56,14 +56,14 @@ const NAV: { page: Route["page"]; label: string; icon: typeof Compass }[] = [
 ];
 
 /**
- * The palette's scrim (`rgba(14, 18, 30, 0.6)`) over a paper colour, flattened
+ * The palette's scrim (`rgba(14, 18, 30, 0.4)`) over a paper colour, flattened
  * to one hex. The native surfaces behind the page take this while search is
  * up, so the gap the keyboard opens is the same tone as the dimmed page.
  */
 function scrimmed(hex: string) {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return hex;
   const n = Number.parseInt(hex.slice(1), 16);
-  const over = (c: number, s: number) => Math.round(c * 0.4 + s * 0.6);
+  const over = (c: number, s: number) => Math.round(c * 0.6 + s * 0.4);
   const r = over((n >> 16) & 255, 14);
   const g = over((n >> 8) & 255, 18);
   const b = over(n & 255, 30);

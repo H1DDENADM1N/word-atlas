@@ -968,10 +968,12 @@ code {
 }
 /* The canvas paints the whole WebView surface, including the strip below a
    layout viewport that the keyboard has just shrunk — the strip the palette's
-   fixed overlay cannot reach. Painting it as "dim over paper" makes it blend
-   into the scrim instead of flashing a band of bare paper. */
+   fixed overlay cannot reach. Painting it as "scrim over paper" makes it blend
+   into the dim instead of flashing a band of bare paper. Keep the ratio in
+   step with `scrimmed()` in App.tsx, which does the same sum for the native
+   surfaces. */
 html.is-search {
-  background: color-mix(in srgb, #0e121e 60%, var(--paper));
+  background: color-mix(in srgb, #0e121e 40%, var(--paper));
 }
 
 .footer {
@@ -1945,12 +1947,6 @@ html.is-search {
   position: fixed;
   inset: 0;
   z-index: 70;
-  /* No full-screen backdrop-filter on phones. The palette covers the whole
-     WebView, and that surface is re-blurred on every resize — the keyboard
-     coming up is one long resize, which is exactly when the blur was visible
-     as a flicker. A slightly denser dim reads the same over a page and costs
-     a single flat fill; the desktop keeps its blur, where there is no IME. */
-  background: rgba(14, 18, 30, 0.6);
   /* The panel's distance from the top is a token, not a viewport unit: with
      the keyboard up the layout viewport shrinks, and `9vh` used to shrink with
      it — the search box popped up a dozen pixels the moment the IME appeared. */
@@ -1959,17 +1955,27 @@ html.is-search {
   justify-content: center;
   align-items: flex-start;
   padding: var(--palette-top) 12px 12px;
+}
+/* The dim and the blur sit on their own layer, under the panel — the same
+   arrangement the word card uses. Painting them on the flex container would
+   put the panel inside the backdrop-filter's layer, and every re-blur (the
+   keyboard resizing the viewport is one long re-blur) would re-rasterise the
+   panel's text with it.
+   The fade lives here rather than on the root for the same reason: an ancestor
+   with opacity under 1 becomes a backdrop root, and the blur would be sampled
+   from an empty backdrop and pop in at the end of the animation. */
+.palette-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 18, 30, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
   animation: fade 0.14s var(--ease);
 }
-@media (min-width: 760px) {
-  .palette-root {
-    background: rgba(14, 18, 30, 0.4);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  }
-}
 @media (max-width: 759px) {
-  .palette-root {
+  .palette-root::before {
     /* The scrim has to outrun the layout viewport. When the keyboard resizes
        it, `inset: 0` ends where the new viewport ends, and the strip below —
        the area the IME is about to cover — keeps painting raw page background:
@@ -1980,11 +1986,12 @@ html.is-search {
   }
 }
 .palette {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 640px;
   /* Fit whatever height is left once the keyboard is up: the list takes the
-     remainder and scrolls, instead of the panel running under the IME. The
-     root is twice the viewport tall, so this cannot lean on its percentage. */
+     remainder and scrolls, instead of the panel running under the IME. */
   max-height: calc(100 * var(--dvh) - var(--palette-top) - 16px);
   display: flex;
   flex-direction: column;
