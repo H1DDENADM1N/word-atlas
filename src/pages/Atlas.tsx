@@ -145,34 +145,45 @@ export function AtlasPage({
     go({ page: "atlas", topic, level, view: route.view, ...patch }, null, true);
 
   const topicRow = useRef<HTMLDivElement>(null);
+  const levelRow = useRef<HTMLDivElement>(null);
   // Nineteen chips never fit on a phone, and 今日's tiles link straight to any
   // of them. Slide the row until the active chip sits in the middle; when the
   // reader can already see it, leave the row alone so a tap does not shift the
   // chips under the finger. Measure on the next frame — the page transition
   // mounts this page before the row has taken its final width.
+  //
+  // The six level chips are short enough to fit at 100% zoom, but not once the
+  // interface scale is turned up or on a 320 px phone, and 今日's learning path
+  // hands over a level the same way the topic tiles hand over a topic.
   useEffect(() => {
-    const row = topicRow.current;
-    if (!row) return;
     const raf = requestAnimationFrame(() => {
-      const chip = topic
-        ? Array.from(row.querySelectorAll<HTMLElement>("[data-topic]")).find((el) => el.dataset.topic === topic)
-        : undefined;
-      // 全部话题 is the first chip, so "nothing selected" means the row starts at 0.
-      if (!chip) {
-        if (row.scrollLeft > 0) slideTo(row, 0);
-        return;
-      }
-      const box = row.getBoundingClientRect();
-      const chipBox = chip.getBoundingClientRect();
-      // A chip at the very edge counts as hidden: centre it rather than leave
-      // it half behind the mask.
-      if (chipBox.left >= box.left + 12 && chipBox.right <= box.right - 12) return;
-      const far = Math.max(0, row.scrollWidth - row.clientWidth);
-      const left = row.scrollLeft + chipBox.left - box.left - (row.clientWidth - chipBox.width) / 2;
-      slideTo(row, Math.max(0, Math.min(left, far)));
+      const pick = (row: HTMLDivElement | null, key: "topic" | "level", value?: string) => {
+        if (!row || !value) return undefined;
+        return Array.from(row.querySelectorAll<HTMLElement>(`[data-${key}]`)).find(
+          (el) => el.dataset[key] === value,
+        );
+      };
+      const centre = (row: HTMLDivElement | null, chip: HTMLElement | undefined) => {
+        if (!row) return;
+        // "全部…" is the first chip, so "nothing selected" means the row starts at 0.
+        if (!chip) {
+          if (row.scrollLeft > 0) slideTo(row, 0);
+          return;
+        }
+        const box = row.getBoundingClientRect();
+        const chipBox = chip.getBoundingClientRect();
+        // A chip at the very edge counts as hidden: centre it rather than leave
+        // it half behind the mask.
+        if (chipBox.left >= box.left + 12 && chipBox.right <= box.right - 12) return;
+        const far = Math.max(0, row.scrollWidth - row.clientWidth);
+        const left = row.scrollLeft + chipBox.left - box.left - (row.clientWidth - chipBox.width) / 2;
+        slideTo(row, Math.max(0, Math.min(left, far)));
+      };
+      centre(levelRow.current, pick(levelRow.current, "level", level));
+      centre(topicRow.current, pick(topicRow.current, "topic", topic));
     });
     return () => cancelAnimationFrame(raf);
-  }, [topic, view]);
+  }, [topic, level, view]);
 
   // Nineteen constellations. The geometry comes from the layout (it depends on
   // where the stars are), the progress from the card store — so a word learned
@@ -228,7 +239,7 @@ export function AtlasPage({
       <div className="filters">
         {view !== "galaxy" && (
           <>
-            <div className="chips chips-scroll" role="group" aria-label="难度">
+            <div className="chips chips-scroll" role="group" aria-label="难度" ref={levelRow}>
               <button
                 className={`chip-btn ${!level ? "is-on" : ""}`}
                 onClick={() => setFilter({ level: undefined })}
@@ -240,6 +251,7 @@ export function AtlasPage({
                 <button
                   key={l}
                   className={`chip-btn lv lv-${l} ${level === l ? "is-on" : ""}`}
+                  data-level={l}
                   onClick={() =>
                     setFilter({ level: level === l ? undefined : l })
                   }

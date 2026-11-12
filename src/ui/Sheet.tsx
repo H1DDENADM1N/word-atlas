@@ -1,4 +1,3 @@
-import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { SHEET_ARM } from "../lib/pull";
 
@@ -184,13 +183,6 @@ export function Sheet({
           tabIndex={-1}
         >
           <span className="sheet-grip" aria-hidden="true" />
-          <button
-            className="icon-btn sheet-close"
-            onClick={onClose}
-            aria-label="关闭"
-          >
-            <X size={20} />
-          </button>
           {children}
         </div>
       </div>

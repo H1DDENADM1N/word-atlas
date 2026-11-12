@@ -1893,14 +1893,6 @@ html.is-search {
   user-select: none;
   -webkit-user-select: none;
 }
-.sheet-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 2;
-  background: var(--card);
-  box-shadow: var(--shadow-sm);
-}
 .sheet .entry-art .illo {
   max-width: 420px;
   margin: 0 auto;
