@@ -12,6 +12,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -78,10 +79,13 @@ public class MainActivity extends Activity {
     private static final int BOOT_BG = 0xFF0D1120;
 
     private WebView web;
+    private FrameLayout root;
     private View splash;
     private boolean backEnabled;
     /** Installed package version, handed to the page by {@link Bridge#version()}. */
     private String versionName = "";
+    /** The page's current chrome colour; also what the native gaps are painted. */
+    private int chromeColor = BOOT_BG;
 
     /** The live shell, if any; WidgetKeepAlive asks it to re-publish on the hour. */
     private static volatile WeakReference<MainActivity> live;
@@ -111,7 +115,7 @@ public class MainActivity extends Activity {
 
         versionName = readVersionName();
 
-        FrameLayout root = new FrameLayout(this);
+        root = new FrameLayout(this);
         root.setBackgroundColor(BOOT_BG);
 
         web = new WebView(this);
@@ -487,8 +491,31 @@ public class MainActivity extends Activity {
             public void run() {
                 ViewGroup parent = (ViewGroup) view.getParent();
                 if (parent != null) parent.removeView(view);
+                // The boot colour was only there to cover the launch; from here
+                // on the native surfaces follow the page.
+                paintNativeSurface(chromeColor);
             }
         }).start();
+    }
+
+    /**
+     * Paint the window, the root view and the WebView with the page's own
+     * colour.
+     *
+     * <p>When the keyboard animates, the app window is resized before the IME
+     * reaches it, and that uncovered strip belongs to the window rather than
+     * the page: kept at the dark boot colour it flashed a black band under a
+     * paper-coloured app. Nothing here is visible while the page is painting —
+     * it only decides what colour a gap shows.
+     */
+    private void paintNativeSurface(int color) {
+        try {
+            getWindow().setBackgroundDrawable(new ColorDrawable(color));
+            if (root != null) root.setBackgroundColor(color);
+            if (web != null) web.setBackgroundColor(color);
+        } catch (RuntimeException ignored) {
+            /* a window that is already gone: nothing left to paint */
+        }
     }
 
     private void openExternal(String url) {
@@ -753,6 +780,11 @@ public class MainActivity extends Activity {
                     Window window = getWindow();
                     window.setStatusBarColor(c);
                     window.setNavigationBarColor(c);
+                    chromeColor = c;
+                    // Only once the launch screen is gone: during boot these
+                    // surfaces deliberately stay dark, or the app would flash
+                    // paper before its first paint.
+                    if (splash == null) paintNativeSurface(c);
                     View decor = window.getDecorView();
                     int flags = decor.getSystemUiVisibility();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
