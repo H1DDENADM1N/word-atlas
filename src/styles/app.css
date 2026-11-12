@@ -971,9 +971,13 @@ code {
    fixed overlay cannot reach. Painting it as "scrim over paper" makes it blend
    into the dim instead of flashing a band of bare paper. Keep the ratio in
    step with `scrimmed()` in App.tsx, which does the same sum for the native
-   surfaces. */
+   surfaces.
+   `overflow: hidden` is the other half of being a modal: the overlay is a
+   fixed layer with nothing to scroll, so a drag on it would otherwise fall
+   through and move the page underneath. */
 html.is-search {
   background: color-mix(in srgb, #0e121e 40%, var(--paper));
+  overflow: hidden;
 }
 
 .footer {
@@ -1819,6 +1823,13 @@ html.is-search {
   /* Follows a downward drag on the panel, so the page behind eases back into
      view as the card is pulled away. Written by Sheet.tsx, 0 when idle. */
   opacity: calc(1 - var(--drag, 0));
+}
+/* The scrim leaves with the card. Clearing the drag offset on release would
+   snap it back to full strength for the length of the fall — a dark flash
+   exactly as the card is about to disappear. */
+.sheet-root.is-closing::before {
+  opacity: 0;
+  transition: opacity 0.16s var(--ease);
 }
 @keyframes fade {
   from {

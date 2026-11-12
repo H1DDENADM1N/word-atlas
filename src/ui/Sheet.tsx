@@ -88,6 +88,7 @@ export function Sheet({
       fr.style.transition = "";
       fr.style.transform = "";
       fr.style.opacity = "";
+      rt.classList.remove("is-closing");
       rt.style.removeProperty("--drag");
       drag = false;
     };
@@ -137,11 +138,13 @@ export function Sheet({
       // Far enough: let the card fall out of the way, then unmount it. The
       // timeout is shorter than the transition on purpose — by then the card is
       // already past the bottom edge and the dismissal reads as instant.
+      // The scrim fades out with it; clearing `--drag` here instead would
+      // bring it back to full strength for the fall.
       fr.style.transition =
         "transform 0.2s cubic-bezier(0.4, 0, 1, 1), opacity 0.18s";
       fr.style.transform = "translateY(102%)";
       fr.style.opacity = "0";
-      rt.style.removeProperty("--drag");
+      rt.classList.add("is-closing");
       timer = window.setTimeout(() => closeRef.current(), 170);
     };
 
