@@ -7,7 +7,7 @@ import { hashSeed } from "../lib/text";
 import { buildSession, masteredCount, todayPlan } from "../store/session";
 import { isMastered } from "../store/srs";
 import { dayKey, store, useStore } from "../store/store";
-import { Galaxy } from "../galaxy/Galaxy";
+import { Galaxy, todayStarIds } from "../galaxy/Galaxy";
 import { Highlight, Pronounce } from "../ui/EntryView";
 import { Illustration } from "../ui/Illustration";
 import { Ring } from "../ui/Ring";
@@ -200,16 +200,8 @@ export function Today() {
 }
 
 function GalaxyPanel({ learned, total }: { learned: number; total: number }) {
-  const today = useStore((s) => s.progress.days[dayKey()]);
   const ids = useStore((s) => s.progress.cards);
-  const todayIds = useMemo(() => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    return Object.entries(ids)
-      .filter(([, c]) => c.seen >= start.getTime())
-      .map(([id]) => id);
-  }, [ids]);
-  void today;
+  const todayIds = useMemo(() => todayStarIds(ids), [ids]);
   return (
     <section className="galaxy-panel" onClick={() => go({ page: "atlas", view: "galaxy" })} role="link" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && go({ page: "atlas", view: "galaxy" })}>
       <Galaxy mode="mini" highlight={todayIds} />

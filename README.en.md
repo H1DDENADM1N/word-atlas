@@ -97,6 +97,9 @@ These are not by-products of "porting to Android" — they are what this build g
 - **Today's two entry points now land in a list.** The A1…C2 learning path and the "browse by topic" tiles hand over `view=list`, so the atlas opens as a column of headwords instead of a picture wall, and both the level and topic rows slide the active chip into view (they stay put when it is already visible; reduced motion jumps straight there). The view belongs to that visit only — it never overwrites the grid/list choice you made by hand.
 - **Typing accepts either spelling, and skipping no longer scores 100%.** The atlas keeps one entry per spelling (`litre` and `liter`), but the typing studio compared character by character, so the other convention was marked wrong and the item never moved on. 61 British/American groups now decide word and sentence answers (punctuation still has to match), while the seven pairs that split meaning in British English — `practice / practise`, `licence / license` and friends — stay apart on purpose; a correct answer names both accepted forms. Skipped or revealed items also count in the denominator and are reported in the summary, so answering nothing no longer ends on "accuracy 100%".
 
+- **Seven phone-only alignment and rendering details, cleaned up at once.** 1.1.2 clears a batch of issues that only showed up on a real device: the compass mark sat 3 px above the search field (a line-box descender), and the −/+ speed steppers were glyphs whose ink drifted with the font — both are now geometrically centred. Card illustrations are square again instead of losing 12.5% off the top and bottom, and the full atlas sky now marks today's new words in gold just like the mini sky on Today.
+- **Narrow screens and special themes no longer lose a piece.** A1…C2 split the row evenly at 320 px and at 110% interface scale, so C2 is never clipped; "Clear study records" is always warning red (dark M3E used to paint it a near-white pink, which did not read as destructive at all); and the aurora skin gets its Gaussian blur back behind a word card — the ribbon is held still while the card is open so Android WebView does not sample a moving, filtered layer on mount.
+
 Full implementation notes, size breakdown and per-issue write-ups: **[docs/android.md](docs/android.md)** (Chinese).
 
 ## What stays the same
@@ -138,11 +141,11 @@ The APKs are not in the repository (`.gitignore` excludes them). Two ways in:
 
 | Artifact | Word audio | Use |
 | :--- | :--- | :--- |
-| `word-atlas-android-v1.1.1.apk` | Original ElevenLabs + Commons human takes for 76 words | Share / public distribution |
-| `word-atlas-android-v1.1.1_O.apk` | OALDPEX human (Oxford University Press) | Personal use only, never redistribute |
+| `word-atlas-android-v1.1.2.apk` | Original ElevenLabs + Commons human takes for 76 words | Share / public distribution |
+| `word-atlas-android-v1.1.2_O.apk` | OALDPEX human (Oxford University Press) | Personal use only, never redistribute |
 
 ```bash
-adb install -r word-atlas-android-v1.1.1.apk
+adb install -r word-atlas-android-v1.1.2.apk
 ```
 
 Both packages share one package name and cannot be installed side by side; installing over keeps your study records.
@@ -151,10 +154,11 @@ Requires **Android 7.0 (API 24)** or newer; arm64 devices are the best experienc
 
 ## Versions
 
-Current **v1.1.1** (versionCode 15). Per-release changes and checksums are in [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
+Current **v1.1.2** (versionCode 16). Per-release changes and checksums are in [Releases](https://github.com/H1DDENADM1N/word-atlas-android/releases).
 
 | Version | In one line |
 | :--- | :--- |
+| **v1.1.2** | **Seven real-device polish fixes**: the compass mark and the search field now share one centre line (a line-box descender had lifted the mark by 3 px); the −/+ speed steppers are geometric icons aligned with the slider; phone word-card art is square again instead of losing 12.5% off the top and bottom; the full atlas sky marks today's new words in gold just like the mini sky on Today; A1…C2 split the available width evenly at 320 px and 110% interface scale, so C2 is never clipped; "Clear study records" is always warning red (dark Material Expressive used to render it as near-white pink); and the aurora skin gets its `blur(6px)` back behind a word card, with the ribbon animation frozen while the card is open so Android WebView never samples a moving layer. No word, illustration or recording changed |
 | **v1.1.1** | **The progress widget refreshes on every hour boundary**: the page publishes 25 hourly projections of the four figures (FSRS stays in the web layer; native only looks up the row for the current hour), and `WidgetKeepAlive` pulls a fresh snapshot on the hour and re-renders all three cards — the numbers keep pace with cards coming due even when the app is closed. Still zero permissions, no notification, no exact alarm, no foreground service. **Each kind of example gets its own reading speed**: daily, IELTS-context and exam sentences each run 0.1×–3.0× in 0.1 steps (default 1.0×), examples only, and — like the theme — the speeds never travel with a backup. **The header is now the search field**: the wordmark is gone on phones, and on Today / Atlas / Me a pull at the very top opens the palette; a word card is closed by pulling it down (the round X is gone). **Today's level and topic entries open the atlas as a list** with the matching chip slid into view. **Typing accepts either British or American spelling** (61 groups, sentences included), and skipped or revealed items no longer score as correct |
 | **v1.1.0** | **Material Expressive 2025 theme family**: three families, mode / accent / palette controls, 22 CSS variables computed at runtime from the 2025 spec with a wallpaper-seeded accent; an optional bundled Chinese WenKai screen face, plus interface and text scaling |
 | **v1.0.12** | **Word cards pick up thesaurus synonyms from the Oxford Learner's Thesaurus**, filtered to same-POS groups by a Chinese-gloss match ≥0.3 — 2,175 cards gain 7,774 synonyms (total 20,745 → 28,518), case-insensitive dedup with no hard cap; **synonyms split by sense** — polysemous cards list them per sense, English only, with an unplaced bucket at the end (≤8 per sense); **lookup fallback** shows UK/US IPA and Chinese for words outside the atlas (341,575 headwords from a trimmed ECDICT, 26 letter-shards, ~26 MB), still voiced by Kokoro; and **UI copy is aligned with the web edition** — 118 label/copy swaps across 12 files (e.g. the atlas headline and the galaxy "review a learned word" hint) pulled from the live site, with no new UI elements and no word-card content changed |
@@ -205,9 +209,9 @@ python3 scripts/android/build_apk.py
 python3 scripts/android/build_apk.py --flavors share
 python3 scripts/android/build_apk.py --flavors private
 
-# → word-atlas-android-v1.1.1.apk      (share build, original audio)
-# → word-atlas-android-v1.1.1_O.apk    (private build, OALDPEX human audio)
-adb install -r word-atlas-android-v1.1.1.apk
+# → word-atlas-android-v1.1.2.apk      (share build, original audio)
+# → word-atlas-android-v1.1.2_O.apk    (private build, OALDPEX human audio)
+adb install -r word-atlas-android-v1.1.2.apk
 ```
 
 Both packages share one Web bundle, one set of inlined data, one `base.apk` and one `classes.dex`; only the word audio is swapped at packaging time. `--skip-web` reuses the previous `dist-android`.

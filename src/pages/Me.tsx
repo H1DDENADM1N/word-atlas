@@ -1,4 +1,4 @@
-import { ChevronRight, Clock3, Download, Globe, RotateCcw, Upload } from "lucide-react";
+import { ChevronRight, Clock3, Download, Globe, Minus, Plus, RotateCcw, Upload } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtlas } from "../atlas/context";
 import { isMastered } from "../store/srs";
@@ -215,7 +215,7 @@ export function Me({ privateAvailable }: { privateAvailable: boolean }) {
             </div>
           </Field>
           <Field label="学习起点" hint="只影响之后安排的新词，已学词的复习和当前这一轮保持不变。">
-            <div className="segmented">
+            <div className="segmented segmented-wide">
               {atlas.cefr.map((l, i) => (
                 <button key={l} className={settings.startLevel === i ? "is-on" : ""} onClick={() => set({ startLevel: i })}>
                   {l}
@@ -535,7 +535,7 @@ function RateField({ label, hint, value, set }: { label: string; hint?: string; 
           disabled={value <= MIN_EX_RATE}
           aria-label={`${label}放慢一档`}
         >
-          −
+          <Minus size={20} aria-hidden="true" />
         </button>
         <input
           type="range"
@@ -554,7 +554,7 @@ function RateField({ label, hint, value, set }: { label: string; hint?: string; 
           disabled={value >= MAX_EX_RATE}
           aria-label={`${label}加快一档`}
         >
-          +
+          <Plus size={20} aria-hidden="true" />
         </button>
         <output className="rate-value" aria-live="off">
           {value.toFixed(1)}×

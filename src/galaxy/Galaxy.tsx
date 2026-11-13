@@ -4,7 +4,7 @@ import { useAtlas } from "../atlas/context";
 import type { WordRef } from "../atlas/types";
 import { openWord } from "../lib/router";
 import { cue, playFile } from "../lib/sound";
-import { isMastered } from "../store/srs";
+import { isMastered, type CardState } from "../store/srs";
 import { store, useStore } from "../store/store";
 import { Illustration } from "../ui/Illustration";
 import { LIT_AT } from "./constellation";
@@ -38,6 +38,19 @@ function starStates(layout: GalaxyLayout, cards: Record<string, { st: number; s:
     }
   });
   return out;
+}
+
+/**
+ * Words first answered today — the gold stars in the sky. Both the little sky
+ * on 今日 and the full one on 图鉴 use this, so a word lit today reads the same
+ * in either view.
+ */
+export function todayStarIds(cards: Record<string, CardState>): string[] {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  return Object.entries(cards)
+    .filter(([, c]) => c.seen >= start.getTime())
+    .map(([id]) => id);
 }
 
 export function Galaxy({

@@ -492,8 +492,17 @@ code {
 .btn-glass:hover {
   background: rgba(255, 255, 255, 0.24);
 }
+/* Destructive actions must read as a warning in every family. `--terra-ink`
+   is re-tinted by m3e and by the night skins — down to #ffdbd3 on a dark m3e
+   card — which is a blush, not a warning. Keep the two reds independent of the
+   palette: deep red on paper, bright red on a dark or night sky. */
 .btn-danger {
-  color: var(--terra-ink);
+  color: #c1272d;
+}
+:root[data-theme="dark"] .btn-danger,
+:root[data-skin="aurora"] .btn-danger,
+:root[data-skin="starlight"] .btn-danger {
+  color: #ff6f6f;
 }
 .btn kbd {
   background: transparent;
@@ -743,6 +752,12 @@ code {
   transition: border-color 0.3s;
 }
 .topbar-logo {
+  /* The logo is an inline-flex span; as the link's only child it would sit in
+     a line box whose descender space (6 px at the root font size) pushes the
+     28 px compass 3 px above the 38 px search field. Making the link a flex
+     container removes the line box and centres the mark on the row instead. */
+  display: flex;
+  align-items: center;
   margin-right: 8px;
   border-radius: var(--shape-md);
   /* The header is the one row that must never be wider than the screen: the
@@ -4387,8 +4402,14 @@ html.is-search {
   border-radius: 50%;
   background: var(--card);
   color: var(--ink-2);
-  font: 600 18px/1 var(--sans);
+  /* The −/+ are SVG icons, not type. A glyph sits on a baseline, so its ink
+     lands ~1.6 px below the button centre; worse, U+2212 often falls back to
+     another font, and the two buttons then disagree with each other and with
+     the slider's centre line. Geometry has no baseline to drift with. */
   transition: transform 0.15s var(--spring), opacity 0.2s;
+}
+.rate-step svg {
+  display: block;
 }
 .rate-step:active:not(:disabled) {
   transform: scale(0.94);
@@ -5046,8 +5067,11 @@ a:hover .mark-needle,
 }
 
 @media (max-width: 559px) {
-  .intro .entry-art .illo,
-  .sheet .entry-art .illo {
+  /* The word card keeps the square plate. Source illustrations are 1:1, so a
+     4:3 frame plus `object-fit: cover` slices ~12.5% off both the top and the
+     bottom — on a phone the picture showed only its middle strip. The intro
+     panel still uses the shorter crop, where the picture is a banner. */
+  .intro .entry-art .illo {
     aspect-ratio: 4 / 3;
   }
   .entry {
@@ -6051,22 +6075,24 @@ a:hover .mark-needle,
     animation: none;
   }
 }
-/* The search/word panels open over the animated aurora ribbon. Their
-   `backdrop-filter` samples that moving filtered layer, and on an Android
-   WebView the overlay blanks for one frame when it mounts (and again when the
-   soft-keyboard resize fires) — the panel pops up, vanishes, then reappears.
-   Give the skins a solid scrim instead so the panel never depends on backdrop
-   sampling; the ribbon still glows faintly through. */
-:root[data-skin="aurora"] .palette-root,
-:root[data-skin="aurora"] .sheet-root::before {
+/* The search panel opens over the animated aurora ribbon. Its `backdrop-filter`
+   samples that moving filtered layer, and on an Android WebView the overlay
+   blanks for one frame when it mounts (and again when the soft-keyboard resize
+   fires) — the panel pops up, vanishes, then reappears. Give that panel a
+   solid scrim so it never depends on backdrop sampling.
+   The word card keeps the standard blur: Sheet.tsx puts `is-locked` on <html>
+   while a card is open, and the ribbon is held still for that time, so the
+   blur only ever samples a static backdrop. */
+:root[data-skin="aurora"] .palette-root {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-}
-:root[data-skin="aurora"] .palette-root {
   background: rgba(5, 6, 15, 0.72);
 }
 :root[data-skin="aurora"] .sheet-root::before {
   background: rgba(5, 6, 15, 0.62);
+}
+:root[data-skin="aurora"].is-locked body::after {
+  animation-play-state: paused;
 }
 :root[data-skin="aurora"] .topbar {
   background: color-mix(in oklab, var(--paper) 68%, transparent);

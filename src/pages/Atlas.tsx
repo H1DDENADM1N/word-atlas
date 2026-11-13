@@ -1,5 +1,5 @@
 import { Grid3x3, List, Search, Sparkles, X } from "lucide-react";
-import { Galaxy, useGalaxyLayout } from "../galaxy/Galaxy";
+import { Galaxy, todayStarIds, useGalaxyLayout } from "../galaxy/Galaxy";
 import { topicProgress } from "../galaxy/constellation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAtlas } from "../atlas/context";
@@ -76,6 +76,8 @@ export function AtlasPage({
 }) {
   const atlas = useAtlas();
   const cards = useStore((s) => s.progress.cards);
+  // The full sky marks today's new words in gold too, like the mini one on 今日.
+  const todayIds = useMemo(() => todayStarIds(cards), [cards]);
   const bookmarks = useStore((s) => s.progress.bookmarks);
   const [q, setQ] = useState(route.q ?? "");
   const [status, setStatus] = useState<Status>("all");
@@ -344,6 +346,7 @@ export function AtlasPage({
             mode="full"
             focus={q.trim() ? list[0]?.id : null}
             focusTopic={focusTopic}
+            highlight={todayIds}
             constellationStat={{ lit: litCount, total: constellations.length }}
           />
           <TopicConstellations items={constellations} selected={focusTopic} onPick={pickTopic} />
