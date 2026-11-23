@@ -59,7 +59,7 @@ export interface Entry {
   /**
    * 词源图景 — one line from the etymology dictionary reading the word's
    * literal meaning out of its root (`com- (共同) + currere (跑) 的字面意思是…`).
-   * Reaches 6,754 of the 7,298 entries; the rest go without the block.
+   * Reaches 7,139 of the 7,298 entries; the rest go without the block.
    */
   ety?: string;
   cefr: string;

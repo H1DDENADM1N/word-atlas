@@ -34,7 +34,7 @@ const SYLLABLE_WORDS = "4,672";
  * How many entries got a 词源图景 note from the etymology dictionary. Printed by
  * `scripts/etymology/import_etymology.py`; bump it when that is re-run.
  */
-const ETYM_WORDS = "6,754";
+const ETYM_WORDS = "7,139";
 
 /** Size of the share build; printed at the end of `scripts/android/build_apk.py`. */
 const APK_SIZE = "1.4 GB";
@@ -100,6 +100,9 @@ export function About() {
             </li>
             <li>
               <b>1.1.2：把真机上的小毛病收干净。</b>顶栏的指南针和搜索框现在严格在同一条中线上，例句速度的减号、加号也与滑条对齐（它们原先是字符，会跟着字体基线漂移）；手机上的词卡插画恢复方形，不再只剩中间一条；图鉴的大星图会把今天新学的词和今日页一样标成金色；学习起点 A1…C2 在窄屏和界面放大时自动等分，C2 不会被裁掉；「清空学习记录」在所有主题下都是红色警告色；极光主题打开词卡时重新有高斯模糊。词条、插画和录音都没有改动。
+            </li>
+            <li>
+              <b>1.1.3：词源图景补到 97.8%。</b>词源词典换成 COCA 40,000 词表（39,875 条，原来 19,996 条），有词源的词条从 6,754 涨到 {ETYM_WORDS}。英式拼写和不规则复数按词典自己的词头归一，<i>colour</i> 借 <i>color</i>、<i>children</i> 借 <i>child</i>；同根词一栏多出 378 张卡，「近义」也多补了 706 个词。新版把每一栏排成了表格，解析器跟着重写，顺手洗掉源数据里 124 条残留的生成指令，也补全了 10 条被截断的小结。释义、例句、插画和录音都没有改动。
             </li>
             <li>
               <b>别的 app 里也能查。</b>在任何能选词的地方长按一个词，弹出的菜单里可以选「词光」当翻译器；从别处分享或复制一段文本，分享面板里也能选词光，直接落到图鉴里搜。两条入口都只读系统传进来的那段字，落点和图鉴搜索是同一个页面，查到的词照常进「最近查过」。长按「exhibition」，回来在「我的 → 查词历史」里就能接着看。不新增任何权限，也不联网：词还是只有本机这一份。
@@ -201,7 +204,7 @@ export function About() {
             公开发布的构建里，单词发音有两种来源。<b>7,222 个词</b>的读音来自上游 Word Atlas 的原版 ElevenLabs 录音（英音 Alice / 美音 Sarah），随上游以 CC BY 4.0 提供；<b>76 个同形异音词的两个读音</b>（152 个文件）取自 Wikimedia Commons 的 Wiktionary 与 Lingua Libre，授权分别是 CC BY-SA 3.0（70）、CC BY-SA 4.0（59）、公有领域（16）、CC0（6）、CC BY 4.0（1），逐条作者与授权见仓库 <code>docs/audio-credits.md</code>；这部分<b>不在 CC BY 4.0 之内</b>，其中 CC BY-SA 的文件再分发时须保留同样的授权。另有 29 个同形异音词在 Commons 上找不到第二个读音，第二读音由本仓库用 ElevenLabs 合成，卡片上标「合成」。公开发布包不包含《牛津高阶》数据包（OALDPEX）的真人录音。如果你自己构建私用版，可以运行 <code>scripts/atlas/import_audio.py</code> 把 OALDPEX 导入 <code>private/audio/oaldpex</code>；那批录音版权归牛津大学出版社，只能自用，不得公开分发。
           </p>
           <p className="muted">
-            词卡里的「词源图景」「同根词」与补充的近义词来自项目自带的词源词典（19,996 条），覆盖 {ETYM_WORDS}{" "}
+            词卡里的「词源图景」「同根词」与补充的近义词来自项目自带的词源词典（COCA 40,000 词表，39,875 条），覆盖 {ETYM_WORDS}{" "}
             个词条，同样随词库以 CC BY 4.0 提供。和释义、例句一样，这些内容由模型按同一套规范撰写、经自动校验，但没有逐条人工审校；同根词按词根归纳，个别条目会给出同时代同族的远亲（<i>dais</i> 下可能列着 <i>desk</i>），当线索看比当词源学结论更合适。
           </p>
           <p className="muted">

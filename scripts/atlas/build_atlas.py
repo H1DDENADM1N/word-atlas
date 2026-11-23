@@ -83,7 +83,7 @@ def webp(src, dst, size, q):
 def apply_etymology(entries):
     """Fold in 词源图景, extra 近义 and 同根词 from the parsed etymology dictionary.
 
-    The dictionary reaches 6,754 of the 7,298 entries; the rest simply go without
+    The dictionary reaches 7,139 of the 7,298 entries; the rest simply go without
     the block. Synonyms it adds go first, and same-root words already covered by
     `fam` or `syn` are dropped so a card never lists one word twice.
     """
@@ -154,7 +154,14 @@ def apply_relations(entries):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-media", action="store_true")
+    ap.add_argument("--data-only", action="store_true", help="re-export the downloads from the existing chunks")
     a = ap.parse_args()
+
+    if a.data_only:
+        chunks = sorted(PUB.glob("entries/*.json"), key=lambda p: int(p.stem))
+        entries = [e for p in chunks for e in json.loads(p.read_text(encoding="utf-8"))]
+        print(f"exported {export_data(entries)} entries from {len(chunks)} chunks")
+        return
 
     raw = {}
     for p in sorted((FORGE / "text").glob("*.json")):
@@ -240,6 +247,14 @@ def main():
     (PUB / "index.json").write_text(json.dumps(meta, ensure_ascii=False, separators=(",", ":")))
 
     DATA.mkdir(exist_ok=True)
+    export_data(entries)
+    (FORGE / "build-warnings.json").write_text(json.dumps(warnings, ensure_ascii=False, indent=1))
+    print(json.dumps({k: meta[k] for k in ("count", "examples", "illustrated", "voiced")}), "warnings", len(warnings), "etymology", ety, "thesaurus", thes, "relations", rel)
+
+
+def export_data(entries):
+    """Write the developer downloads (CC BY 4.0) from the finished entries."""
+    DATA.mkdir(exist_ok=True)
     public = [{k: v for k, v in c.items() if not k.startswith("_") and k != "m"} for c in entries]
     (DATA / "word-atlas.json").write_text(json.dumps(public, ensure_ascii=False, indent=1))
     with open(DATA / "word-atlas.csv", "w", newline="", encoding="utf-8") as f:
@@ -254,8 +269,7 @@ def main():
                         " | ".join(s["en"] for s in c["senses"]),
                         ex[0]["en"], ex[0]["zh"], ex[1]["en"], ex[1]["zh"],
                         " ; ".join(c["col"]), " ; ".join(c["fam"]), ", ".join(c["syn"]), ", ".join(c["ant"]), c["tip"]])
-    (FORGE / "build-warnings.json").write_text(json.dumps(warnings, ensure_ascii=False, indent=1))
-    print(json.dumps({k: meta[k] for k in ("count", "examples", "illustrated", "voiced")}), "warnings", len(warnings), "etymology", ety, "thesaurus", thes, "relations", rel)
+    return len(public)
 
 
 if __name__ == "__main__":
